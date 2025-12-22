@@ -98,22 +98,39 @@ a:hover {
     top: 0;
     left: 0;
     width: 100%;
-    padding: 2rem 5%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
+    /* Center the inner content */
     z-index: 100;
     background: rgba(5, 5, 5, 0.0);
     /* Transparent start */
-    transition: background 0.3s ease, padding 0.3s ease;
+    transition: background 0.3s ease;
     mix-blend-mode: difference;
+}
+
+.nav-content {
+    width: 100%;
+    max-width: 1800px;
+    /* Constrained width */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5%;
+    transition: padding 0.3s ease;
 }
 
 .navbar.scrolled {
     background: rgba(5, 5, 5, 0.8);
     backdrop-filter: blur(10px);
-    padding: 1rem 5%;
     mix-blend-mode: normal;
+}
+
+.navbar.scrolled .nav-content {
+    padding: 1rem 5%;
 }
 
 .logo {
@@ -354,9 +371,12 @@ a:hover {
 }
 
 .work-section .container {
-    max-width: 95vw;
-    /* Almost full width for gallery */
-    padding: 0 2.5%;
+    max-width: 1800px;
+    /* Wider container for gallery but constrained */
+    width: 95%;
+    padding: 0;
+    /* Padding handled by width or internal gaps, or keep padding if needed for mobile edges */
+    margin: 0 auto;
 }
 
 /* Masonry Grid Layout */
@@ -411,6 +431,21 @@ a:hover {
     /* Color on hover */
 }
 
+/* Gallery Video */
+.gallery-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+    filter: grayscale(100%);
+}
+
+.gallery-item:hover .gallery-video {
+    transform: scale(1.05);
+    filter: grayscale(0%);
+}
+
 .item-info {
     position: absolute;
     bottom: 0;
@@ -421,6 +456,8 @@ a:hover {
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    /* Let clicks pass through to video if needed, though surrounding div handles click */
 }
 
 .gallery-item:hover .item-info {
@@ -617,18 +654,35 @@ a:hover {
     opacity: 1;
 }
 
-.lightbox-content {
-    margin: auto;
-    display: block;
-    width: 80%;
-    max-width: 1200px;
-    max-height: 80vh;
-    object-fit: contain;
+.lightbox-content-container {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 1200px;
+    max-height: 80vh;
+    display: flex;
+    /* Centers content */
+    justify-content: center;
+    align-items: center;
+}
+
+.lightbox-content {
+    /* Base style for img, video, iframe */
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    display: block;
+}
+
+/* Specifics for iframe to ensure it has height */
+iframe.lightbox-content {
+    height: 80vh;
+    background: #fff;
+    border: none;
 }
 
 #caption {

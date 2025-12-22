@@ -40,6 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.classList.remove('scrolled');
         }
     });
+    // Video Hover Auto-play
+    const videoItems = document.querySelectorAll('.gallery-video');
+    videoItems.forEach(video => {
+        video.parentElement.addEventListener('mouseenter', () => {
+            video.play().catch(e => console.log('Auto-play prevented:', e));
+        });
+        video.parentElement.addEventListener('mouseleave', () => {
+            video.pause();
+            video.currentTime = 0; // Optional: Reset to start
+        });
+    });
 });
 
 // Gallery Filter
@@ -86,12 +97,36 @@ function filterGallery(category) {
 }
 
 // Lightbox Functions
-function openLightbox(imgSrc, captionText) {
+function openLightbox(src, captionText, type = 'image') {
     const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
+    const container = document.getElementById('lightbox-content-container');
     const caption = document.getElementById('caption');
 
-    lightboxImg.src = imgSrc;
+    // Clear previous content
+    container.innerHTML = '';
+
+    let contentElement;
+
+    if (type === 'video') {
+        contentElement = document.createElement('video');
+        contentElement.src = src;
+        contentElement.controls = true;
+        contentElement.autoplay = true;
+        contentElement.className = 'lightbox-content';
+    } else if (type === 'iframe' || type === 'html') {
+        contentElement = document.createElement('iframe');
+        contentElement.src = src;
+        contentElement.className = 'lightbox-content';
+        // Allow fullscreen for iframe content if needed
+        contentElement.allow = "fullscreen";
+    } else {
+        // Default to image
+        contentElement = document.createElement('img');
+        contentElement.src = src;
+        contentElement.className = 'lightbox-content';
+    }
+
+    container.appendChild(contentElement);
     caption.textContent = captionText;
     lightbox.style.display = 'block';
 
@@ -105,11 +140,15 @@ function openLightbox(imgSrc, captionText) {
 
 function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
+    const container = document.getElementById('lightbox-content-container');
+
     lightbox.classList.remove('active');
 
     setTimeout(() => {
         lightbox.style.display = 'none';
         document.body.style.overflow = 'auto';
+        // Clear content to stop video playing
+        container.innerHTML = '';
     }, 300); // Match transition duration
 }
 

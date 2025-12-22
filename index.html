@@ -16,11 +16,13 @@
 <body>
 
     <nav class="navbar">
-        <a href="#hero" class="logo"></a>
-        <div class="nav-links">
-            <a href="#about">About</a>
-            <a href="#work">Work</a>
-            <a href="#contact">Contact</a>
+        <div class="nav-content">
+            <a href="#hero" class="logo"></a>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#work">Work</a>
+                <a href="#contact">Contact</a>
+            </div>
         </div>
     </nav>
 
@@ -284,6 +286,27 @@
                             <p>Reference</p>
                         </div>
                     </div>
+
+                    <!-- Video Item Example -->
+                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="realtime"
+                        onclick="openLightbox('assets/Untitled video - Made with Clipchamp (3).mp4', 'Real-time Walkthrough', 'video')">
+                        <video src="assets/Untitled video - Made with Clipchamp (3).mp4" muted loop playsinline
+                            class="gallery-video"></video>
+                        <div class="item-info">
+                            <h4>Walkthrough</h4>
+                            <p>Real-time Video</p>
+                        </div>
+                    </div>
+
+                    <!-- HTML Page Item Example -->
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/interactive_plan_pro (18).html', 'Interactive Plan', 'iframe')">
+                        <img src="assets/mall.jpg" alt="Interactive Preview" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Interactive Plan</h4>
+                            <p>Live Demo</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -291,7 +314,10 @@
         <!-- Lightbox Modal -->
         <div id="lightbox" class="lightbox" onclick="closeLightbox()">
             <span class="close-btn">&times;</span>
-            <img class="lightbox-content" id="lightbox-img">
+            <div id="lightbox-content-container" class="lightbox-content-container">
+                <!-- Content injected via JS -->
+                <img class="lightbox-content" id="lightbox-img-placeholder" style="display:none;">
+            </div>
             <div id="caption"></div>
         </div>
 
