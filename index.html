@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jervis Tuazon | 3D Visual Artist</title>
+    <meta name="description"
+        content="3D Visual Artist specializing in architectural visualization and real-time workflows.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="#hero" class="logo"></a>
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#work">Work</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <h1 class="fade-in">JERVIS TUAZON<br>Visualizing<br>Architecture</h1>
+                <p class="subtitle fade-in delay-1">Bridging technical accuracy with design storytelling.</p>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container about-grid">
+                <!-- 1. Profile Photo -->
+                <div class="profile-col fade-in-scroll">
+                    <div class="profile-img-container">
+                        <img src="assets/profile.png" alt="Jervis Tuazon Profile" class="profile-img">
+                    </div>
+                </div>
+
+                <!-- 2. Bio Text -->
+                <div class="bio-col fade-in-scroll delay-1">
+                    <div class="bio-text">
+                        <h2>About</h2>
+                        <p>I’m Jervis, a Senior Visual Artist with over 12 years of collective experience in the design
+                            industry. For the last <span class="highlight-tool">7 years as a Senior Visual Artist at
+                                Parks + Associates</span>, I have focused on architectural visualization, producing
+                            high-fidelity renders and cinematic animations that help clients see the project clearly
+                            before it’s built. Prior to this, I spent <span class="highlight-tool">5 years as a 2D
+                                Designer at HBA Clark Philippines</span>, where I cultivated a sharp eye for composition
+                            and detail.</p>
+                        <p>Currently, I am delving deeper into the future of the craft—integrating AI into visual
+                            workflows, exploring dynamic presentation methods, and developing custom tools to streamline
+                            the design process. My goal is to bridge traditional artistry with emerging technology,
+                            creating deeper, more reliable narratives for every project.</p>
+                        <p>Whether through real-time walkthroughs or bespoke visualization tools, my approach remains
+                            grounded: keep the design intent honest, make the visuals feel believable, and deliver
+                            efficiently under real production constraints.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Skills/Services -->
+                <div class="skills-col fade-in-scroll delay-2">
+                    <div class="skills-list">
+                        <h3>Services & Expertise</h3>
+                        <ul>
+                            <li>
+                                <span class="skill-title">Architectural Visualization</span>
+                                <span class="skill-desc">High-end marketing still renders for exterior and interior
+                                    developments, composed in <span class="highlight-tool">SketchUp</span>, rendered
+                                    with <span class="highlight-tool">3Ds Max</span> and <span
+                                        class="highlight-tool">V-Ray</span>, then polished with <span
+                                        class="highlight-tool">Photoshop</span> and <span
+                                        class="highlight-tool">AI</span>.</span>
+                            </li>
+                            <li>
+                                <span class="skill-title">Cinematic Animation</span>
+                                <span class="skill-desc">Story-driven walkthroughs that capture the mood of
+                                    the
+                                    space, produced using <span class="highlight-tool">Twinmotion</span>, <span
+                                        class="highlight-tool">D5</span>, and <span class="highlight-tool">Premiere
+                                        Pro</span>.</span>
+                            </li>
+                            <li>
+                                <span class="skill-title">Real-time Interactive</span>
+                                <span class="skill-desc">Immersive design reviews and interactive solutions powered by
+                                    <span class="highlight-tool">Twinmotion</span> and <span
+                                        class="highlight-tool">custom personal tools</span>.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="work" class="work-section">
+            <div class="container">
+                <div class="work-header">
+                    <h2 class="section-title fade-in-scroll">Selected Work</h2>
+                    <div class="filter-bar fade-in-scroll delay-1">
+                        <button class="filter-btn active" onclick="filterGallery('all')">All</button>
+                        <button class="filter-btn" onclick="filterGallery('visualization')">Visualization</button>
+                        <button class="filter-btn" onclick="filterGallery('realtime')">Real-time</button>
+                        <button class="filter-btn" onclick="filterGallery('concept')">Concept</button>
+                        <button class="filter-btn" onclick="filterGallery('ai')">AI Research</button>
+                    </div>
+                </div>
+
+                <div class="gallery-grid">
+                    <!-- Featured Item -->
+                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="visualization"
+                        onclick="openLightbox('assets/exterior.png', 'Modern Residential Exterior')">
+                        <img src="assets/exterior.png" alt="Modern minimalist house exterior" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Exterior Residential</h4>
+                            <p>Visualization</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="realtime"
+                        onclick="openLightbox('assets/interior.png', 'Office Lobby Interior')">
+                        <img src="assets/interior.png" alt="Modern office lobby" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Interior Commercial</h4>
+                            <p>Real-time</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/abstract.png', 'Massing Study')">
+                        <img src="assets/abstract.png" alt="Architectural massing model" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Massing Study</h4>
+                            <p>Concept</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/mall.jpg', 'Commercial Mall Layout')">
+                        <img src="assets/mall.jpg" alt="Commercial mall layout" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Commercial Hub</h4>
+                            <p>Layout Design</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="visualization"
+                        onclick="openLightbox('assets/forest.jpg', 'Landscape Integration')">
+                        <img src="assets/forest.jpg" alt="Forest landscape" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Eco Integration</h4>
+                            <p>Landscape</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/bubble.jpg', 'Organic Structure')">
+                        <img src="assets/bubble.jpg" alt="Bubble structure" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Organic Structure</h4>
+                            <p>Experimental</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="visualization"
+                        onclick="openLightbox('assets/product.png', 'Product Viz')">
+                        <img src="assets/product.png" alt="Product realization" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Industrial Design</h4>
+                            <p>Product Viz</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/123d.jpg', 'Process Sketch')">
+                        <img src="assets/123d.jpg" alt="Process sketch" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Early Concept</h4>
+                            <p>Sketch</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/brutalist.jpg', 'Brutalist Concrete')">
+                        <img src="assets/brutalist.jpg" alt="Brutalist concrete structure" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Brutalist Study</h4>
+                            <p>Materiality</p>
+                        </div>
+                    </div>
+
+                    <!-- AI / Remix Series -->
+                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340884404.png', 'AI Concept Exploration 01')">
+                        <img src="assets/remix_1766340884404.png" alt="AI Generated Concept" class="gallery-img">
+                        <div class="item-info">
+                            <h4>AI Exploration 01</h4>
+                            <p>Generative Design</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340887685.png', 'AI Concept Exploration 02')">
+                        <img src="assets/remix_1766340887685.png" alt="AI Generated Concept" class="gallery-img">
+                        <div class="item-info">
+                            <h4>AI Exploration 02</h4>
+                            <p>Generative Design</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340901441.png', 'AI Concept Exploration 03')">
+                        <img src="assets/remix_1766340901441.png" alt="AI Generated Concept" class="gallery-img">
+                        <div class="item-info">
+                            <h4>AI Exploration 03</h4>
+                            <p>Generative Design</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340905501.png', 'AI Concept Exploration 04')">
+                        <img src="assets/remix_1766340905501.png" alt="AI Generated Concept" class="gallery-img">
+                        <div class="item-info">
+                            <h4>AI Exploration 04</h4>
+                            <p>Generative Design</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1765564743892.png', 'AI Remix Variation')">
+                        <img src="assets/remix_1765564743892.png" alt="AI Remix" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Remix Study 01</h4>
+                            <p>Iteration</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340872541.png', 'AI Remix Variation')">
+                        <img src="assets/remix_1766340872541.png" alt="AI Remix" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Remix Study 02</h4>
+                            <p>Iteration</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="ai"
+                        onclick="openLightbox('assets/remix_1766340912651.png', 'AI Remix Variation')">
+                        <img src="assets/remix_1766340912651.png" alt="AI Remix" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Remix Study 03</h4>
+                            <p>Iteration</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="visualization"
+                        onclick="openLightbox('assets/wood.jpg', 'Wood Detail')">
+                        <img src="assets/wood.jpg" alt="Wood texture detail" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Material Detail</h4>
+                            <p>Texture</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item fade-in-scroll" data-category="concept"
+                        onclick="openLightbox('assets/zaha.jpg', 'Organic Form Study')">
+                        <img src="assets/zaha.jpg" alt="Organic architectural form" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Organic Forms</h4>
+                            <p>Parametric Design</p>
+                        </div>
+                    </div>
+
+                    <!-- Referenced / Research images -->
+                    <div class="gallery-item fade-in-scroll" data-category="visualization"
+                        onclick="openLightbox('assets/5e8342522fb7310f16ab9f45_5b82c36b2b7a39bc1eb486b0_Architectural-Rendering-is-Not-Easy%2C-Here-is-Why-EASY-RENDER.jpg', 'Industry Reference')">
+                        <img src="assets/5e8342522fb7310f16ab9f45_5b82c36b2b7a39bc1eb486b0_Architectural-Rendering-is-Not-Easy%2C-Here-is-Why-EASY-RENDER.jpg"
+                            alt="Architecture" class="gallery-img">
+                        <div class="item-info">
+                            <h4>Industry Standard</h4>
+                            <p>Reference</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+            <span class="close-btn">&times;</span>
+            <img class="lightbox-content" id="lightbox-img">
+            <div id="caption"></div>
+        </div>
+
+        <section id="contact" class="contact-section">
+            <div class="container fade-in-scroll">
+                <h2>Let's Collaborate</h2>
+                <p>Available for freelance projects and collaborations.</p>
+                <div class="contact-details" style="margin-top: 2rem;">
+                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;"><a
+                            href="mailto:jervistuazon@gmail.com">jervistuazon@gmail.com</a></p>
+                    <p style="font-size: 1.2rem;"><a href="tel:+6594474504">+65 9447 4504</a></p>
+                </div>
+
+            </div>
+            <footer class="footer">
+                <p>&copy; 2025 Jervis Tuazon. All rights reserved.</p>
+            </footer>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
