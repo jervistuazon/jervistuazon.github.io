@@ -200,11 +200,13 @@ a:hover {
 }
 
 .hero-content h1 {
-    font-size: clamp(4rem, 10vw, 8rem);
+    font-size: clamp(3rem, 6.5vw, 8rem);
     font-weight: 200;
     /* Super sleek thin font */
-    margin-bottom: 2rem;
-    line-height: 1;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+    white-space: nowrap;
+
 }
 
 .hero-content .subtitle {
@@ -215,6 +217,21 @@ a:hover {
     letter-spacing: 0.02em;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
     padding-left: 1.5rem;
+}
+
+.hero-tagline {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+    display: block;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.delay-2 {
+    animation-delay: 0.4s;
 }
 
 /* About Section */
@@ -232,6 +249,12 @@ a:hover {
     /* Profile | Bio | Skills */
     gap: 4rem;
     align-items: start;
+}
+
+.profile-col {
+    padding-top: 7.5rem;
+    /* Aligns image top with the text content of neighbor columns, accounting for their headers */
+    width: 100%;
 }
 
 .profile-img-container {
@@ -264,21 +287,23 @@ a:hover {
 
 
 .bio-text p {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 2rem;
     font-weight: 300;
 }
 
 
 
 /* Skill/Services Section (New) */
-.skills-list h3 {
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.column-header {
+    font-size: 3rem;
+    text-transform: none;
+    letter-spacing: -0.02em;
     margin-bottom: 2rem;
+    /* Reduced from 3rem slightly as text is smaller */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 1rem;
     color: var(--accent-color);
+    font-weight: 300;
 }
 
 .skills-list ul {
@@ -286,26 +311,34 @@ a:hover {
 }
 
 .skills-list li {
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
+    /* Increased breathing room */
 }
 
 .skill-title {
     display: block;
-    font-size: 1.5rem;
-    font-weight: 300;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
+    font-size: 1.15em;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #ffffff;
+    /* Match highlight-tool style */
 }
 
 
 
 .skill-desc {
     display: block;
-    color: #cccccc;
+    color: var(--text-primary);
+    /* Matched to bio text color */
     font-size: 1rem;
     font-weight: 300;
     max-width: 90%;
-    line-height: 1.6;
+    line-height: 1.5;
+}
+
+.skill-desc .highlight-tool {
+    font-size: 1em;
+    /* Reset zoom on tools inside desc since title is smaller now */
 }
 
 .highlight-tool {
