@@ -1,4 +1,5 @@
 // Gallery Data is loaded from gallery-data.js (const galleryData = ...)
+const galleryData = window.galleryData;
 
 let currentGalleryImages = [];
 let currentImageIndex = 0;
@@ -56,7 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderGalleryGrid() {
     const grid = document.getElementById('gallery-grid');
-    if (!grid || typeof galleryData === 'undefined') return;
+    const data = window.galleryData || galleryData;
+    if (!grid || !data) {
+        console.error("Gallery Grid or Data not found", { grid, data });
+        return;
+    }
 
     grid.innerHTML = ''; // Clear fallback
 
@@ -85,7 +90,7 @@ function renderGalleryGrid() {
     let index = 0;
 
     // Loop through gallery folders
-    for (const [folderName, files] of Object.entries(galleryData)) {
+    for (const [folderName, files] of Object.entries(data)) {
         if (!files || files.length === 0) continue;
 
         // Use first valid image/video as thumbnail
