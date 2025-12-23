@@ -1,5 +1,4 @@
 // Gallery Data is loaded from gallery-data.js (const galleryData = ...)
-const galleryData = window.galleryData;
 
 let currentGalleryImages = [];
 let currentImageIndex = 0;
@@ -25,15 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const observerOptions = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.15 // Slightly higher threshold for better reveal timing
+        threshold: 0.15
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-            } else {
-                // entry.target.classList.remove('is-visible'); // Standard scroll reveal usually doesn't hide again
             }
         });
     }, observerOptions);
@@ -51,19 +48,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // We don't need to add video listeners here for the main gallery since they are added dynamically in renderGalleryGrid
-    // But if there were static ones, we would.
+    // ESC Key Support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const lightbox = document.getElementById('lightbox');
+            const projectView = document.getElementById('project-view');
+
+            // Priority: Close Lightbox first, then Project View
+            if (lightbox.style.display === 'block') {
+                closeLightbox();
+            } else if (projectView.style.display === 'block') {
+                closeProjectView();
+            }
+        }
+    });
 });
+
+// Reusable pattern for both main gallery and project sub-gallery
+const layoutPattern = [
+    'span-2-2', 'span-2-1', '', 'span-2-2', '', 'span-2-1', '', '', 'span-2-1'
+];
+// Slightly randomized pattern or just fixed
+// Using the previous requested one:
+const layoutPatternMain = [
+    'span-2-2', '', '', 'span-2-1', '', '', 'span-2-2', '', 'span-2-1', ''
+];
+
 
 function renderGalleryGrid() {
     const grid = document.getElementById('gallery-grid');
-    const data = window.galleryData || galleryData;
-    if (!grid || !data) {
-        console.error("Gallery Grid or Data not found", { grid, data });
-        return;
-    }
+    if (!grid || typeof galleryData === 'undefined') return;
 
-    grid.innerHTML = ''; // Clear fallback
+    grid.innerHTML = '';
 
     // Observer for new items
     const observer = new IntersectionObserver((entries) => {
@@ -72,61 +88,38 @@ function renderGalleryGrid() {
         });
     }, { threshold: 0.1 });
 
-    // Layout Pattern to mimic the original "hand-crafted" look
-    // pattern classes: 'span-2-2' (Large), 'span-2-1' (Wide), '' (Standard 1x1)
-    const layoutPattern = [
-        'span-2-2', // 1. Large
-        '',         // 2. Standard
-        '',         // 3. Standard
-        'span-2-1', // 4. Wide
-        '',         // 5. Standard
-        '',         // 6. Standard
-        'span-2-2', // 7. Large
-        '',         // 8. Standard
-        'span-2-1', // 9. Wide
-        ''          // 10. Standard
-    ];
-
     let index = 0;
 
     // Loop through gallery folders
-    for (const [folderName, files] of Object.entries(data)) {
+    for (const [folderName, files] of Object.entries(galleryData)) {
         if (!files || files.length === 0) continue;
 
-        // Use first valid image/video as thumbnail
         const thumbnail = files[0];
-
-        // Create Item
         const item = document.createElement('div');
 
-        // Get span class from pattern (repeating)
-        const spanClass = layoutPattern[index % layoutPattern.length];
+        // Use pattern
+        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
-        item.setAttribute('data-category', 'visualization'); // Default category
-        item.onclick = () => openGallery(folderName);
+        item.setAttribute('data-category', 'visualization');
+        item.onclick = () => openGallery(folderName); // Now behaves as "Open Project View"
 
         index++;
 
-        // Content
         const path = `assets/${folderName}/${thumbnail}`;
         const encodedPath = encodePath(path);
 
-        // Check if video
+        // Thumbnail Content
         if (isVideo(thumbnail)) {
             const video = document.createElement('video');
             video.src = encodedPath;
             video.muted = true;
             video.loop = true;
             video.className = 'gallery-video';
-
-            // Auto play on hover logic for dynamically added video
             item.onmouseenter = () => video.play().catch(e => { });
             item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
-
             item.appendChild(video);
         } else {
-            // Image Thumbnail
             const img = document.createElement('img');
             img.src = encodedPath;
             img.alt = folderName;
@@ -134,54 +127,124 @@ function renderGalleryGrid() {
             item.appendChild(img);
         }
 
-        // Info Overlay
         const info = document.createElement('div');
         info.className = 'item-info';
 
         const h4 = document.createElement('h4');
         h4.textContent = folderName;
 
-        // const p = document.createElement('p');
-        // p.textContent = `${files.length} items`; // Show count
-
         info.appendChild(h4);
-        // info.appendChild(p);
         item.appendChild(info);
 
         grid.appendChild(item);
-
-        // Observe
         observer.observe(item);
     }
 }
 
-// Helper to encode paths properly (fixing spaces)
-function encodePath(path) {
-    return path.split('/').map(part => encodeURIComponent(part)).join('/');
-}
-
-function isVideo(filename) {
-    return /\.(mp4|webm|mov)$/i.test(filename);
-}
-
-// Lightbox Functions
+// Open Project View (Sub-Gallery)
 function openGallery(folderName) {
     if (!galleryData[folderName]) return;
 
     currentFolder = folderName;
     currentGalleryImages = galleryData[folderName];
-    currentImageIndex = 0;
 
+    // Populate the project grid
+    const projectGrid = document.getElementById('project-grid');
+    const projectTitle = document.getElementById('project-title');
+    const projectView = document.getElementById('project-view');
+
+    projectTitle.textContent = folderName;
+    projectGrid.innerHTML = '';
+
+    // Reuse layout pattern logic for sub-gallery?
+    // User asked "arrange in block and different sizes".
+    // We can use the same pattern or a slightly different one.
+    // Let's reuse the main pattern for consistency.
+
+    let index = 0;
+
+    // Observer for project view items
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('is-visible');
+        });
+    }, { threshold: 0.1 });
+
+    currentGalleryImages.forEach((filename, i) => {
+        const item = document.createElement('div');
+        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+        item.className = `gallery-item fade-in-scroll ${spanClass}`;
+
+        // Clicking this opens actual lightbox
+        item.onclick = () => openLightbox(i);
+
+        index++;
+
+        const path = `assets/${currentFolder}/${filename}`;
+        const encodedPath = encodePath(path);
+
+        if (isVideo(filename)) {
+            const video = document.createElement('video');
+            video.src = encodedPath;
+            video.muted = true;
+            video.loop = true;
+            video.className = 'gallery-video';
+            item.onmouseenter = () => video.play().catch(e => { });
+            item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+            item.appendChild(video);
+        } else {
+            const img = document.createElement('img');
+            img.src = encodedPath;
+            img.alt = filename;
+            img.className = 'gallery-img';
+            item.appendChild(img);
+        }
+
+        // No text overlay needed for individual images usually, or maybe filename?
+        // User requested removing extensions, maybe clear look is better?
+        // Let's add a subtle hover effect if needed, but for now just the media.
+
+        // Add Info Overlay with Filename (User Request)
+        const info = document.createElement('div');
+        info.className = 'item-info';
+
+        const h4 = document.createElement('h4');
+        h4.textContent = filename.replace(/\.[^/.]+$/, ""); // Strip extension
+
+        info.appendChild(h4);
+        item.appendChild(info);
+
+        projectGrid.appendChild(item);
+        observer.observe(item);
+    });
+
+    // Show Overlay
+    projectView.style.display = 'block';
+    setTimeout(() => projectView.classList.add('active'), 10);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProjectView() {
+    const projectView = document.getElementById('project-view');
+    projectView.classList.remove('active');
+    setTimeout(() => {
+        projectView.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Re-enable scroll
+    }, 300);
+}
+
+
+// --- Lightbox Functions (Modified to be opened from Project View) ---
+
+function openLightbox(index) {
+    currentImageIndex = index;
     updateLightboxContent();
 
     const lightbox = document.getElementById('lightbox');
     lightbox.style.display = 'block';
+    setTimeout(() => lightbox.classList.add('active'), 10);
 
-    setTimeout(() => {
-        lightbox.classList.add('active');
-    }, 10);
-
-    document.body.style.overflow = 'hidden';
+    // Note: Body overflow is ALREADY hidden by project view.
 }
 
 function updateLightboxContent() {
@@ -212,14 +275,12 @@ function updateLightboxContent() {
         contentElement.src = encodedPath;
         contentElement.alt = imgName;
         contentElement.className = 'lightbox-content';
-        // Remove 'fade-in' class to avoid animation conflicts
         contentElement.style.opacity = '1';
         contentElement.style.display = 'block';
-        contentElement.style.animation = 'none'; // Ensure no animation interference
+        contentElement.style.animation = 'none';
     }
 
     container.appendChild(contentElement);
-    // Remove extension logic
     caption.textContent = imgName.replace(/\.[^/.]+$/, "");
 }
 
@@ -233,11 +294,6 @@ function changeImage(direction) {
     updateLightboxContent();
 }
 
-// Filter Logic placeholder (if we re-implement filters later)
-function filterGallery(category) {
-    // No-op for dynamic grid currently
-}
-
 function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
     const container = document.getElementById('lightbox-content-container');
@@ -246,10 +302,19 @@ function closeLightbox() {
 
     setTimeout(() => {
         lightbox.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        // DO NOT reset body overflow here, because we return to Project View!
+        // document.body.style.overflow = 'auto'; 
         container.innerHTML = '';
-        currentGalleryImages = [];
     }, 300);
+}
+
+// Helper to encode paths properly (fixing spaces)
+function encodePath(path) {
+    return path.split('/').map(part => encodeURIComponent(part)).join('/');
+}
+
+function isVideo(filename) {
+    return /\.(mp4|webm|mov)$/i.test(filename);
 }
 
 // Lenis Smooth Scrolling

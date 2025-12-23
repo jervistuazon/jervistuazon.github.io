@@ -720,9 +720,12 @@ a:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
-    max-width: 1200px;
-    max-height: 80vh;
+    width: 95%;
+    /* Increased from 80% */
+    max-width: none;
+    /* Removed limit of 1200px */
+    max-height: 95vh;
+    /* Increased from 80vh */
     display: flex;
     /* Centers content */
     justify-content: center;
@@ -733,7 +736,8 @@ a:hover {
     /* Base style for img, video, iframe */
     width: 100%;
     height: auto;
-    max-height: 80vh;
+    max-height: 95vh;
+    /* Increased from 80vh */
     object-fit: contain;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
     display: block;
@@ -756,9 +760,84 @@ iframe.lightbox-content {
     position: absolute;
     bottom: 5%;
     left: 10%;
-    font-size: 1.2rem;
-    font-weight: 300;
 }
+
+/* Project View Overlay */
+.project-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #0b0b0b;
+    z-index: 1001;
+    /* Above navbar */
+    overflow-y: auto;
+    padding: 2rem;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(30px);
+    /* Start slightly lower */
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.project-view.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.project-view-header {
+    text-align: center;
+    /* Center the title */
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.project-view-header h2 {
+    font-size: 2rem;
+    font-weight: 300;
+    margin: 0;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.close-project-btn {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: 100;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 1002;
+    /* Above everything in project view */
+    line-height: 1;
+    /* Ensure vertical centering */
+}
+
+.close-project-btn:hover {
+    color: #bbb;
+}
+
+/* Ensure reusable grid works inside project view */
+.project-view .gallery-grid {
+    padding: 0 var(--spacing-md) 4rem;
+    max-width: 1400px;
+    /* Constrain width like container */
+    margin: 0 auto;
+}
+
+/* Adjust Lightbox z-index to be strictly above project view */
+.lightbox {
+    z-index: 2000;
+}
+
+
 
 .close-btn {
     position: absolute;
