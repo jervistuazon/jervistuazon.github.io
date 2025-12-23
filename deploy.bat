@@ -17,7 +17,12 @@ if not exist .git (
     git remote set-url origin %REPO_URL%
 )
 
-REM 3. Add and Commit
+REM 3. Pull from GitHub
+echo.
+echo [INFO] Pulling latest changes...
+git pull origin main
+
+REM 4. Add and Commit
 echo.
 echo [INFO] Staging files...
 git add .
