@@ -103,7 +103,7 @@
             <div class="container">
                 <div class="work-header">
                     <h2 class="section-title fade-in-scroll">Selected Work</h2>
-                    <div class="filter-bar fade-in-scroll delay-1">
+                    <div class="filter-bar fade-in-scroll delay-1" style="display: none;">
                         <button class="filter-btn active" onclick="filterGallery('all')">All</button>
                         <button class="filter-btn" onclick="filterGallery('visualization')">Visualization</button>
                         <button class="filter-btn" onclick="filterGallery('realtime')">Real-time</button>
@@ -112,221 +112,29 @@
                     </div>
                 </div>
 
-                <div class="gallery-grid">
-                    <!-- Featured Item -->
-                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="visualization"
-                        onclick="openLightbox('assets/exterior.png', 'Modern Residential Exterior')">
-                        <img src="assets/exterior.png" alt="Modern minimalist house exterior" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Exterior Residential</h4>
-                            <p>Visualization</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="realtime"
-                        onclick="openLightbox('assets/interior.png', 'Office Lobby Interior')">
-                        <img src="assets/interior.png" alt="Modern office lobby" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Interior Commercial</h4>
-                            <p>Real-time</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/abstract.png', 'Massing Study')">
-                        <img src="assets/abstract.png" alt="Architectural massing model" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Massing Study</h4>
-                            <p>Concept</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/mall.jpg', 'Commercial Mall Layout')">
-                        <img src="assets/mall.jpg" alt="Commercial mall layout" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Commercial Hub</h4>
-                            <p>Layout Design</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="visualization"
-                        onclick="openLightbox('assets/forest.jpg', 'Landscape Integration')">
-                        <img src="assets/forest.jpg" alt="Forest landscape" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Eco Integration</h4>
-                            <p>Landscape</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/bubble.jpg', 'Organic Structure')">
-                        <img src="assets/bubble.jpg" alt="Bubble structure" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Organic Structure</h4>
-                            <p>Experimental</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="visualization"
-                        onclick="openLightbox('assets/product.png', 'Product Viz')">
-                        <img src="assets/product.png" alt="Product realization" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Industrial Design</h4>
-                            <p>Product Viz</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/123d.jpg', 'Process Sketch')">
-                        <img src="assets/123d.jpg" alt="Process sketch" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Early Concept</h4>
-                            <p>Sketch</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/brutalist.jpg', 'Brutalist Concrete')">
-                        <img src="assets/brutalist.jpg" alt="Brutalist concrete structure" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Brutalist Study</h4>
-                            <p>Materiality</p>
-                        </div>
-                    </div>
-
-                    <!-- AI / Remix Series -->
-                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340884404.png', 'AI Concept Exploration 01')">
-                        <img src="assets/remix_1766340884404.png" alt="AI Generated Concept" class="gallery-img">
-                        <div class="item-info">
-                            <h4>AI Exploration 01</h4>
-                            <p>Generative Design</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340887685.png', 'AI Concept Exploration 02')">
-                        <img src="assets/remix_1766340887685.png" alt="AI Generated Concept" class="gallery-img">
-                        <div class="item-info">
-                            <h4>AI Exploration 02</h4>
-                            <p>Generative Design</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340901441.png', 'AI Concept Exploration 03')">
-                        <img src="assets/remix_1766340901441.png" alt="AI Generated Concept" class="gallery-img">
-                        <div class="item-info">
-                            <h4>AI Exploration 03</h4>
-                            <p>Generative Design</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340905501.png', 'AI Concept Exploration 04')">
-                        <img src="assets/remix_1766340905501.png" alt="AI Generated Concept" class="gallery-img">
-                        <div class="item-info">
-                            <h4>AI Exploration 04</h4>
-                            <p>Generative Design</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1765564743892.png', 'AI Remix Variation')">
-                        <img src="assets/remix_1765564743892.png" alt="AI Remix" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Remix Study 01</h4>
-                            <p>Iteration</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340872541.png', 'AI Remix Variation')">
-                        <img src="assets/remix_1766340872541.png" alt="AI Remix" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Remix Study 02</h4>
-                            <p>Iteration</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="ai"
-                        onclick="openLightbox('assets/remix_1766340912651.png', 'AI Remix Variation')">
-                        <img src="assets/remix_1766340912651.png" alt="AI Remix" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Remix Study 03</h4>
-                            <p>Iteration</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item span-2-1 fade-in-scroll" data-category="visualization"
-                        onclick="openLightbox('assets/wood.jpg', 'Wood Detail')">
-                        <img src="assets/wood.jpg" alt="Wood texture detail" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Material Detail</h4>
-                            <p>Texture</p>
-                        </div>
-                    </div>
-
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/zaha.jpg', 'Organic Form Study')">
-                        <img src="assets/zaha.jpg" alt="Organic architectural form" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Organic Forms</h4>
-                            <p>Parametric Design</p>
-                        </div>
-                    </div>
-
-                    <!-- Referenced / Research images -->
-                    <div class="gallery-item fade-in-scroll" data-category="visualization"
-                        onclick="openLightbox('assets/5e8342522fb7310f16ab9f45_5b82c36b2b7a39bc1eb486b0_Architectural-Rendering-is-Not-Easy%2C-Here-is-Why-EASY-RENDER.jpg', 'Industry Reference')">
-                        <img src="assets/5e8342522fb7310f16ab9f45_5b82c36b2b7a39bc1eb486b0_Architectural-Rendering-is-Not-Easy%2C-Here-is-Why-EASY-RENDER.jpg"
-                            alt="Architecture" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Industry Standard</h4>
-                            <p>Reference</p>
-                        </div>
-                    </div>
-
-                    <!-- Video Item Example -->
-                    <div class="gallery-item span-2-2 fade-in-scroll" data-category="realtime"
-                        onclick="openLightbox('assets/Untitled video - Made with Clipchamp (3).mp4', 'Real-time Walkthrough', 'video')">
-                        <video src="assets/Untitled video - Made with Clipchamp (3).mp4" muted loop playsinline
-                            class="gallery-video"></video>
-                        <div class="item-info">
-                            <h4>Walkthrough</h4>
-                            <p>Real-time Video</p>
-                        </div>
-                    </div>
-
-                    <!-- HTML Page Item Example -->
-                    <div class="gallery-item fade-in-scroll" data-category="concept"
-                        onclick="openLightbox('assets/interactive_plan_pro (18).html', 'Interactive Plan', 'iframe')">
-                        <img src="assets/mall.jpg" alt="Interactive Preview" class="gallery-img">
-                        <div class="item-info">
-                            <h4>Interactive Plan</h4>
-                            <p>Live Demo</p>
-                        </div>
-                    </div>
-
+                <div class="gallery-grid" id="gallery-grid">
+                    <!-- Gallery items will be injected via JS -->
                 </div>
             </div>
         </section>
 
         <!-- Lightbox Modal -->
-        <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-            <span class="close-btn">&times;</span>
+        <div id="lightbox" class="lightbox" onclick="if(event.target === this) closeLightbox()">
+            <span class="close-btn" onclick="closeLightbox()">&times;</span>
+
+            <!-- Navigation Buttons -->
+            <button class="nav-btn prev-btn" onclick="event.stopPropagation(); changeImage(-1)">&#10094;</button>
+            <button class="nav-btn next-btn" onclick="event.stopPropagation(); changeImage(1)">&#10095;</button>
+
             <div id="lightbox-content-container" class="lightbox-content-container">
                 <!-- Content injected via JS -->
-                <img class="lightbox-content" id="lightbox-img-placeholder" style="display:none;">
             </div>
             <div id="caption"></div>
         </div>
 
         <section id="contact" class="contact-section">
             <div class="container fade-in-scroll">
-                <h2>Let's Collaborate</h2>
-                <p>Available for freelance projects and collaborations.</p>
+                <h2>Contacts</h2>
                 <div class="contact-details" style="margin-top: 2rem;">
                     <p style="font-size: 1.2rem; margin-bottom: 0.5rem;"><a
                             href="mailto:jervistuazon@gmail.com">jervistuazon@gmail.com</a></p>
@@ -341,6 +149,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="gallery-data.js"></script>
     <script src="script.js"></script>
 </body>
 

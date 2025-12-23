@@ -1,4 +1,13 @@
+// Gallery Data is loaded from gallery-data.js (const galleryData = ...)
+
+let currentGalleryImages = [];
+let currentImageIndex = 0;
+let currentFolder = '';
+
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Render Gallery Grid from Data
+    renderGalleryGrid();
+
     // Force scroll to top on refresh
     if (history.scrollRestoration) {
         history.scrollRestoration = 'manual';
@@ -23,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
             } else {
-                entry.target.classList.remove('is-visible');
+                // entry.target.classList.remove('is-visible'); // Standard scroll reveal usually doesn't hide again
             }
         });
     }, observerOptions);
@@ -40,102 +49,188 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.classList.remove('scrolled');
         }
     });
-    // Video Hover Auto-play
-    const videoItems = document.querySelectorAll('.gallery-video');
-    videoItems.forEach(video => {
-        video.parentElement.addEventListener('mouseenter', () => {
-            video.play().catch(e => console.log('Auto-play prevented:', e));
-        });
-        video.parentElement.addEventListener('mouseleave', () => {
-            video.pause();
-            video.currentTime = 0; // Optional: Reset to start
-        });
-    });
+
+    // We don't need to add video listeners here for the main gallery since they are added dynamically in renderGalleryGrid
+    // But if there were static ones, we would.
 });
 
-// Gallery Filter
-function filterGallery(category) {
-    const items = document.querySelectorAll('.gallery-item');
-    const buttons = document.querySelectorAll('.filter-btn');
+function renderGalleryGrid() {
+    const grid = document.getElementById('gallery-grid');
+    if (!grid || typeof galleryData === 'undefined') return;
 
-    // Button active state
-    buttons.forEach(btn => {
-        // Check if the button's text content (converted to lowercase) matches the category
-        // or if it's the 'all' button and the category is 'all'
-        const btnText = btn.innerText.toLowerCase();
-        const isActive = (btnText.includes(category) && category !== 'all') ||
-            (category === 'all' && btnText === 'all') ||
-            (category === 'ai' && btnText.includes('ai')); // Specific check for 'ai'
+    grid.innerHTML = ''; // Clear fallback
 
-        if (isActive) {
-            btn.classList.add('active');
+    // Observer for new items
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('is-visible');
+        });
+    }, { threshold: 0.1 });
+
+    // Layout Pattern to mimic the original "hand-crafted" look
+    // pattern classes: 'span-2-2' (Large), 'span-2-1' (Wide), '' (Standard 1x1)
+    const layoutPattern = [
+        'span-2-2', // 1. Large
+        '',         // 2. Standard
+        '',         // 3. Standard
+        'span-2-1', // 4. Wide
+        '',         // 5. Standard
+        '',         // 6. Standard
+        'span-2-2', // 7. Large
+        '',         // 8. Standard
+        'span-2-1', // 9. Wide
+        ''          // 10. Standard
+    ];
+
+    let index = 0;
+
+    // Loop through gallery folders
+    for (const [folderName, files] of Object.entries(galleryData)) {
+        if (!files || files.length === 0) continue;
+
+        // Use first valid image/video as thumbnail
+        const thumbnail = files[0];
+
+        // Create Item
+        const item = document.createElement('div');
+
+        // Get span class from pattern (repeating)
+        const spanClass = layoutPattern[index % layoutPattern.length];
+        item.className = `gallery-item fade-in-scroll ${spanClass}`;
+
+        item.setAttribute('data-category', 'visualization'); // Default category
+        item.onclick = () => openGallery(folderName);
+
+        index++;
+
+        // Content
+        const path = `assets/${folderName}/${thumbnail}`;
+        const encodedPath = encodePath(path);
+
+        // Check if video
+        if (isVideo(thumbnail)) {
+            const video = document.createElement('video');
+            video.src = encodedPath;
+            video.muted = true;
+            video.loop = true;
+            video.className = 'gallery-video';
+
+            // Auto play on hover logic for dynamically added video
+            item.onmouseenter = () => video.play().catch(e => { });
+            item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+
+            item.appendChild(video);
         } else {
-            btn.classList.remove('active');
+            // Image Thumbnail
+            const img = document.createElement('img');
+            img.src = encodedPath;
+            img.alt = folderName;
+            img.className = 'gallery-img';
+            item.appendChild(img);
         }
-    });
 
+        // Info Overlay
+        const info = document.createElement('div');
+        info.className = 'item-info';
 
-    items.forEach(item => {
-        const itemCategory = item.getAttribute('data-category');
+        const h4 = document.createElement('h4');
+        h4.textContent = folderName;
 
-        if (category === 'all' || itemCategory === category) {
-            item.style.display = 'block';
-            setTimeout(() => {
-                item.style.opacity = '1';
-                item.style.transform = 'scale(1)';
-            }, 50);
-        } else {
-            item.style.opacity = '0';
-            item.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                item.style.display = 'none';
-            }, 400); // Wait for transition
-        }
-    });
+        // const p = document.createElement('p');
+        // p.textContent = `${files.length} items`; // Show count
 
-    // Refresh Lenis logic if needed (usually auto-handled)
+        info.appendChild(h4);
+        // info.appendChild(p);
+        item.appendChild(info);
+
+        grid.appendChild(item);
+
+        // Observe
+        observer.observe(item);
+    }
+}
+
+// Helper to encode paths properly (fixing spaces)
+function encodePath(path) {
+    return path.split('/').map(part => encodeURIComponent(part)).join('/');
+}
+
+function isVideo(filename) {
+    return /\.(mp4|webm|mov)$/i.test(filename);
 }
 
 // Lightbox Functions
-function openLightbox(src, captionText, type = 'image') {
+function openGallery(folderName) {
+    if (!galleryData[folderName]) return;
+
+    currentFolder = folderName;
+    currentGalleryImages = galleryData[folderName];
+    currentImageIndex = 0;
+
+    updateLightboxContent();
+
     const lightbox = document.getElementById('lightbox');
-    const container = document.getElementById('lightbox-content-container');
-    const caption = document.getElementById('caption');
-
-    // Clear previous content
-    container.innerHTML = '';
-
-    let contentElement;
-
-    if (type === 'video') {
-        contentElement = document.createElement('video');
-        contentElement.src = src;
-        contentElement.controls = true;
-        contentElement.autoplay = true;
-        contentElement.className = 'lightbox-content';
-    } else if (type === 'iframe' || type === 'html') {
-        contentElement = document.createElement('iframe');
-        contentElement.src = src;
-        contentElement.className = 'lightbox-content';
-        // Allow fullscreen for iframe content if needed
-        contentElement.allow = "fullscreen";
-    } else {
-        // Default to image
-        contentElement = document.createElement('img');
-        contentElement.src = src;
-        contentElement.className = 'lightbox-content';
-    }
-
-    container.appendChild(contentElement);
-    caption.textContent = captionText;
     lightbox.style.display = 'block';
 
-    // Slight timeout to allow display:block to apply before adding class for opacity transition
     setTimeout(() => {
         lightbox.classList.add('active');
     }, 10);
 
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+function updateLightboxContent() {
+    const container = document.getElementById('lightbox-content-container');
+    const caption = document.getElementById('caption');
+    const imgName = currentGalleryImages[currentImageIndex];
+
+    if (!imgName) return;
+
+    const path = `assets/${currentFolder}/${imgName}`;
+    const encodedPath = encodePath(path);
+
+    container.innerHTML = '';
+
+    let contentElement;
+
+    if (isVideo(imgName)) {
+        contentElement = document.createElement('video');
+        contentElement.src = encodedPath;
+        contentElement.controls = true;
+        contentElement.autoplay = true;
+
+        contentElement.className = 'lightbox-content';
+        contentElement.style.opacity = '1';
+        contentElement.style.display = 'block';
+    } else {
+        contentElement = document.createElement('img');
+        contentElement.src = encodedPath;
+        contentElement.alt = imgName;
+        contentElement.className = 'lightbox-content';
+        // Remove 'fade-in' class to avoid animation conflicts
+        contentElement.style.opacity = '1';
+        contentElement.style.display = 'block';
+        contentElement.style.animation = 'none'; // Ensure no animation interference
+    }
+
+    container.appendChild(contentElement);
+    // Remove extension logic
+    caption.textContent = imgName.replace(/\.[^/.]+$/, "");
+}
+
+function changeImage(direction) {
+    currentImageIndex += direction;
+    if (currentImageIndex < 0) {
+        currentImageIndex = currentGalleryImages.length - 1;
+    } else if (currentImageIndex >= currentGalleryImages.length) {
+        currentImageIndex = 0;
+    }
+    updateLightboxContent();
+}
+
+// Filter Logic placeholder (if we re-implement filters later)
+function filterGallery(category) {
+    // No-op for dynamic grid currently
 }
 
 function closeLightbox() {
@@ -147,9 +242,9 @@ function closeLightbox() {
     setTimeout(() => {
         lightbox.style.display = 'none';
         document.body.style.overflow = 'auto';
-        // Clear content to stop video playing
         container.innerHTML = '';
-    }, 300); // Match transition duration
+        currentGalleryImages = [];
+    }, 300);
 }
 
 // Lenis Smooth Scrolling

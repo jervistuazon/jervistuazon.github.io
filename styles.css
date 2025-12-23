@@ -173,12 +173,40 @@ a:hover {
     position: relative;
     overflow: hidden;
     /* Immersive Background */
-    background-image: url('assets/exterior.png');
+    background-image: url('assets/00_HERO SHOT/Hero Shot.jpg');
     /* Fallback / Static */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     /* Simple Parallax */
+}
+
+/* Lightbox Nav Buttons */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    font-size: 3rem;
+    cursor: pointer;
+    z-index: 10002;
+    padding: 20px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.nav-btn:hover {
+    opacity: 1;
+}
+
+.prev-btn {
+    left: 20px;
+}
+
+.next-btn {
+    right: 20px;
 }
 
 .hero-section::after {
