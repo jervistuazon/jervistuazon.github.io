@@ -99,9 +99,13 @@ function renderGalleryGrid() {
 
         // Special handling for Animation, Interactive Presentation: Show ALL items
         if (folderName === 'Animation' || folderName === 'Interactive Presentation') {
-            files.forEach((filename, fileIndex) => {
+            files.forEach((itemData, fileIndex) => {
+                const isObject = typeof itemData === 'object';
+                const filename = isObject ? itemData.src : itemData;
+                const spanConfig = isObject ? itemData.span : null;
+
                 const item = document.createElement('div');
-                const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+                const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
                 item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
                 // Set Category
@@ -113,7 +117,7 @@ function renderGalleryGrid() {
                 // Click Action: Open Lightbox directly
                 item.onclick = () => {
                     currentFolder = folderName;
-                    currentGalleryImages = files;
+                    currentGalleryImages = files.map(f => typeof f === 'object' ? f.src : f);
                     openLightbox(fileIndex);
                 };
 
@@ -122,17 +126,14 @@ function renderGalleryGrid() {
                 const path = `assets/${folderName}/${filename}`;
                 const encodedPath = encodePath(path);
 
-                // Content (Video only likely, but check provided)
                 if (isVideo(filename)) {
                     const video = document.createElement('video');
                     video.src = encodedPath;
                     video.muted = true;
                     video.loop = true;
-                    video.playsInline = true; // Critical for mobile
-                    video.autoplay = true;    // Ensure it starts
+                    video.playsInline = true;
+                    video.autoplay = true;
                     video.className = 'gallery-video';
-                    // item.onmouseenter = ... (Removed for mobile compatibility)
-                    // item.onmouseleave = ... (Removed for mobile compatibility)
                     item.appendChild(video);
                 } else {
                     const img = document.createElement('img');
@@ -146,7 +147,7 @@ function renderGalleryGrid() {
                 const info = document.createElement('div');
                 info.className = 'item-info';
                 const h4 = document.createElement('h4');
-                h4.textContent = filename.replace(/\.[^/.]+$/, ""); // Strip extension
+                h4.textContent = filename.replace(/\.[^/.]+$/, "");
                 info.appendChild(h4);
                 item.appendChild(info);
 
@@ -156,10 +157,14 @@ function renderGalleryGrid() {
         }
         // Default: Show Folder Thumbnail (Project View)
         else {
-            const thumbnail = files[0];
-            const item = document.createElement('div');
+            // Thumbnail is first item
+            const firstItem = files[0];
+            const thumbnail = typeof firstItem === 'object' ? firstItem.src : firstItem;
+            // Use span from first item if available to control Folder Thumbnail Size
+            const spanConfig = typeof firstItem === 'object' ? firstItem.span : null;
 
-            const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+            const item = document.createElement('div');
+            const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
             item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
             item.setAttribute('data-category', 'render');
@@ -178,7 +183,6 @@ function renderGalleryGrid() {
                 video.playsInline = true;
                 video.autoplay = true;
                 video.className = 'gallery-video';
-                // Removed hover logic
                 item.appendChild(video);
             } else {
                 const img = document.createElement('img');
@@ -207,7 +211,9 @@ function openGallery(folderName) {
     if (!galleryData[folderName]) return;
 
     currentFolder = folderName;
-    currentGalleryImages = galleryData[folderName];
+    const rawData = galleryData[folderName];
+    // Normalize for Lightbox usage (strings only)
+    currentGalleryImages = rawData.map(f => typeof f === 'object' ? f.src : f);
 
     // Populate the project grid
     const projectGrid = document.getElementById('project-grid');
@@ -231,9 +237,15 @@ function openGallery(folderName) {
         });
     }, { threshold: 0.1 });
 
-    currentGalleryImages.forEach((filename, i) => {
+    rawData.forEach((itemData, i) => {
+        const isObject = typeof itemData === 'object';
+        const filename = isObject ? itemData.src : itemData;
+        const spanConfig = isObject ? itemData.span : null;
+
         const item = document.createElement('div');
-        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+        // Use custom span if available, else fallback to pattern
+        const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
+
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Clicking this opens actual lightbox

@@ -19,8 +19,8 @@
         <div class="nav-content">
             <a href="#hero" class="logo"></a>
             <div class="nav-links">
-                <a href="#about">About</a>
                 <a href="#work">Work</a>
+                <a href="#about">About</a>
                 <a href="#contact">Contact</a>
             </div>
         </div>
@@ -32,6 +32,25 @@
                 <h1 class="fade-in">JERVIS TUAZON</h1>
                 <p class="hero-tagline fade-in delay-1">VISUALIZING ARCHITECTURE</p>
                 <p class="subtitle fade-in delay-2">Bridging technical accuracy with design storytelling.</p>
+            </div>
+        </section>
+
+        <section id="work" class="work-section">
+            <div class="container">
+                <div class="work-header">
+                    <h2 class="section-title fade-in-scroll">Selected Work</h2>
+                    <div class="filter-bar fade-in-scroll delay-1">
+                        <button class="filter-btn active" onclick="filterGallery('all')">All</button>
+                        <button class="filter-btn" onclick="filterGallery('render')">Render</button>
+                        <button class="filter-btn" onclick="filterGallery('animation')">Animation</button>
+                        <button class="filter-btn" onclick="filterGallery('interactive')">Interactive
+                            Presentation</button>
+                    </div>
+                </div>
+
+                <div class="gallery-grid" id="gallery-grid">
+                    <!-- Gallery items will be injected via JS -->
+                </div>
             </div>
         </section>
 
@@ -95,25 +114,6 @@
                             </li>
                         </ul>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="work" class="work-section">
-            <div class="container">
-                <div class="work-header">
-                    <h2 class="section-title fade-in-scroll">Selected Work</h2>
-                    <div class="filter-bar fade-in-scroll delay-1">
-                        <button class="filter-btn active" onclick="filterGallery('all')">All</button>
-                        <button class="filter-btn" onclick="filterGallery('render')">Render</button>
-                        <button class="filter-btn" onclick="filterGallery('animation')">Animation</button>
-                        <button class="filter-btn" onclick="filterGallery('interactive')">Interactive
-                            Presentation</button>
-                    </div>
-                </div>
-
-                <div class="gallery-grid" id="gallery-grid">
-                    <!-- Gallery items will be injected via JS -->
                 </div>
             </div>
         </section>
