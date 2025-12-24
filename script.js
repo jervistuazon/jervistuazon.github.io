@@ -128,9 +128,11 @@ function renderGalleryGrid() {
                     video.src = encodedPath;
                     video.muted = true;
                     video.loop = true;
+                    video.playsInline = true; // Critical for mobile
+                    video.autoplay = true;    // Ensure it starts
                     video.className = 'gallery-video';
-                    item.onmouseenter = () => video.play().catch(e => { });
-                    item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                    // item.onmouseenter = ... (Removed for mobile compatibility)
+                    // item.onmouseleave = ... (Removed for mobile compatibility)
                     item.appendChild(video);
                 } else {
                     const img = document.createElement('img');
@@ -173,9 +175,10 @@ function renderGalleryGrid() {
                 video.src = encodedPath;
                 video.muted = true;
                 video.loop = true;
+                video.playsInline = true;
+                video.autoplay = true;
                 video.className = 'gallery-video';
-                item.onmouseenter = () => video.play().catch(e => { });
-                item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                // Removed hover logic
                 item.appendChild(video);
             } else {
                 const img = document.createElement('img');
@@ -246,9 +249,10 @@ function openGallery(folderName) {
             video.src = encodedPath;
             video.muted = true;
             video.loop = true;
+            video.playsInline = true;
+            video.autoplay = true;
             video.className = 'gallery-video';
-            item.onmouseenter = () => video.play().catch(e => { });
-            item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+            // Removed hover logic
             item.appendChild(video);
         } else {
             const img = document.createElement('img');
@@ -324,6 +328,7 @@ function updateLightboxContent() {
         contentElement.src = encodedPath;
         contentElement.controls = true;
         contentElement.autoplay = true;
+        contentElement.playsInline = true;
 
         contentElement.className = 'lightbox-content';
         contentElement.style.opacity = '1';
