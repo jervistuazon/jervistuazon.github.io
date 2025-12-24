@@ -94,50 +94,108 @@ function renderGalleryGrid() {
     for (const [folderName, files] of Object.entries(galleryData)) {
         if (!files || files.length === 0) continue;
 
-        const thumbnail = files[0];
-        const item = document.createElement('div');
+        // Skip HERO SHOT (used for background)
+        if (folderName === 'HERO SHOT') continue;
 
-        // Use pattern
-        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
-        item.className = `gallery-item fade-in-scroll ${spanClass}`;
+        // Special handling for Animation, Interactive Presentation: Show ALL items
+        if (folderName === 'Animation' || folderName === 'Interactive Presentation') {
+            files.forEach((filename, fileIndex) => {
+                const item = document.createElement('div');
+                const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+                item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
-        item.setAttribute('data-category', 'visualization');
-        item.onclick = () => openGallery(folderName); // Now behaves as "Open Project View"
+                // Set Category
+                let category = 'render';
+                if (folderName === 'Animation') category = 'animation';
+                if (folderName === 'Interactive Presentation') category = 'interactive';
+                item.setAttribute('data-category', category);
 
-        index++;
+                // Click Action: Open Lightbox directly
+                item.onclick = () => {
+                    currentFolder = folderName;
+                    currentGalleryImages = files;
+                    openLightbox(fileIndex);
+                };
 
-        const path = `assets/${folderName}/${thumbnail}`;
-        const encodedPath = encodePath(path);
+                index++;
 
-        // Thumbnail Content
-        if (isVideo(thumbnail)) {
-            const video = document.createElement('video');
-            video.src = encodedPath;
-            video.muted = true;
-            video.loop = true;
-            video.className = 'gallery-video';
-            item.onmouseenter = () => video.play().catch(e => { });
-            item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
-            item.appendChild(video);
-        } else {
-            const img = document.createElement('img');
-            img.src = encodedPath;
-            img.alt = folderName;
-            img.className = 'gallery-img';
-            item.appendChild(img);
+                const path = `assets/${folderName}/${filename}`;
+                const encodedPath = encodePath(path);
+
+                // Content (Video only likely, but check provided)
+                if (isVideo(filename)) {
+                    const video = document.createElement('video');
+                    video.src = encodedPath;
+                    video.muted = true;
+                    video.loop = true;
+                    video.className = 'gallery-video';
+                    item.onmouseenter = () => video.play().catch(e => { });
+                    item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                    item.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = encodedPath;
+                    img.alt = filename;
+                    img.className = 'gallery-img';
+                    item.appendChild(img);
+                }
+
+                // Info Overlay
+                const info = document.createElement('div');
+                info.className = 'item-info';
+                const h4 = document.createElement('h4');
+                h4.textContent = filename.replace(/\.[^/.]+$/, ""); // Strip extension
+                info.appendChild(h4);
+                item.appendChild(info);
+
+                grid.appendChild(item);
+                observer.observe(item);
+            });
         }
+        // Default: Show Folder Thumbnail (Project View)
+        else {
+            const thumbnail = files[0];
+            const item = document.createElement('div');
 
-        const info = document.createElement('div');
-        info.className = 'item-info';
+            const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+            item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
-        const h4 = document.createElement('h4');
-        h4.textContent = folderName;
+            item.setAttribute('data-category', 'render');
+            item.onclick = () => openGallery(folderName);
 
-        info.appendChild(h4);
-        item.appendChild(info);
+            index++;
 
-        grid.appendChild(item);
-        observer.observe(item);
+            const path = `assets/${folderName}/${thumbnail}`;
+            const encodedPath = encodePath(path);
+
+            if (isVideo(thumbnail)) {
+                const video = document.createElement('video');
+                video.src = encodedPath;
+                video.muted = true;
+                video.loop = true;
+                video.className = 'gallery-video';
+                item.onmouseenter = () => video.play().catch(e => { });
+                item.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                item.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = encodedPath;
+                img.alt = folderName;
+                img.className = 'gallery-img';
+                item.appendChild(img);
+            }
+
+            // Info Overlay for Folder
+            const info = document.createElement('div');
+            info.className = 'item-info';
+            const h4 = document.createElement('h4');
+            h4.textContent = folderName;
+            info.appendChild(h4);
+            item.appendChild(info);
+
+            grid.appendChild(item);
+            observer.observe(item);
+        }
     }
 }
 
@@ -335,3 +393,50 @@ function raf(time) {
 }
 
 requestAnimationFrame(raf);
+
+// Filter Gallery Function
+function filterGallery(category) {
+    // 1. Update Buttons
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    // Try to find the button that was clicked
+    // event.target might work if triggered from inline onclick
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+
+    // 2. Filter Items
+    const items = document.querySelectorAll('.gallery-item');
+    items.forEach(item => {
+        const itemCategory = item.getAttribute('data-category');
+        if (category === 'all' || itemCategory === category) {
+            item.style.display = 'block';
+            // Optional: restart animation?
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Re-layout is handled by CSS grid/flex automatically, 
+    // but the pattern classes (span-2-2 etc) might look weird if gaps appear.
+    // For a masonry layout, we might need to re-apply classes based on visible items.
+    // But user didn't ask for that yet, and CSS grid dense packing might help if enabled.
+    // Current CSS (styles.css) uses grid-template-columns with span classes.
+    // Ideally we should re-assign span classes to visible items to maintain the layout rhythm.
+    reassignLayoutPattern();
+}
+
+function reassignLayoutPattern() {
+    const visibleItems = Array.from(document.querySelectorAll('.gallery-item')).filter(item => item.style.display !== 'none');
+
+    visibleItems.forEach((item, index) => {
+        // Remove old span classes
+        item.classList.remove('span-2-2', 'span-2-1', 'span-1-1'); // assuming these are the classes
+        // Re-apply based on new index
+        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+        if (spanClass) item.classList.add(spanClass);
+    });
+}

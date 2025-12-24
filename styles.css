@@ -173,7 +173,7 @@ a:hover {
     position: relative;
     overflow: hidden;
     /* Immersive Background */
-    background-image: url('assets/00_HERO SHOT/Hero Shot.jpg');
+    background-image: url('assets/HERO SHOT/Hero Shot.jpg');
     /* Fallback / Static */
     background-size: cover;
     background-position: center;

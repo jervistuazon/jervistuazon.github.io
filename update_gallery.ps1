@@ -30,7 +30,7 @@ foreach ($Folder in $Folders) {
 # Convert to JSON-like string for JS file
 $JsonRaw = $GalleryData | ConvertTo-Json -Depth 3
 # Make it a valid JS variable assignment
-$JsContent = "const galleryData = $JsonRaw;"
+$JsContent = "window.galleryData = $JsonRaw;"
 
 # Write to file
 Set-Content -Path $OutputFile -Value $JsContent -Encoding UTF8
