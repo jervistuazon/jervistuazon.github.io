@@ -597,15 +597,22 @@ function raf(time) {
 requestAnimationFrame(raf);
 
 // Filter Gallery Function
-function filterGallery(category) {
+function filterGallery(category, evt) {
     // 1. Update Buttons
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
 
-    // Try to find the button that was clicked
-    // event.target might work if triggered from inline onclick
-    if (event && event.target) {
-        event.target.classList.add('active');
+    // Mark clicked button as active
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    } else {
+        // Fallback: find button by category
+        buttons.forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(category.toLowerCase()) ||
+                (category === 'all' && btn.textContent === 'All')) {
+                btn.classList.add('active');
+            }
+        });
     }
 
     // 2. Filter Items

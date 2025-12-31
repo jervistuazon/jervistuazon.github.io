@@ -45,10 +45,10 @@
                 <div class="work-header">
                     <h2 class="section-title fade-in-scroll">Selected Work</h2>
                     <div class="filter-bar fade-in-scroll delay-1">
-                        <button class="filter-btn active" onclick="filterGallery('all')">All</button>
-                        <button class="filter-btn" onclick="filterGallery('render')">Render</button>
-                        <button class="filter-btn" onclick="filterGallery('animation')">Animation</button>
-                        <button class="filter-btn" onclick="filterGallery('interactive')">Interactive
+                        <button class="filter-btn active" onclick="filterGallery('all', event)">All</button>
+                        <button class="filter-btn" onclick="filterGallery('render', event)">Render</button>
+                        <button class="filter-btn" onclick="filterGallery('animation', event)">Animation</button>
+                        <button class="filter-btn" onclick="filterGallery('interactive', event)">Interactive
                             Presentation</button>
                     </div>
                 </div>
@@ -64,7 +64,8 @@
                 <!-- 1. Profile Photo -->
                 <div class="profile-col fade-in-scroll delay-1">
                     <div class="profile-img-container">
-                        <img src="assets/profile.png" alt="Jervis Tuazon Profile" class="profile-img">
+                        <img src="assets/profile.png"
+                            alt="Jervis Tuazon - Senior Visual Artist with 12+ years experience" class="profile-img">
                     </div>
                 </div>
 
@@ -75,7 +76,8 @@
                         <p>My practice focuses on <strong>architectural visualization</strong> across
                             <strong>high-fidelity renders</strong>, <strong>cinematic animations</strong>, and
                             <strong>real-time presentations</strong>. Recently, I've been exploring <strong>AI-assisted
-                                workflows</strong> and <strong>custom tools</strong> to push speed and storytelling.</p>
+                                workflows</strong> and <strong>custom tools</strong> to push speed and storytelling.
+                        </p>
                         <p>I'm Jervis, a Senior Visual Artist with <strong>12+ years</strong> of experience in the
                             design industry. For the last 7 years at <strong>Parks + Associates</strong>, I've worked on
                             visualizations that help people understand projects clearly before they're built. Prior to
@@ -122,12 +124,16 @@
         </section>
 
         <!-- Lightbox Modal -->
-        <div id="lightbox" class="lightbox" onclick="if(event.target === this) closeLightbox()">
-            <span class="close-btn" onclick="closeLightbox()">&times;</span>
+        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox"
+            onclick="if(event.target === this) closeLightbox()">
+            <span class="close-btn" onclick="closeLightbox()" role="button" tabindex="0"
+                aria-label="Close lightbox">&times;</span>
 
             <!-- Navigation Buttons -->
-            <button class="nav-btn prev-btn" onclick="event.stopPropagation(); changeImage(-1)">&#10094;</button>
-            <button class="nav-btn next-btn" onclick="event.stopPropagation(); changeImage(1)">&#10095;</button>
+            <button class="nav-btn prev-btn" onclick="event.stopPropagation(); changeImage(-1)"
+                aria-label="Previous image">&#10094;</button>
+            <button class="nav-btn next-btn" onclick="event.stopPropagation(); changeImage(1)"
+                aria-label="Next image">&#10095;</button>
 
             <div id="lightbox-content-container" class="lightbox-content-container">
                 <!-- Content injected via JS -->
@@ -137,7 +143,8 @@
 
         <!-- Project View Overlay (Sub-gallery) -->
         <div id="project-view" class="project-view" data-lenis-prevent>
-            <span class="close-project-btn" onclick="closeProjectView()">&times;</span>
+            <span class="close-project-btn" onclick="closeProjectView()" role="button" tabindex="0"
+                aria-label="Close project view">&times;</span>
             <div class="project-view-header">
                 <h2 id="project-title">Project Name</h2>
             </div>
@@ -149,12 +156,10 @@
         <section id="contact" class="contact-section">
             <div class="container fade-in-scroll">
                 <h2>Contact</h2>
-                <div class="contact-details" style="margin-top: 2rem;">
-                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;"><a
-                            href="mailto:jervistuazon@gmail.com">jervistuazon@gmail.com</a></p>
-                    <p style="font-size: 1.2rem;"><a href="tel:+6594474504">+65 9447 4504</a></p>
+                <div class="contact-details">
+                    <p class="contact-link"><a href="mailto:jervistuazon@gmail.com">jervistuazon@gmail.com</a></p>
+                    <p class="contact-link"><a href="tel:+6594474504">+65 9447 4504</a></p>
                 </div>
-
             </div>
             <footer class="footer">
                 <p>&copy; 2025 Jervis Tuazon. All rights reserved.</p>

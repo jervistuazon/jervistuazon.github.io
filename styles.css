@@ -32,24 +32,7 @@ body {
     /* Crisper text */
 }
 
-/* Custom Cursor */
-.cursor-dot,
-.cursor-outline {
-    display: none;
-}
 
-.cursor-dot {
-    width: 6px;
-    height: 6px;
-    background-color: var(--cursor-color);
-}
-
-.cursor-outline {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    transition: width 0.2s, height 0.2s;
-}
 
 /* Layout Utilities */
 .container {
@@ -98,16 +81,10 @@ a:hover {
     top: 0;
     left: 0;
     width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
     display: flex;
     justify-content: center;
-    /* Center the inner content */
     z-index: 100;
     background: rgba(5, 5, 5, 0.0);
-    /* Transparent start */
     transition: background 0.3s ease;
     mix-blend-mode: difference;
 }
@@ -616,6 +593,19 @@ body::after {
     margin-bottom: var(--spacing-md);
 }
 
+.contact-details {
+    margin-top: 2rem;
+}
+
+.contact-link {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.contact-link:last-child {
+    margin-bottom: 0;
+}
+
 .btn-primary {
     display: inline-block;
     padding: 1rem 2rem;
@@ -834,6 +824,14 @@ iframe.lightbox-content {
     margin: 0;
     color: #fff;
     letter-spacing: -0.02em;
+}
+
+/* Mobile: Smaller project title */
+@media (max-width: 768px) {
+    .project-view-header h2 {
+        font-size: 1.2rem;
+        padding-right: 3rem;
+    }
 }
 
 .close-project-btn {
