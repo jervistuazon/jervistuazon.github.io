@@ -271,6 +271,26 @@ a:hover {
     z-index: 2;
 }
 
+/* Subtle Favicon Watermark - Behind all content */
+body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40vw;
+    height: 40vw;
+    max-width: 600px;
+    max-height: 600px;
+    background-image: url('assets/favicon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -9999;
+}
+
 .about-grid {
     display: grid;
     grid-template-columns: 280px 1.5fr 1fr;
