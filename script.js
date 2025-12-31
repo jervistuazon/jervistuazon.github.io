@@ -3,6 +3,7 @@
 let currentGalleryImages = [];
 let currentImageIndex = 0;
 let currentFolder = '';
+let savedScrollPosition = 0; // For scroll position memory
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Render Gallery Grid from Data
@@ -471,6 +472,9 @@ function openGallery(category, projectName) {
         observer.observe(item);
     });
 
+    // Save scroll position before showing overlay
+    savedScrollPosition = window.scrollY || document.documentElement.scrollTop;
+
     // Show Overlay
     projectView.style.display = 'block';
     setTimeout(() => projectView.classList.add('active'), 10);
@@ -483,6 +487,8 @@ function closeProjectView() {
     setTimeout(() => {
         projectView.style.display = 'none';
         document.body.style.overflow = 'auto'; // Re-enable scroll
+        // Restore scroll position
+        window.scrollTo(0, savedScrollPosition);
     }, 300);
 }
 
