@@ -153,46 +153,140 @@ function renderGalleryGrid() {
         return; // Exit, do not run legacy loop
     }
 
-    // === FALLBACK: Automatic Loop (Legacy) ===
-    let index = 0;
+    // === FALLBACK: Automatic Loop ===
+    // Collect all items first, then shuffle to distribute videos throughout
+    const allItems = [];
 
-    // Loop through gallery folders
-    for (const [folderName, files] of Object.entries(galleryData)) {
-        if (!files || files.length === 0) continue;
+    // Define category folders
+    const videoCategories = ['Animation', 'Interactive Presentation'];
 
-        // Skip special folders that shouldn't appear as main gallery items
-        if (folderName === 'HERO SHOT') continue;
+    // Collect items from all categories
+    for (const [categoryName, categoryData] of Object.entries(galleryData)) {
+        // Skip special folders
+        if (categoryName === 'HERO SHOT') continue;
 
+        // Handle Render category (nested folders)
+        if (categoryName === 'Render' && typeof categoryData === 'object' && !Array.isArray(categoryData)) {
+            for (const [projectName, files] of Object.entries(categoryData)) {
+                if (!files || files.length === 0) continue;
+
+                let thumbSrc = files[0];
+                if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
+
+                allItems.push({
+                    type: 'render',
+                    category: 'render',
+                    projectName: projectName,
+                    thumbSrc: thumbSrc,
+                    files: files
+                });
+            }
+        }
+        // Handle video categories
+        else if (videoCategories.includes(categoryName) && Array.isArray(categoryData)) {
+            const category = categoryName === 'Animation' ? 'animation' : 'interactive';
+
+            categoryData.forEach((fileData, fileIndex) => {
+                const filename = typeof fileData === 'object' ? fileData.src : fileData;
+
+                allItems.push({
+                    type: 'video',
+                    category: category,
+                    categoryName: categoryName,
+                    filename: filename,
+                    fileIndex: fileIndex,
+                    categoryData: categoryData
+                });
+            });
+        }
+    }
+
+    // Shuffle array to mix videos with render projects
+    function shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    const shuffledItems = shuffleArray(allItems);
+
+    // Render all items
+    shuffledItems.forEach((itemData, index) => {
         const item = document.createElement('div');
 
         // Apply layout pattern
         const spanClass = layoutPatternMain[index % layoutPatternMain.length];
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
+        item.setAttribute('data-category', itemData.category);
 
-        // Determine category for filtering
-        let category = 'render';
-        if (folderName === 'Animation') category = 'animation';
-        if (folderName === 'Interactive Presentation') category = 'interactive';
-        item.setAttribute('data-category', category);
-
-        // Click opens the project sub-gallery
-        item.onclick = () => openGallery(folderName);
-
-        // Get thumbnail (first item in folder)
-        let thumbSrc = files[0];
-        if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
-
-        // Render the thumbnail media
-        renderMedia(item, folderName, thumbSrc);
-
-        // Render the folder name as info overlay
-        renderInfo(item, folderName);
+        if (itemData.type === 'render') {
+            // Render project folder
+            item.onclick = () => openGallery('Render', itemData.projectName);
+            renderMediaNested(item, 'Render', itemData.projectName, itemData.thumbSrc);
+            renderInfo(item, itemData.projectName);
+        } else {
+            // Video item
+            item.onclick = () => {
+                currentFolder = itemData.categoryName;
+                currentGalleryImages = itemData.categoryData.map(f => typeof f === 'object' ? f.src : f);
+                openLightbox(itemData.fileIndex);
+            };
+            renderMedia(item, itemData.categoryName, itemData.filename);
+            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, ""));
+        }
 
         grid.appendChild(item);
         observer.observe(item);
-        index++;
+    });
+}
+
+// Helper for nested paths (Render/ProjectName/file)
+function renderMediaNested(container, category, folder, filename) {
+    const path = `assets/${category}/${folder}/${filename}`;
+    const encodedPath = encodePath(path);
+
+    // Add loading state
+    container.classList.add('loading');
+
+    if (isVideo(filename)) {
+        const video = document.createElement('video');
+        video.src = encodedPath;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.className = 'gallery-video';
+
+        video.addEventListener('loadeddata', () => {
+            container.classList.remove('loading');
+            container.classList.add('loaded');
+        });
+        video.addEventListener('error', () => {
+            container.classList.remove('loading');
+        });
+
+        container.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = encodedPath;
+        img.alt = filename;
+        img.className = 'gallery-img';
+
+        img.addEventListener('load', () => {
+            container.classList.remove('loading');
+            container.classList.add('loaded');
+        });
+        img.addEventListener('error', () => {
+            container.classList.remove('loading');
+        });
+
+        container.appendChild(img);
     }
 }
+
 
 // Helper to clean up render code
 function renderMedia(container, folder, filename) {
@@ -256,11 +350,29 @@ function renderInfo(container, text) {
 */
 
 // Open Project View (Sub-Gallery)
-function openGallery(folderName) {
-    if (!galleryData[folderName]) return;
+// For Render projects: openGallery('Render', 'ProjectName')
+// For video categories: openGallery('Animation') - but these open lightbox directly
+function openGallery(category, projectName) {
+    let rawData;
+    let displayName;
+    let basePath;
 
-    currentFolder = folderName;
-    const rawData = galleryData[folderName];
+    // Handle Render nested structure
+    if (category === 'Render' && projectName) {
+        if (!galleryData.Render || !galleryData.Render[projectName]) return;
+        rawData = galleryData.Render[projectName];
+        displayName = projectName;
+        basePath = `assets/Render/${projectName}`;
+        currentFolder = `Render/${projectName}`;
+    } else {
+        // Legacy fallback for flat structure
+        if (!galleryData[category]) return;
+        rawData = galleryData[category];
+        displayName = category;
+        basePath = `assets/${category}`;
+        currentFolder = category;
+    }
+
     // Normalize for Lightbox usage (strings only)
     currentGalleryImages = rawData.map(f => typeof f === 'object' ? f.src : f);
 
@@ -269,13 +381,8 @@ function openGallery(folderName) {
     const projectTitle = document.getElementById('project-title');
     const projectView = document.getElementById('project-view');
 
-    projectTitle.textContent = folderName;
+    projectTitle.textContent = displayName;
     projectGrid.innerHTML = '';
-
-    // Reuse layout pattern logic for sub-gallery?
-    // User asked "arrange in block and different sizes".
-    // We can use the same pattern or a slightly different one.
-    // Let's reuse the main pattern for consistency.
 
     let index = 0;
 
@@ -302,11 +409,12 @@ function openGallery(folderName) {
 
         index++;
 
-        const path = `assets/${currentFolder}/${filename}`;
+        const path = `${basePath}/${filename}`;
         const encodedPath = encodePath(path);
 
         // Add loading state
         item.classList.add('loading');
+
 
         if (isVideo(filename)) {
             const video = document.createElement('video');
