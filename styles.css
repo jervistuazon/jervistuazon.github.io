@@ -501,15 +501,11 @@ body::after {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
-    filter: grayscale(100%);
-    /* Start B&W for art feel */
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gallery-item:hover .gallery-img {
     transform: scale(1.05);
-    filter: grayscale(0%);
-    /* Color on hover */
 }
 
 /* Gallery Video */
@@ -518,13 +514,11 @@ body::after {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
-    filter: grayscale(100%);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gallery-item:hover .gallery-video {
     transform: scale(1.05);
-    filter: grayscale(0%);
 }
 
 .item-info {
@@ -846,10 +840,11 @@ iframe.lightbox-content {
 
 /* Ensure reusable grid works inside project view */
 .project-view .gallery-grid {
-    padding: 0 var(--spacing-md) 4rem;
-    max-width: 1400px;
-    /* Constrain width like container */
+    padding: 0 5% 4rem;
+    max-width: 1800px;
+    width: 95%;
     margin: 0 auto;
+    gap: 1.5rem;
 }
 
 /* Adjust Lightbox z-index to be strictly above project view */
