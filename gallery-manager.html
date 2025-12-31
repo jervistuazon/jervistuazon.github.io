@@ -4,22 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery Manager</title>
+    <title>Gallery Manager V2</title>
+    <!-- SortableJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <!-- InteractJS for Resizing -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="gallery-data.js"></script>
     <style>
         :root {
             --bg-color: #0a0a0a;
             --text-primary: #f5f5f5;
-            --text-secondary: #888888;
-            --accent-color: #4a90e2;
-            --grid-gap: 1.5rem;
+            --grid-gap: 20px;
+            --cell-size: 200px;
+            /* Base unit size for 1x1 */
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -34,174 +37,81 @@
             align-items: center;
         }
 
-        select {
-            padding: 10px;
+        select,
+        button {
+            padding: 10px 15px;
             background: #222;
             color: #fff;
             border: 1px solid #444;
-            font-size: 1rem;
             border-radius: 4px;
+            cursor: pointer;
         }
 
-        button {
-            padding: 10px 20px;
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            border-radius: 4px;
+        button.primary {
+            background: #4a90e2;
+            border-color: #4a90e2;
         }
 
         button:hover {
             opacity: 0.9;
         }
 
-        button.secondary {
-            background: #444;
-        }
-
-        .main-container {
+        .workspace {
             display: flex;
             gap: 20px;
             flex: 1;
             overflow: hidden;
         }
 
-        .editor-area {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
+        .editor {
+            flex: 1;
             overflow-y: auto;
             border: 1px solid #333;
-            padding: 20px;
-            border-radius: 8px;
             background: #111;
+            padding: 40px;
+            position: relative;
         }
+
+        /* 
+           We use CSS Grid for the display, but for resizing drag-and-drop, 
+           InteractJS works best with absolute or transformed elements.
+           HOWEVER, mixing Sortable (reorder) and Interact (resize) is tricky.
+           Strategy:
+           - Use CSS Grid for layout.
+           - Resize simply toggles classes (span-X-X).
+           - The "Handle" is just a UI trigger. Dragging it updates the class.
+        */
 
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
+            /* 3 Columns as per site */
             gap: var(--grid-gap);
-            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-            padding-bottom: 50px;
-            /* Space for dragging */
-        }
-
-        /* 3-Row Limit Line */
-        .limit-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            /* Calculate top based on assumption of row height. 
-               Since heights vary, we might need JS to position this or use a fixed aspect ratio grid for preview.
-               Let's try to simulate the aspect ratios. */
-            border-bottom: 2px dashed red;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .limit-label {
-            position: absolute;
-            right: 0;
-            top: -20px;
-            color: red;
-            font-size: 0.8rem;
-            font-weight: bold;
+            padding-bottom: 100px;
         }
 
         .grid-item {
             background: #222;
             border: 1px solid #444;
             position: relative;
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            aspect-ratio: 16/9;
-            /* Default base aspect */
+            /* Prevent interaction on children to allow drag */
+            user-select: none;
             transition: all 0.2s;
         }
 
-        .grid-item:active {
-            cursor: grabbing;
-        }
-
-        .grid-item.sortable-ghost {
-            opacity: 0.4;
-            background: #444;
-        }
-
-        .grid-item img,
-        .grid-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-            /* Let clicks pass to item */
-        }
-
-        .size-badge {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 6px;
-            font-size: 0.7rem;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        .item-controls {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            display: flex;
-            gap: 5px;
-        }
-
-        .control-btn {
-            width: 20px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid white;
-            color: white;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 50%;
-        }
-
-        /* Span Classes (matching main site CSS logic) */
+        /* Span Classes (Visual) */
         .span-1-1 {
             grid-column: span 1;
             grid-row: span 1;
+            aspect-ratio: 16/9;
         }
 
         .span-2-1 {
             grid-column: span 2;
             grid-row: span 1;
             aspect-ratio: 32/9;
-            /* roughly double width */
-        }
-
-        .span-2-2 {
-            grid-column: span 2;
-            grid-row: span 2;
-            aspect-ratio: 1;
-            /* square-ish or big rect */
-        }
-
-        .span-3-1 {
-            grid-column: span 3;
-            grid-row: span 1;
         }
 
         .span-1-2 {
@@ -210,35 +120,106 @@
             aspect-ratio: 8/9;
         }
 
-        /* Note: Aspect ratios in CSS Grid with dense packing and varying content are tricky to exact match 
-           without the actual images loading fully, but for layout planning this is close enough. 
-           Real site uses object-fit: cover */
+        .span-2-2 {
+            grid-column: span 2;
+            grid-row: span 2;
+            aspect-ratio: 16/9;
+            /* Big box */
+        }
 
-        .output-area {
-            flex: 1;
+        .span-3-1 {
+            grid-column: span 3;
+            grid-row: span 1;
+            aspect-ratio: 48/9;
+        }
+
+        .span-3-2 {
+            grid-column: span 3;
+            grid-row: span 2;
+            aspect-ratio: 48/18;
+        }
+
+        .grid-item img,
+        .grid-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Resize Handle */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, transparent 50%, #4a90e2 50%);
+            cursor: nwse-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+
+        .grid-item:hover .resize-handle {
+            opacity: 1;
+        }
+
+        .grid-item:hover {
+            border-color: #4a90e2;
+            z-index: 10;
+        }
+
+        .info-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .output-panel {
+            width: 300px;
+            background: #151515;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            padding: 20px;
-            background: #151515;
-            border-left: 1px solid #333;
         }
 
         textarea {
-            width: 100%;
-            height: 100%;
-            background: #000;
+            flex: 1;
+            background: black;
             color: #0f0;
-            font-family: monospace;
             border: 1px solid #333;
-            padding: 10px;
             resize: none;
+            font-family: monospace;
+            padding: 10px;
+            font-size: 11px;
         }
 
-        .guide {
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 10px;
+        /* Limit Line */
+        .limit-line {
+            grid-column: 1 / -1;
+            height: 2px;
+            background: red;
+            margin: 10px 0;
+            position: relative;
+            display: none;
+            /* Only show in main gallery */
+        }
+
+        .limit-line::after {
+            content: "MAX 3 ROWS APPROX";
+            position: absolute;
+            right: 0;
+            top: -20px;
+            color: red;
+            font-weight: bold;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -246,247 +227,303 @@
 <body>
 
     <header>
-        <h2>Gallery Manager</h2>
-        <select id="folderSelect">
-            <option value="" disabled selected>Select a Project Folder</option>
+        <h2>Gallery Manager V2</h2>
+        <select id="modeSelect">
+            <option value="MAIN">Main Gallery (Home Page)</option>
+            <option value="INDIVIDUAL">Individual Projects...</option>
         </select>
-        <button id="saveBtn">Generate Config</button>
-        <button id="resetBtn" class="secondary">Reset to Default</button>
+        <select id="folderSelect" style="display:none;"></select>
+        <button id="generateBtn" class="primary">Generate Config</button>
     </header>
 
-    <div class="main-container">
-        <div class="editor-area">
-            <p class="guide">Drag to reorder. Click "Resize" icon to cycle sizes.</p>
+    <div class="workspace">
+        <div class="editor">
             <div id="grid" class="grid-container">
-                <!-- Items injected here -->
-                <div id="limitMarker" class="limit-line" style="display:none;">
-                    <span class="limit-label">MAX 3 ROWS (APPROX)</span>
-                </div>
+                <!-- Items -->
             </div>
         </div>
 
-        <div class="output-area">
-            <h3>Output Configuration</h3>
-            <p class="guide">Copy this and replace the corresponding array in <code>gallery-data.js</code>.</p>
+        <div class="output-panel">
+            <h3>Config Output</h3>
+            <p style="font-size:12px; color:#888;">Paste this into `gallery-data.js`</p>
             <textarea id="output" readonly></textarea>
-            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button onclick="copyOut()">Copy</button>
         </div>
     </div>
 
     <script>
-        // Constants
-        const SIZES = ['span-1-1', 'span-2-1', 'span-2-2', 'span-1-2']; // Cycle order
-
-        let currentFolder = '';
-        let currentItems = []; // Array of objects { src, span }
-
+        let currentMode = 'MAIN';
+        let currentItems = []; // Contains objects with data
         const grid = document.getElementById('grid');
+        const modeSelect = document.getElementById('modeSelect');
         const folderSelect = document.getElementById('folderSelect');
-        const output = document.getElementById('output');
 
-        // Initialize
+        // === Initialization ===
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.galleryData) {
-                populateFolderSelect();
+            if (!window.galleryData) return alert("No Gallery Data");
+
+            populateFolders();
+            loadMainGallery(); // Default
+        });
+
+        modeSelect.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            if (currentMode === 'MAIN') {
+                folderSelect.style.display = 'none';
+                loadMainGallery();
             } else {
-                alert('Could not load gallery-data.js');
+                folderSelect.style.display = 'inline-block';
+                if (folderSelect.value) loadFolder(folderSelect.value);
+                else folderSelect.selectedIndex = 0;
             }
         });
 
-        function populateFolderSelect() {
-            for (const folder in window.galleryData) {
-                if (folder === 'HERO SHOT') continue;
-                const option = document.createElement('option');
-                option.value = folder;
-                option.textContent = folder;
-                folderSelect.appendChild(option);
+        folderSelect.addEventListener('change', (e) => loadFolder(e.target.value));
+
+        function populateFolders() {
+            for (const key in galleryData) {
+                if (key === 'HERO SHOT') continue;
+                const op = document.createElement('option');
+                op.value = key;
+                op.textContent = key;
+                folderSelect.appendChild(op);
             }
         }
 
-        folderSelect.addEventListener('change', (e) => {
-            currentFolder = e.target.value;
-            loadFolder(currentFolder);
-        });
+        // === Data Loading ===
+
+        function loadMainGallery() {
+            currentItems = [];
+
+            // 1. Flatten Data
+            for (const [key, files] of Object.entries(galleryData)) {
+                if (key === 'HERO SHOT') continue;
+
+                const isExploded = (key === 'Animation' || key === 'Interactive Presentation');
+
+                if (isExploded) {
+                    // Add every item
+                    files.forEach(f => {
+                        const src = (typeof f === 'object') ? f.src : f;
+                        const span = (typeof f === 'object') ? f.span : 'span-1-1';
+                        currentItems.push({
+                            type: 'item',
+                            src: src,
+                            folder: key,
+                            span: span,
+                            name: src
+                        });
+                    });
+                } else {
+                    // Add Folder as single item
+                    const thumbnail = files[0];
+                    const src = (typeof thumbnail === 'object') ? thumbnail.src : thumbnail;
+                    // Folder itself might have stored span preference in future, 
+                    // but for now we store it on the thumbnail object? 
+                    // Or we need a separate "layout" config.
+                    // Current V1 implementation used thumbnail.span to control folder size.
+                    const span = (typeof thumbnail === 'object') ? thumbnail.span : 'span-1-1';
+
+                    currentItems.push({
+                        type: 'folder',
+                        folder: key,
+                        thumbnail: src, // We keep ref to first image
+                        span: span,
+                        name: key
+                    });
+                }
+            }
+
+            render();
+        }
 
         function loadFolder(folderName) {
-            const rawData = window.galleryData[folderName];
+            currentItems = [];
+            const files = galleryData[folderName];
 
-            // Normalize data to objects
-            currentItems = rawData.map(item => {
-                if (typeof item === 'string') {
-                    return { src: item, span: 'span-1-1' }; // Default
-                } else {
-                    return { ...item }; // Clone existing
-                }
+            files.forEach(f => {
+                const src = (typeof f === 'object') ? f.src : f;
+                const span = (typeof f === 'object') ? f.span : 'span-1-1';
+                currentItems.push({
+                    type: 'item',
+                    src: src,
+                    folder: folderName,
+                    span: span,
+                    name: src
+                });
             });
 
-            renderGrid();
+            render();
         }
 
-        function renderGrid() {
-            // Clear but keep limit marker
-            const marker = document.getElementById('limitMarker');
+        // === Rendering ===
+
+        function render() {
             grid.innerHTML = '';
-            grid.appendChild(marker);
 
             currentItems.forEach((item, index) => {
                 const el = document.createElement('div');
                 el.className = `grid-item ${item.span}`;
                 el.dataset.index = index;
 
-                // Media Preview
-                const path = `assets/${currentFolder}/${item.src}`;
-                // Encode path
-                const encodedPath = path.split('/').map(p => encodeURIComponent(p)).join('/');
-
-                if (item.src.match(/\.(mp4|webm|mov)$/i)) {
-                    const video = document.createElement('video');
-                    video.src = encodedPath;
-                    video.muted = true;
-                    el.appendChild(video);
+                // Media
+                let path = '';
+                if (item.type === 'folder') {
+                    path = `assets/${item.folder}/${item.thumbnail}`;
                 } else {
-                    const img = document.createElement('img');
-                    img.src = encodedPath;
-                    el.appendChild(img);
+                    path = `assets/${item.folder}/${item.src}`;
                 }
 
-                // Size Badge
+                const encoded = path.split('/').map(encodeURIComponent).join('/');
+
+                // Check video
+                if (path.match(/\.(mp4|mov|webm)$/i)) {
+                    const v = document.createElement('video');
+                    v.src = encoded;
+                    v.muted = true;
+                    el.appendChild(v);
+                } else {
+                    const i = document.createElement('img');
+                    i.src = encoded;
+                    el.appendChild(i);
+                }
+
+                // Info Badge
                 const badge = document.createElement('div');
-                badge.className = 'size-badge';
-                badge.textContent = item.span.replace('span-', '');
+                badge.className = 'info-badge';
+                badge.textContent = item.name;
                 el.appendChild(badge);
 
-                // Controls
-                const controls = document.createElement('div');
-                controls.className = 'item-controls';
+                // Resize Handle
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
 
-                const resizeBtn = document.createElement('div');
-                resizeBtn.className = 'control-btn';
-                resizeBtn.innerHTML = '&#x21f1;'; // Resize icon arrow type
-                resizeBtn.title = "Cycle Size";
-                resizeBtn.onclick = (e) => {
-                    e.stopPropagation(); // Prevent drag start maybe?
-                    cycleSize(index);
-                };
+                // InteractJS for resizing logic
+                // Actually, for a grid, "dragging a corner" usually implies 
+                // snapping to the next grid cell.
+                // We can emulate this by cycling sizes on drag, or tracking dx/dy.
+                // Simple approach: Click handle to cycle? User asked to "drag".
+                // Let's implement real drag detect.
 
-                controls.appendChild(resizeBtn);
-                el.appendChild(controls);
+                initResizeHandle(handle, index);
 
+                el.appendChild(handle);
                 grid.appendChild(el);
             });
 
-            // Initialize Sortable
+            // Sortable
             if (this.sortable) this.sortable.destroy();
             this.sortable = new Sortable(grid, {
                 animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: function (evt) {
-                    const itemEl = evt.item;
-                    const newIndex = evt.newIndex; // Index in DOM children
-                    const oldIndex = evt.oldIndex;
+                onEnd: () => {
+                    // Re-read DOM to update array order
+                    const newItems = [];
+                    const els = grid.querySelectorAll('.grid-item');
+                    els.forEach(el => {
+                        const idx = parseInt(el.dataset.index);
+                        newItems.push(currentItems[idx]);
+                    });
+                    currentItems = newItems;
+                    // Update indices
+                    render();
+                }
+            });
+        }
 
-                    // Note: Sortable counts all children. If limitMarker is present, we must account for it?
-                    // limitMarker is in the DOM. Sortable might include it in index if it's draggable.
-                    // Let's make limitMarker non-draggable via filter or ignore.
-                    // Simpler: Just re-read the DOM order to update state.
+        // === Resize Logic ===
 
-                    updateStateFromDOM();
+        function initResizeHandle(handle, index) {
+            interact(handle).draggable({
+                onmove: (event) => {
+                    // We don't verify move, just detect "drag amount" to snap?
+                    // Visual feedback is hard without complex ghosting.
+                    // Alternative: Just use the delta to switch class.
                 },
-                filter: '.limit-line' // Ignore the marker
-            });
+                onend: (event) => {
+                    // Simple logic:
+                    // If Drag X > 50 -> Increase Width
+                    // If Drag Y > 50 -> Increase Height
+                    // If Drag X < -50 -> Decrease Width
+                    // etc.
 
-            updateLimitMarker();
+                    const dx = event.pageX - event.x0;
+                    const dy = event.pageY - event.y0;
+                    const threshold = 30; // pixels
+
+                    const item = currentItems[index];
+                    let w = getWidth(item.span);
+                    let h = getHeight(item.span);
+
+                    if (dx > threshold && w < 3) w++; // Max 3 cols
+                    if (dx < -threshold && w > 1) w--;
+
+                    if (dy > threshold && h < 2) h++; // Max 2 rows
+                    if (dy < -threshold && h > 1) h--;
+
+                    item.span = getClass(w, h);
+                    render();
+                }
+            });
         }
 
-        function cycleSize(index) {
-            const item = currentItems[index];
-            const currentSizeIdx = SIZES.indexOf(item.span);
-            const nextSize = SIZES[(currentSizeIdx + 1) % SIZES.length];
-            item.span = nextSize;
-            renderGrid(); // Re-render to update class and badge
+        function getWidth(span) {
+            if (span.includes('span-3')) return 3;
+            if (span.includes('span-2')) return 2;
+            return 1;
         }
 
-        function updateStateFromDOM() {
-            const newOrder = [];
-            const itemEls = grid.querySelectorAll('.grid-item');
-            itemEls.forEach(el => {
-                const oldIndex = parseInt(el.dataset.index);
-                const item = currentItems[oldIndex]; // This is wrong if we mutated currentItems. 
-                // We should keep the item object attached to the element or lookup.
-                // Actually the item object inside currentItems is safe? No, array order changes.
-                // Best to read data from DOM re-map.
-
-                // Better approach:
-                // We stored dataset.index which points to the *original* index in the array before this render.
-                // So currentItems[oldIndex] gives us the Data Object.
-                // We push that into newOrder.
-                newOrder.push(item);
-            });
-
-            currentItems = newOrder;
-            // Re-render to fix dataset.indices for next moves
-            renderGrid();
+        function getHeight(span) {
+            // e.g. span-2-2 -> height 2
+            // span-1-2 -> height 2
+            // The last number is typically row span in my class naming or implied?
+            // Classes: span-1-1, span-2-1, span-1-2, span-2-2
+            const parts = span.split('-');
+            if (parts.length === 3) return parseInt(parts[2]);
+            return 1;
         }
 
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            if (!currentFolder) return;
+        function getClass(w, h) {
+            return `span-${w}-${h}`;
+        }
 
-            // Generate JSON
-            // We want nice formatting
-            let json = `    "${currentFolder}": [\n`;
-            currentItems.forEach((item, i) => {
-                const isLast = i === currentItems.length - 1;
-                json += `        { "src": "${item.src}", "span": "${item.span}" }${isLast ? '' : ','}\n`;
-            });
-            json += `    ]`;
+        // === Generation ===
 
-            output.value = json;
-        });
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            let outputStr = '';
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            if (currentFolder && confirm("Reset layout to default 1x1?")) {
-                loadFolder(currentFolder);
+            if (currentMode === 'MAIN') {
+                // Generate window.galleryLayout
+                outputStr += `// Place this usually at the end of gallery-data.js\n`;
+                outputStr += `window.galleryLayout = [\n`;
+                currentItems.forEach(item => {
+                    // We need to store enough info to reconstruct the view
+                    // For direct items: { type: 'item', folder: '...', src: '...', span: '...' }
+                    // For folders: { type: 'folder', folder: '...', span: '...' }
+
+                    if (item.type === 'folder') {
+                        outputStr += `    { type: 'folder', folder: "${item.folder}", span: "${item.span}" },\n`;
+                    } else {
+                        outputStr += `    { type: 'item', folder: "${item.folder}", src: "${item.src}", span: "${item.span}" },\n`;
+                    }
+                });
+                outputStr += `];`;
+            } else {
+                // Generate normal folder array
+                const fName = document.getElementById('folderSelect').value;
+                outputStr += `"${fName}": [\n`;
+                currentItems.forEach(item => {
+                    outputStr += `    { src: "${item.src}", span: "${item.span}" },\n`;
+                });
+                outputStr += `]`;
             }
+
+            document.getElementById('output').value = outputStr;
         });
 
-        function copyToClipboard() {
-            output.select();
+        function copyOut() {
+            document.getElementById('output').select();
             document.execCommand('copy');
-            alert('Copied to clipboard!');
-        }
-
-        function updateLimitMarker() {
-            // Rough estimation of 3 rows
-            // In a real grid, row height depends on content.
-            // But here we use aspect-ratios.
-            // Let's just place the marker at a fixed distance approx 3 rows height?
-            // Or just calculate via Grid Row Height * 3 + Gap * 2
-
-            // We can't easily know exact pixel height. 
-            // Simple visual guide: 3 rows of standard 16/9 items ~ 
-            // Let's just show the marker at the bottom of the grid or try to compute.
-
-            const marker = document.getElementById('limitMarker');
-            marker.style.display = 'block';
-
-            // Assume "approx" row height relative to width?
-            // It's dynamic. Let's just leave the visual marker floating or manual check.
-            // The User requested "show that too".
-
-            // Let's try to find the 3rd row bottom.
-            // We can check the offsetTop of the 10th item? (3x3=9 items if 1x1).
-            // This is tricky.
-            // Let's just set it to `top: calc((100vw / 3 * (9/16)) * 3 + 4rem)` approx?
-
-            // For now, let's just create a visual box that represents the "Safety Zone" maybe?
-            // No, complex interactions.
-            // I'll skip complex dynamic positioning for now and rely on visual counting 
-            // or just put it after the grid if it overflows?
-
-            // Alternative: Simply draw a line at roughly 800px? (common height)
-
-            // Let's position it via JS by looking at grid computed styles.
-            // (Not verified in code, but good enough for MVP)
+            alert("Copied!");
         }
 
     </script>

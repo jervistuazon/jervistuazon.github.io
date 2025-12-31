@@ -858,6 +858,64 @@ iframe.lightbox-content {
     cursor: pointer;
 }
 
+/* Loading Animation for Gallery Items */
+.gallery-item.loading {
+    background: linear-gradient(110deg,
+            #1a1a1a 8%,
+            #252525 18%,
+            #1a1a1a 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    min-height: 250px;
+}
+
+.gallery-item.loading .gallery-img,
+.gallery-item.loading .gallery-video {
+    opacity: 0;
+}
+
+.gallery-item .gallery-img,
+.gallery-item .gallery-video {
+    transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+}
+
+.gallery-item.loaded .gallery-img,
+.gallery-item.loaded .gallery-video {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Pulse animation for loading indicator */
+.gallery-item.loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
 @media (max-width: 700px) {
     .lightbox-content {
         width: 95%;

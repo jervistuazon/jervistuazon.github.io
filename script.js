@@ -88,123 +88,172 @@ function renderGalleryGrid() {
         });
     }, { threshold: 0.1 });
 
+    // === NEW LOGIC: Custom Layout ===
+    if (window.galleryLayout && Array.isArray(window.galleryLayout)) {
+        window.galleryLayout.forEach((layoutItem, index) => {
+            const item = document.createElement('div');
+            // Use config span or default
+            const spanClass = layoutItem.span || 'span-1-1';
+            item.className = `gallery-item fade-in-scroll ${spanClass}`;
+
+            // Render logic based on type
+            if (layoutItem.type === 'folder') {
+                const folderName = layoutItem.folder;
+                const files = galleryData[folderName];
+                if (!files || !files.length) return;
+
+                // Thumbnail is usually first item
+                let thumbSrc = files[0];
+                if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
+
+                item.setAttribute('data-category', 'render');
+                item.onclick = () => openGallery(folderName);
+
+                renderMedia(item, folderName, thumbSrc);
+                renderInfo(item, folderName);
+
+            } else if (layoutItem.type === 'item') {
+                const folderName = layoutItem.folder;
+                const filename = layoutItem.src;
+
+                // Determine Category for filter
+                let category = 'render';
+                if (folderName === 'Animation') category = 'animation';
+                if (folderName === 'Interactive Presentation') category = 'interactive';
+                item.setAttribute('data-category', category);
+
+                // Find index in original data for Lightbox?
+                // Lightbox needs a list of images.
+                // If we click a single item on Home Page, do we open the Folder's lightbox or just that item?
+                // Usually just that item in context of its folder.
+
+                // Let's find index in the original folder data
+                const folderFiles = galleryData[folderName];
+                // Assume normalized strings for search
+                const fileIndex = folderFiles.findIndex(f => {
+                    const fName = (typeof f === 'object') ? f.src : f;
+                    return fName === filename;
+                });
+
+                item.onclick = () => {
+                    currentFolder = folderName;
+                    // Prepare lightbox list from the folder
+                    currentGalleryImages = folderFiles.map(f => typeof f === 'object' ? f.src : f);
+                    openLightbox(fileIndex !== -1 ? fileIndex : 0);
+                };
+
+                renderMedia(item, folderName, filename);
+                renderInfo(item, filename.replace(/\.[^/.]+$/, ""));
+            }
+
+            grid.appendChild(item);
+            observer.observe(item);
+        });
+
+        return; // Exit, do not run legacy loop
+    }
+
+    // === FALLBACK: Automatic Loop (Legacy) ===
     let index = 0;
 
     // Loop through gallery folders
     for (const [folderName, files] of Object.entries(galleryData)) {
         if (!files || files.length === 0) continue;
 
-        // Skip HERO SHOT (used for background)
+        // Skip special folders that shouldn't appear as main gallery items
         if (folderName === 'HERO SHOT') continue;
 
-        // Special handling for Animation, Interactive Presentation: Show ALL items
-        if (folderName === 'Animation' || folderName === 'Interactive Presentation') {
-            files.forEach((itemData, fileIndex) => {
-                const isObject = typeof itemData === 'object';
-                const filename = isObject ? itemData.src : itemData;
-                const spanConfig = isObject ? itemData.span : null;
+        const item = document.createElement('div');
 
-                const item = document.createElement('div');
-                const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
-                item.className = `gallery-item fade-in-scroll ${spanClass}`;
+        // Apply layout pattern
+        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+        item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
-                // Set Category
-                let category = 'render';
-                if (folderName === 'Animation') category = 'animation';
-                if (folderName === 'Interactive Presentation') category = 'interactive';
-                item.setAttribute('data-category', category);
+        // Determine category for filtering
+        let category = 'render';
+        if (folderName === 'Animation') category = 'animation';
+        if (folderName === 'Interactive Presentation') category = 'interactive';
+        item.setAttribute('data-category', category);
 
-                // Click Action: Open Lightbox directly
-                item.onclick = () => {
-                    currentFolder = folderName;
-                    currentGalleryImages = files.map(f => typeof f === 'object' ? f.src : f);
-                    openLightbox(fileIndex);
-                };
+        // Click opens the project sub-gallery
+        item.onclick = () => openGallery(folderName);
 
-                index++;
+        // Get thumbnail (first item in folder)
+        let thumbSrc = files[0];
+        if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
 
-                const path = `assets/${folderName}/${filename}`;
-                const encodedPath = encodePath(path);
+        // Render the thumbnail media
+        renderMedia(item, folderName, thumbSrc);
 
-                if (isVideo(filename)) {
-                    const video = document.createElement('video');
-                    video.src = encodedPath;
-                    video.muted = true;
-                    video.loop = true;
-                    video.playsInline = true;
-                    video.autoplay = true;
-                    video.className = 'gallery-video';
-                    item.appendChild(video);
-                } else {
-                    const img = document.createElement('img');
-                    img.src = encodedPath;
-                    img.alt = filename;
-                    img.className = 'gallery-img';
-                    item.appendChild(img);
-                }
+        // Render the folder name as info overlay
+        renderInfo(item, folderName);
 
-                // Info Overlay
-                const info = document.createElement('div');
-                info.className = 'item-info';
-                const h4 = document.createElement('h4');
-                h4.textContent = filename.replace(/\.[^/.]+$/, "");
-                info.appendChild(h4);
-                item.appendChild(info);
-
-                grid.appendChild(item);
-                observer.observe(item);
-            });
-        }
-        // Default: Show Folder Thumbnail (Project View)
-        else {
-            // Thumbnail is first item
-            const firstItem = files[0];
-            const thumbnail = typeof firstItem === 'object' ? firstItem.src : firstItem;
-            // Use span from first item if available to control Folder Thumbnail Size
-            const spanConfig = typeof firstItem === 'object' ? firstItem.span : null;
-
-            const item = document.createElement('div');
-            const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
-            item.className = `gallery-item fade-in-scroll ${spanClass}`;
-
-            item.setAttribute('data-category', 'render');
-            item.onclick = () => openGallery(folderName);
-
-            index++;
-
-            const path = `assets/${folderName}/${thumbnail}`;
-            const encodedPath = encodePath(path);
-
-            if (isVideo(thumbnail)) {
-                const video = document.createElement('video');
-                video.src = encodedPath;
-                video.muted = true;
-                video.loop = true;
-                video.playsInline = true;
-                video.autoplay = true;
-                video.className = 'gallery-video';
-                item.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = encodedPath;
-                img.alt = folderName;
-                img.className = 'gallery-img';
-                item.appendChild(img);
-            }
-
-            // Info Overlay for Folder
-            const info = document.createElement('div');
-            info.className = 'item-info';
-            const h4 = document.createElement('h4');
-            h4.textContent = folderName;
-            info.appendChild(h4);
-            item.appendChild(info);
-
-            grid.appendChild(item);
-            observer.observe(item);
-        }
+        grid.appendChild(item);
+        observer.observe(item);
+        index++;
     }
 }
+
+// Helper to clean up render code
+function renderMedia(container, folder, filename) {
+    const path = `assets/${folder}/${filename}`;
+    const encodedPath = encodePath(path);
+
+    // Add loading state
+    container.classList.add('loading');
+
+    if (isVideo(filename)) {
+        const video = document.createElement('video');
+        video.src = encodedPath;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.className = 'gallery-video';
+
+        // Handle video load
+        video.addEventListener('loadeddata', () => {
+            container.classList.remove('loading');
+            container.classList.add('loaded');
+        });
+        video.addEventListener('error', () => {
+            container.classList.remove('loading');
+        });
+
+        container.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = encodedPath;
+        img.alt = filename;
+        img.className = 'gallery-img';
+
+        // Handle image load
+        img.addEventListener('load', () => {
+            container.classList.remove('loading');
+            container.classList.add('loaded');
+        });
+        img.addEventListener('error', () => {
+            container.classList.remove('loading');
+        });
+
+        container.appendChild(img);
+    }
+}
+
+function renderInfo(container, text) {
+    const info = document.createElement('div');
+    info.className = 'item-info';
+    const h4 = document.createElement('h4');
+    h4.textContent = text;
+    info.appendChild(h4);
+    container.appendChild(info);
+}
+
+// Modified renderGalleryGrid (Legacy Part below for matching)
+/* 
+   Since the codebase is large, let's just insert the new logic at the top of renderGalleryGrid 
+   and put the old logic in a block that runs if no layout found.
+*/
 
 // Open Project View (Sub-Gallery)
 function openGallery(folderName) {
@@ -256,6 +305,9 @@ function openGallery(folderName) {
         const path = `assets/${currentFolder}/${filename}`;
         const encodedPath = encodePath(path);
 
+        // Add loading state
+        item.classList.add('loading');
+
         if (isVideo(filename)) {
             const video = document.createElement('video');
             video.src = encodedPath;
@@ -264,13 +316,32 @@ function openGallery(folderName) {
             video.playsInline = true;
             video.autoplay = true;
             video.className = 'gallery-video';
-            // Removed hover logic
+
+            // Handle video load
+            video.addEventListener('loadeddata', () => {
+                item.classList.remove('loading');
+                item.classList.add('loaded');
+            });
+            video.addEventListener('error', () => {
+                item.classList.remove('loading');
+            });
+
             item.appendChild(video);
         } else {
             const img = document.createElement('img');
             img.src = encodedPath;
             img.alt = filename;
             img.className = 'gallery-img';
+
+            // Handle image load
+            img.addEventListener('load', () => {
+                item.classList.remove('loading');
+                item.classList.add('loaded');
+            });
+            img.addEventListener('error', () => {
+                item.classList.remove('loading');
+            });
+
             item.appendChild(img);
         }
 
