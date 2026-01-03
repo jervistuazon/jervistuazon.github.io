@@ -133,10 +133,10 @@ function renderGalleryGrid() {
 
     // Categories to process (exclude HERO SHOT and Video separately)
     const categoriesToProcess = [
+        'Commercial',
         'Hospitality',
         'Institutional',
         'Mix Used Development',
-        'Offices',
         'Residential',
         'Residential Development'
     ];
@@ -146,9 +146,25 @@ function renderGalleryGrid() {
         const categoryData = galleryData[categoryName];
         if (!categoryData || typeof categoryData !== 'object') return;
 
-        // Each category contains project folders
+        // Each category contains project folders and possibly _standalone images
         for (const [projectName, files] of Object.entries(categoryData)) {
             if (!files || files.length === 0) continue;
+
+            // Handle _standalone images (files directly in category folder)
+            if (projectName === '_standalone') {
+                files.forEach((filename, fileIndex) => {
+                    allProjects.push({
+                        type: 'standalone',
+                        category: categoryName,
+                        categorySlug: categoryName.toLowerCase().replace(/ /g, '-'),
+                        filename: filename,
+                        fileIndex: fileIndex,
+                        standaloneFiles: files,
+                        featured: false
+                    });
+                });
+                continue;
+            }
 
             // Check if featured (ends with - F or -F)
             const isFeatured = / - F$| -F$/.test(projectName);
@@ -195,8 +211,8 @@ function renderGalleryGrid() {
     sortedProjects.forEach((itemData, index) => {
         const item = document.createElement('div');
 
-        // Apply layout pattern
-        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
+        // Apply layout pattern (standalone items get small 1x1)
+        const spanClass = itemData.type === 'standalone' ? '' : layoutPatternMain[index % layoutPatternMain.length];
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering
@@ -213,6 +229,15 @@ function renderGalleryGrid() {
             // Display name: extract just the project name (before first dash)
             const displayName = parseProjectName(itemData.projectName).name;
             renderInfo(item, displayName);
+        } else if (itemData.type === 'standalone') {
+            // Standalone image in category folder
+            item.onclick = () => {
+                currentFolder = itemData.category;
+                currentGalleryImages = itemData.standaloneFiles;
+                openLightbox(itemData.fileIndex);
+            };
+            renderMedia(item, itemData.category, itemData.filename);
+            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, ""));
         } else if (itemData.type === 'video') {
             // Video item
             item.onclick = () => {
@@ -227,33 +252,6 @@ function renderGalleryGrid() {
         grid.appendChild(item);
         observer.observe(item);
     });
-
-    // Process "Other Works" at the very bottom with smallest icons
-    if (galleryData['Other Works'] && Array.isArray(galleryData['Other Works'])) {
-        galleryData['Other Works'].forEach((filename, fileIndex) => {
-            const item = document.createElement('div');
-
-            // Use small-item class for the smallest thumbnails (no span, just 1x1)
-            item.className = 'gallery-item fade-in-scroll small-item';
-            item.setAttribute('data-category', 'other-works');
-
-            // Clicking opens lightbox directly
-            item.onclick = () => {
-                currentFolder = 'Other Works';
-                currentGalleryImages = galleryData['Other Works'];
-                openLightbox(fileIndex);
-            };
-
-            renderMedia(item, 'Other Works', filename);
-
-            // Use filename without extension as title
-            const displayName = filename.replace(/\.[^/.]+$/, "");
-            renderInfo(item, displayName);
-
-            grid.appendChild(item);
-            observer.observe(item);
-        });
-    }
 }
 
 // Helper for nested paths (Render/ProjectName/file)

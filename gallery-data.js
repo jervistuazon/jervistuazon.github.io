@@ -1,11 +1,30 @@
 ﻿window.galleryData = {
+    "Commercial": {
+        "Certis": [
+            "Exhibition.jpeg",
+            "Lounge.jpeg",
+            "Meeting Room.png"
+        ],
+        "Prism+": [
+            "Office Workspace.png",
+            "Pantry.png",
+            "Workspace.png"
+        ],
+        "_standalone": [
+            "Bradell Office Singapore.png",
+            "Clubhouse China.png",
+            "Country Club Siingapore.png",
+            "Funeral Parlour Singapore.png",
+            "Oceanrium Singapore.png"
+        ]
+    },
     "Hospitality": {
         "Fiji Island Resort": [
             "Aerial View.jpg",
             "Pool View Evening.png",
             "Pool View.png"
         ],
-        "Maldives Samarafushi Island Resort": [
+        "Maldives Samarafushi Island Resort - F": [
             "Aerial View Island.png",
             "Aerial View.png",
             "Arrival.png",
@@ -15,6 +34,13 @@
             "Specialty Restaurant Aerial View.png",
             "Specialty Restaurant.png",
             "Specialty Spa.png"
+        ],
+        "_standalone": [
+            "Clemenceau Citadines Singapore.png",
+            "Hotel Extension Arrival Singapore.png",
+            "Hotel Extension Drop-off Singapore.png",
+            "Hotel Extension Lobby Singapore.png",
+            "Male Hotel.png"
         ]
     },
     "Institutional": {
@@ -23,10 +49,14 @@
             "China Dormitory School Aerial.png",
             "China Dormitory School Ground Floor.png",
             "China Dormitory School.jpg"
+        ],
+        "_standalone": [
+            "Academy China.png",
+            "Ancient Tree China.png"
         ]
     },
     "Mix Used Development": {
-        "India Kohlshet Development": [
+        "India Kohlshet Development - F": [
             "Aerial View Clubhouse Evening.png",
             "Aerial View Clubhouse.png",
             "Aerial View.png",
@@ -42,18 +72,6 @@
             "Lobby.png",
             "Overall View Night Scene.png",
             "Perspective.png"
-        ]
-    },
-    "Offices": {
-        "Certis": [
-            "Exhibition.jpeg",
-            "Lounge.jpeg",
-            "Meeting Room.png"
-        ],
-        "Prism+": [
-            "Office Workspace.png",
-            "Pantry.png",
-            "Workspace.png"
         ]
     },
     "Residential": {
@@ -104,6 +122,18 @@
             "Overall View Day Scene.png",
             "Overall View.png",
             "Pool View.png"
+        ],
+        "_standalone": [
+            "Amber Road Singapore.png",
+            "Bayshore Apartment Tower Singapore.png",
+            "Changi Singapore.png",
+            "Chong Kuo Rd Singapore.png",
+            "Everton Singapore.png",
+            "Farrer Rd  Singapore.png",
+            "Gilstead Rd Singapore.png",
+            "Old Tampines Road Singapore.png",
+            "Rangood Road SIngapore.png",
+            "Siglap Rd Singapore.png"
         ]
     },
     "Residential Development": {
@@ -112,7 +142,7 @@
             "Corner View.png",
             "Street View.png"
         ],
-        "Moscow Residence": [
+        "Moscow Residence - F": [
             "Aerial View Winter.png",
             "Aerial View.png",
             "Atrium Interior.png",
@@ -130,19 +160,12 @@
             "Overall View.jpg",
             "Park.png",
             "Playground.png"
+        ],
+        "_standalone": [
+            "Huangshan China.png",
+            "Mansion Saudi Arabia.png"
         ]
     },
-    "Other Works": [
-        "Amber Road Singapore.png",
-        "Bayshore Apartment Tower Singapore.png",
-        "Bradell Office.png",
-        "Changi Singapore.png",
-        "Chong Kuo Rd Singapore.png",
-        "Gilstead Rd Singapore.png",
-        "Saudi Arabia Mansion.png",
-        "Siglap Rd Singapore.png",
-        "Singapore Clemenceau Citadines.png"
-    ],
     "Video": [
         "Interactive Presentation Apartment Interior.mp4",
         "Interactive Presentation Singapore House.mp4",
@@ -155,12 +178,11 @@
 
 // Categories for filter (order matters for display)
 window.galleryCategories = [
+    "Commercial",
     "Hospitality",
     "Institutional",
     "Mix Used Development",
-    "Offices",
     "Residential",
     "Residential Development",
-    "Video",
-    "Other Works"
+    "Video"
 ];
