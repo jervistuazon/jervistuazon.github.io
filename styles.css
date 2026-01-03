@@ -241,7 +241,8 @@ a:hover {
 
 /* About Section */
 .about-section {
-    padding: var(--spacing-xl) 0;
+    padding: 9rem 0;
+    /* Adjusted to intermediate */
     min-height: auto;
     background-color: var(--bg-color);
     position: relative;
@@ -380,7 +381,8 @@ body::after {
 
 /* Work Section */
 .work-section {
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-xl) 0 9rem 0;
+    /* Adjusted to intermediate */
     background-color: var(--bg-color);
 }
 
@@ -700,7 +702,8 @@ body::after {
 /* Contact Section */
 .contact-section {
     /* scroll-snap-align: center; removed */
-    min-height: 100vh;
+    min-height: 80vh;
+    /* Adjusted to intermediate */
     display: flex;
     flex-direction: column;
     justify-content: center;
