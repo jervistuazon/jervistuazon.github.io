@@ -57,10 +57,45 @@
         ]
     },
     "Residential": {
-        "House 4B - Singapore - 2021 - F": [
+        "1953 - SIngapore - 2022": [
+            "Corner View.jpeg",
+            "Facade  Closeup.jpeg",
+            "Rooftop  Swimming Pool.png",
+            "Street View Night.png"
+        ],
+        "House 28 - Singapore - 2021 - F": [
+            "Corner View.png",
+            "Courtyard.png",
+            "Living Area B.png",
+            "Living Area.png",
+            "Master Bathroom.png",
+            "Perspective.png"
+        ],
+        "House 4B - Singapore - 2021": [
             "Arrival.png",
             "Front Facade.png",
             "Rear View.png"
+        ],
+        "House in Contours - Thailand - 2023 - F": [
+            "Corner View.png",
+            "Drop-Off.png",
+            "Grand Stair.png",
+            "Lviing Area.png",
+            "Overview.png",
+            "Wine Bar.png"
+        ],
+        "ME House - Singapore - 2020": [
+            "Courtyard View.jpeg",
+            "Courtyard.jpeg",
+            "Elevation.jpeg",
+            "Foyer.png",
+            "Greenhouse.png"
+        ],
+        "Nyon - Singapore - 2022": [
+            "Corner View.png",
+            "Sky Bar Evening.png",
+            "Sky Bar.png",
+            "Street View.png"
         ],
         "Parc Komo -Singapore - 2022 - F": [
             "Boardwalk View.png",
@@ -97,6 +132,17 @@
             "Playground.png"
         ]
     },
+    "Other Works": [
+        "Amber Road Singapore.png",
+        "Bayshore Apartment Tower Singapore.png",
+        "Bradell Office.png",
+        "Changi Singapore.png",
+        "Chong Kuo Rd Singapore.png",
+        "Gilstead Rd Singapore.png",
+        "Saudi Arabia Mansion.png",
+        "Siglap Rd Singapore.png",
+        "Singapore Clemenceau Citadines.png"
+    ],
     "Video": [
         "Interactive Presentation Apartment Interior.mp4",
         "Interactive Presentation Singapore House.mp4",
@@ -115,5 +161,6 @@ window.galleryCategories = [
     "Offices",
     "Residential",
     "Residential Development",
-    "Video"
+    "Video",
+    "Other Works"
 ];

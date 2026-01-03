@@ -44,6 +44,7 @@
             <div class="container">
                 <div class="work-header">
                     <h2 class="section-title fade-in-scroll">Selected Work</h2>
+                    <!-- Desktop filter buttons -->
                     <div class="filter-bar fade-in-scroll delay-1">
                         <button class="filter-btn active" onclick="filterGallery('all', event)">All</button>
                         <button class="filter-btn" onclick="filterGallery('featured', event)">Featured</button>
@@ -57,7 +58,21 @@
                         <button class="filter-btn"
                             onclick="filterGallery('institutional', event)">Institutional</button>
                         <button class="filter-btn" onclick="filterGallery('video', event)">Video</button>
+                        <button class="filter-btn" onclick="filterGallery('other-works', event)">Other Works</button>
                     </div>
+                    <!-- Mobile filter dropdown -->
+                    <select class="filter-dropdown fade-in-scroll delay-1" onchange="filterGallery(this.value, event)">
+                        <option value="all">All</option>
+                        <option value="featured">Featured</option>
+                        <option value="hospitality">Hospitality</option>
+                        <option value="residential">Residential</option>
+                        <option value="residential-development">Residential Development</option>
+                        <option value="mix-used-development">Mix Used Development</option>
+                        <option value="offices">Offices</option>
+                        <option value="institutional">Institutional</option>
+                        <option value="video">Video</option>
+                        <option value="other-works">Other Works</option>
+                    </select>
                 </div>
 
                 <div class="gallery-grid" id="gallery-grid">

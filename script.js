@@ -49,17 +49,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ESC Key Support
+    // Keyboard Support (ESC + Arrow Keys)
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const lightbox = document.getElementById('lightbox');
-            const projectView = document.getElementById('project-view');
+        const lightbox = document.getElementById('lightbox');
+        const projectView = document.getElementById('project-view');
 
+        if (e.key === 'Escape') {
             // Priority: Close Lightbox first, then Project View
             if (lightbox.style.display === 'block') {
                 closeLightbox();
             } else if (projectView.style.display === 'block') {
                 closeProjectView();
+            }
+        }
+
+        // Arrow key navigation in lightbox
+        if (lightbox.style.display === 'block') {
+            if (e.key === 'ArrowLeft') {
+                changeImage(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeImage(1);
             }
         }
     });
@@ -74,6 +83,35 @@ const layoutPattern = [
 const layoutPatternMain = [
     'span-2-2', '', '', 'span-2-1', '', '', 'span-2-2', '', 'span-2-1', ''
 ];
+
+// Helper to parse folder name format: "Project Name - Location - Year - F"
+// Returns { name, location, date }
+function parseProjectName(folderName) {
+    // Remove the - F suffix first
+    const cleaned = folderName.replace(/ - F$| -F$/, '');
+
+    // Split by " - " pattern
+    const parts = cleaned.split(/ - /);
+
+    // First part is always the project name
+    const name = parts[0] || cleaned;
+
+    // Try to identify location and date from remaining parts
+    let location = null;
+    let date = null;
+
+    for (let i = 1; i < parts.length; i++) {
+        const part = parts[i].trim();
+        // Check if it looks like a year (4 digits)
+        if (/^\d{4}$/.test(part)) {
+            date = part;
+        } else if (part) {
+            location = part;
+        }
+    }
+
+    return { name, location, date };
+}
 
 
 function renderGalleryGrid() {
@@ -172,8 +210,8 @@ function renderGalleryGrid() {
             item.onclick = () => openGallery(itemData.category, itemData.projectName);
             renderMediaNested(item, itemData.category, itemData.projectName, itemData.thumbSrc);
 
-            // Display name: strip the " - F" suffix for display
-            const displayName = itemData.projectName.replace(/ - F$| -F$/, '');
+            // Display name: extract just the project name (before first dash)
+            const displayName = parseProjectName(itemData.projectName).name;
             renderInfo(item, displayName);
         } else if (itemData.type === 'video') {
             // Video item
@@ -189,6 +227,33 @@ function renderGalleryGrid() {
         grid.appendChild(item);
         observer.observe(item);
     });
+
+    // Process "Other Works" at the very bottom with smallest icons
+    if (galleryData['Other Works'] && Array.isArray(galleryData['Other Works'])) {
+        galleryData['Other Works'].forEach((filename, fileIndex) => {
+            const item = document.createElement('div');
+
+            // Use small-item class for the smallest thumbnails (no span, just 1x1)
+            item.className = 'gallery-item fade-in-scroll small-item';
+            item.setAttribute('data-category', 'other-works');
+
+            // Clicking opens lightbox directly
+            item.onclick = () => {
+                currentFolder = 'Other Works';
+                currentGalleryImages = galleryData['Other Works'];
+                openLightbox(fileIndex);
+            };
+
+            renderMedia(item, 'Other Works', filename);
+
+            // Use filename without extension as title
+            const displayName = filename.replace(/\.[^/.]+$/, "");
+            renderInfo(item, displayName);
+
+            grid.appendChild(item);
+            observer.observe(item);
+        });
+    }
 }
 
 // Helper for nested paths (Render/ProjectName/file)
@@ -329,7 +394,15 @@ function openGallery(category, projectName) {
     const projectTitle = document.getElementById('project-title');
     const projectView = document.getElementById('project-view');
 
-    projectTitle.textContent = displayName;
+    // Parse project name into parts
+    const projectParts = parseProjectName(projectName);
+
+    // Build formatted title with project name large, location/date small
+    projectTitle.innerHTML = `
+        <span class="project-name">${projectParts.name}</span>
+        ${projectParts.location || projectParts.date ?
+            `<span class="project-meta">${[projectParts.location, projectParts.date].filter(Boolean).join(' • ')}</span>` : ''}
+    `;
     projectGrid.innerHTML = '';
 
     let index = 0;

@@ -433,6 +433,39 @@ body::after {
     background-color: var(--accent-color);
 }
 
+/* Mobile Filter Dropdown - Hidden on desktop */
+.filter-dropdown {
+    display: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    min-width: 200px;
+}
+
+.filter-dropdown:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.filter-dropdown option {
+    background: var(--bg-color);
+    color: var(--text-primary);
+    padding: 0.5rem;
+}
+
 .work-section .container {
     max-width: 1800px;
     /* Wider container for gallery but constrained */
@@ -546,6 +579,13 @@ body::after {
     .span-2-1 {
         grid-column: span 2;
     }
+
+    /* Small items for Other Works - 1x1 square thumbnails at bottom */
+    .small-item {
+        grid-column: span 1;
+        grid-row: span 1;
+        aspect-ratio: 1/1;
+    }
 }
 
 @media (max-width: 768px) {
@@ -570,6 +610,21 @@ body::after {
 
     .gallery-item .item-info h4 {
         font-size: 0.75rem;
+    }
+
+    /* Mobile: Hide filter buttons, show dropdown */
+    .filter-bar {
+        display: none;
+    }
+
+    .filter-dropdown {
+        display: block;
+    }
+
+    .work-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 }
 
@@ -824,6 +879,27 @@ iframe.lightbox-content {
     margin: 0;
     color: #fff;
     letter-spacing: -0.02em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Project name - large text */
+.project-view-header .project-name {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+
+/* Location and date - smaller text */
+.project-view-header .project-meta {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 /* Mobile: Smaller project title */
@@ -831,6 +907,14 @@ iframe.lightbox-content {
     .project-view-header h2 {
         font-size: 1.2rem;
         padding-right: 3rem;
+    }
+
+    .project-view-header .project-name {
+        font-size: 1.5rem;
+    }
+
+    .project-view-header .project-meta {
+        font-size: 0.7rem;
     }
 }
 
