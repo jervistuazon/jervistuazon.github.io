@@ -91,7 +91,7 @@ a:hover {
 
 .nav-content {
     width: 100%;
-    max-width: 1800px;
+    max-width: 1400px;
     /* Constrained width */
     display: flex;
     justify-content: space-between;
@@ -492,7 +492,7 @@ body::after {
 }
 
 .work-section .container {
-    max-width: 1800px;
+    max-width: 1400px;
     /* Wider container for gallery but constrained */
     width: 95%;
     padding: 0;
@@ -504,8 +504,8 @@ body::after {
 .gallery-grid {
     display: grid;
     /* Use fixed column widths instead of 1fr so justify-content: center works */
-    grid-template-columns: repeat(3, calc((min(95vw, 1800px) - 3rem) / 3));
-    grid-auto-rows: calc((min(95vw, 1800px) - 3rem) / 3 * 0.666);
+    grid-template-columns: repeat(3, calc((min(95vw, 1400px) - 3rem) / 3));
+    grid-auto-rows: calc((min(95vw, 1400px) - 3rem) / 3 * 0.666);
     /* Fixed row height 3:2 ratio: ((Width - Gaps) / 3)*0.666 */
     gap: 1.5rem;
     /* Tighter gap looks more professional */
@@ -1010,12 +1010,12 @@ iframe.lightbox-content {
 .project-view .gallery-grid {
     padding: 0;
     /* Remove extra padding, width handles it */
-    max-width: 1800px;
+    max-width: 1400px;
     width: 95%;
     /* Match main container width */
     margin: 0 auto;
     gap: 1.5rem;
-    grid-auto-rows: calc((min(95vw, 1800px) - 3rem) / 3 * 0.666);
+    grid-auto-rows: calc((min(95vw, 1400px) - 3rem) / 3 * 0.666);
     /* Enforce 3:2 ratio here too */
 }
 
