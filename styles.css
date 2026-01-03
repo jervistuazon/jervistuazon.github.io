@@ -503,12 +503,14 @@ body::after {
 /* Masonry Grid Layout */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* Use fixed column widths instead of 1fr so justify-content: center works */
+    grid-template-columns: repeat(3, calc((min(95vw, 1800px) - 3rem) / 3));
     grid-auto-rows: calc((min(95vw, 1800px) - 3rem) / 3 * 0.666);
     /* Fixed row height 3:2 ratio: ((Width - Gaps) / 3)*0.666 */
     gap: 1.5rem;
     /* Tighter gap looks more professional */
     grid-auto-flow: dense;
+    justify-content: center;
 }
 
 /* Hide vertical stack styles */
@@ -596,8 +598,36 @@ body::after {
     letter-spacing: 0.05em;
 }
 
+/* Image count badge for project folders */
+.image-count-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 400;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.gallery-item:hover .image-count-badge {
+    opacity: 1;
+}
+
 /* Masonry Spans */
 /* Masonry Spans - Global (since mobile is now 3 cols too) */
+.span-3-2 {
+    grid-column: span 3;
+    grid-row: span 2;
+}
+
 .span-2-2 {
     grid-column: span 2;
     grid-row: span 2;

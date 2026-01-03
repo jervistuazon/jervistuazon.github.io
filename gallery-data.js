@@ -19,6 +19,13 @@
             "Foyer.png",
             "Sushi Bar.png"
         ],
+        "The Oxley Singapore - F": [
+            "1. Shops Ground Floor.png",
+            "Atrium.png",
+            "Facade.png",
+            "Shops Elevation.png",
+            "Shops.png"
+        ],
         "_standalone": [
             "Batam Malaysia Terminal.png",
             "Batam Malaysia.png",
@@ -37,25 +44,20 @@
         ]
     },
     "Hospitality": {
-        "Clemenceau Citadines Singapore -F": [
+        "Clemenceau Citadines - Singapore - 2022 - F": [
             "Front Elevation.png",
             "Mezanine Restaurant.png",
             "Rear Side.png",
             "Room 1970s.png",
             "Walkway.png"
         ],
-        "Crowne Plaza - Sinngapore - 2023": [
+        "Crowne Plaza - Sinngapore - 2023 - F": [
             "1. Feature Oven.png",
             "All Day Dining.png",
             "Lobby.png",
             "Outdoor.png",
             "Restaurant.png",
             "Specialty Restaurant.png"
-        ],
-        "Fiji Island Resort": [
-            "Aerial View.jpg",
-            "Pool View Evening.png",
-            "Pool View.png"
         ],
         "Maldives Samarafushi Island Resort - F": [
             "1. Aerial View.png",
@@ -74,6 +76,7 @@
             "Hotel Extension Lobby Singapore.png",
             "Hotel Lobby Siam.png",
             "Hotel Malaysia.png",
+            "Hotel and Residence Lobby Thailand.png",
             "Male Hotel.png",
             "Palau Resort.png",
             "Scarlet Hotel Bar Singapore.png",
@@ -96,35 +99,6 @@
             "Kindergarten China.png",
             "School China.png",
             "School Thailand.png"
-        ]
-    },
-    "Mix Used Development": {
-        "India Kohlshet Development - F": [
-            "Aerial View Clubhouse Evening.png",
-            "Aerial View Clubhouse.png",
-            "Aerial View.png",
-            "Arrival View.png",
-            "Drop-off.png",
-            "Pool View.png"
-        ],
-        "India Mix Use Development": [
-            "Drop Off.jpg",
-            "Experience Gallery.png",
-            "Lift Lobby.jpg",
-            "Lobby Evening.png",
-            "Lobby.png",
-            "Overall View Night Scene.png",
-            "Perspective.png"
-        ],
-        "The Oxley Singapore - F": [
-            "Shops Elevation.png",
-            "Atrium.png",
-            "Facade.png",
-            "1. Shops Ground Floor.png",
-            "Shops.png"
-        ],
-        "_standalone": [
-            "Hotel annd Residence Lobby Thailand.png"
         ]
     },
     "Residential": {
@@ -176,6 +150,13 @@
             "Front.png",
             "Rear View.png"
         ],
+        "Moscow Residence - F": [
+            "Aerial View Winter.png",
+            "Aerial View.png",
+            "Atrium Interior.png",
+            "Atrium View.png",
+            "Sales Office.png"
+        ],
         "Nyon - Singapore - 2022 - F": [
             "1. Street View.png",
             "Corner View.png",
@@ -188,6 +169,31 @@
             "Elevation View.png",
             "Overall View Day Scene.png",
             "Overall View.png",
+            "Pool View.png"
+        ],
+        "Serangoon Tower Singapore": [
+            "Singapore Residential Tower Aerial.png",
+            "Singapore Residential Tower.png"
+        ],
+        "Singapore HDB Development": [
+            "1. Aerial View.png",
+            "Aerial View Park.jpg",
+            "Garden.png",
+            "Overall View.jpg",
+            "Park.png",
+            "Playground.png"
+        ],
+        "Banyan Balley Sabah Terrace Malaysia": [
+            "Aerial.png",
+            "Corner View.png",
+            "Street View.png"
+        ],
+        "India Kohlshet Development - F": [
+            "Aerial View Clubhouse Evening.png",
+            "Aerial View Clubhouse.png",
+            "Aerial View.png",
+            "Arrival View.png",
+            "Drop-off.png",
             "Pool View.png"
         ],
         "_standalone": [
@@ -213,32 +219,6 @@
             "Tembelling Road Singapore.png"
         ]
     },
-    "Residential Development": {
-        "Banyan Balley Sabah Terrace Malaysia": [
-            "Aerial.png",
-            "Corner View.png",
-            "Street View.png"
-        ],
-        "Moscow Residence - F": [
-            "Aerial View Winter.png",
-            "Aerial View.png",
-            "Atrium Interior.png",
-            "Atrium View.png",
-            "Sales Office.png"
-        ],
-        "Serangoon Tower Singapore": [
-            "Singapore Residential Tower Aerial.png",
-            "Singapore Residential Tower.png"
-        ],
-        "Singapore HDB Development": [
-            "1. Aerial View.png",
-            "Aerial View Park.jpg",
-            "Garden.png",
-            "Overall View.jpg",
-            "Park.png",
-            "Playground.png"
-        ]
-    },
     "Video": [
         "Interactive Presentation Apartment Interior.mp4",
         "Interactive Presentation Singapore House.mp4",
@@ -254,8 +234,6 @@ window.galleryCategories = [
     "Commercial",
     "Hospitality",
     "Institutional",
-    "Mix Used Development",
     "Residential",
-    "Residential Development",
     "Video"
 ];

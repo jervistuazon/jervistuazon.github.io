@@ -84,6 +84,32 @@ const layoutPatternMain = [
     '', '', '', '', '', ''
 ];
 
+// Possible span classes for non-featured projects (flexible sizing)
+const projectSpanOptions = ['span-2-2', 'span-2-1', 'span-1-2'];
+
+// Manual size overrides for specific projects (to fill gaps or customize layout)
+const projectSizeOverrides = {
+    'Banyan Balley Sabah Terrace Malaysia': 'span-1-2'
+};
+
+// Simple seeded random for consistent layout on page reload
+function seededRandom(seed) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+// Get a random span class for a project based on its index
+// Uses index as seed for deterministic randomness (same layout on refresh)
+// Checks for manual overrides first
+function getRandomProjectSpan(index, projectName = null) {
+    // Check for manual override first
+    if (projectName && projectSizeOverrides[projectName]) {
+        return projectSizeOverrides[projectName];
+    }
+    const rand = seededRandom(index * 1337 + 42);
+    return projectSpanOptions[Math.floor(rand * projectSpanOptions.length)];
+}
+
 // --- SEO URL Hash Routing ---
 // Convert project name to URL-safe slug
 function slugify(text) {
@@ -191,9 +217,7 @@ function renderGalleryGrid() {
         'Commercial',
         'Hospitality',
         'Institutional',
-        'Mix Used Development',
-        'Residential',
-        'Residential Development'
+        'Residential'
     ];
 
     // Process each category
@@ -268,28 +292,30 @@ function renderGalleryGrid() {
         });
     }
 
-    // Sort: Featured first, then the rest
-    const sortedProjects = [...featuredProjects, ...allProjects.filter(p => !p.featured)];
+    // Sort: Featured first, then project folders, then standalone/videos (1x1) last
+    const nonFeatured = allProjects.filter(p => !p.featured);
+    const projectFolders = nonFeatured.filter(p => p.type === 'project');
+    const standaloneAndVideos = nonFeatured.filter(p => p.type === 'standalone' || p.type === 'video');
+    const sortedProjects = [...featuredProjects, ...projectFolders, ...standaloneAndVideos];
 
     // Render all items
     sortedProjects.forEach((itemData, index) => {
         const item = document.createElement('div');
 
         // Apply layout: 
-        // - Featured projects: always 2x2
-        // - Normal project folders: cycle between 2x1, 1x2, 2x2 (never 1x1)
+        // - Featured projects: always 2x2, alternating left/right
+        // - Normal project folders: random sized (2x2, 2x1, or 1x2) for visual variety
         // - Standalone images: 1x1 (no span class)
         // - Videos: 1x1 (no span class)
         let spanClass = '';
         if (itemData.type === 'project') {
+            item.setAttribute('data-project', 'true');
             if (itemData.featured) {
-                // Alternate featured items between left and right 2x2
-                spanClass = index % 2 === 0 ? 'span-2-2' : 'span-2-2-right';
+                // Featured items are full width (3 cols) x 2 rows
+                spanClass = 'span-3-2';
             } else {
-                // Normal project folders: cycle between 1x1, 1x2, 2x2. 
-                // Removed 2x1 as it looks too long with 3:2 ratio.
-                const projectSpanPatterns = ['', '', 'span-2-2', '', 'span-1-2'];
-                spanClass = projectSpanPatterns[index % projectSpanPatterns.length];
+                // Normal project folders: check for manual override first, else random sizing
+                spanClass = getRandomProjectSpan(index, itemData.projectName);
             }
         }
         // Standalone images and videos get no span class (1x1)
@@ -309,8 +335,18 @@ function renderGalleryGrid() {
             // Display name: extract just the project name (before first dash)
             const displayName = parseProjectName(itemData.projectName).name;
             renderInfo(item, displayName);
+
+            // Add image count badge to indicate multiple images
+            const imageCount = itemData.files.length;
+            if (imageCount > 1) {
+                const badge = document.createElement('div');
+                badge.className = 'image-count-badge';
+                badge.textContent = `${imageCount} images`;
+                item.appendChild(badge);
+            }
         } else if (itemData.type === 'standalone') {
-            // Standalone image in category folder
+            // Standalone image in category folder - mark for desaturated styling
+            item.setAttribute('data-standalone', 'true');
             item.onclick = () => {
                 currentFolder = itemData.category;
                 currentGalleryImages = itemData.standaloneFiles;
@@ -760,6 +796,7 @@ function filterGallery(category, evt) {
 
     // 2. Filter Items
     const items = document.querySelectorAll('.gallery-item');
+
     items.forEach(item => {
         const itemCategory = item.getAttribute('data-category');
         const isFeatured = item.getAttribute('data-featured') === 'true';
@@ -778,12 +815,18 @@ function filterGallery(category, evt) {
             item.style.display = 'block';
             item.style.opacity = '1';
             item.style.transform = 'translateY(0)';
+
         } else {
             item.style.display = 'none';
         }
     });
 
-    // Re-assign span classes to maintain layout rhythm
+    // 3. Adjust grid columns
+    const grid = document.getElementById('gallery-grid');
+    // Ensure we are always on default grid (remove specific column overrides if any were present)
+    grid.style.gridTemplateColumns = '';
+
+    // Re-assign span classes to maintain layout rhythm for visible items
     reassignLayoutPattern();
 }
 
@@ -792,9 +835,25 @@ function reassignLayoutPattern() {
 
     visibleItems.forEach((item, index) => {
         // Remove old span classes
-        item.classList.remove('span-2-2', 'span-2-1', 'span-1-1'); // assuming these are the classes
-        // Re-apply based on new index
-        const spanClass = layoutPatternMain[index % layoutPatternMain.length];
-        if (spanClass) item.classList.add(spanClass);
+        item.classList.remove('span-3-2', 'span-2-2', 'span-2-1', 'span-1-2');
+
+        // Check item type based on data attributes
+        const isFeatured = item.getAttribute('data-featured') === 'true';
+        // Check if it is a project folder (has data-project attribute)
+        const isProject = item.getAttribute('data-project') === 'true';
+
+        // Featured projects: always 3x2 (full width x 2 rows)
+        if (isFeatured) {
+            item.classList.add('span-3-2');
+        }
+        // Non-featured project folders: random dynamic sizing
+        else if (isProject) {
+            // Use the visible index to ensure good distribution, or just original?
+            // User seems to prefer stable shapes? Let's stick to the reassign logic for now 
+            // but ensure we identify projects correctly.
+            // Using text content or hash is better than index for stability, but index is okay for packing.
+            const spanClass = getRandomProjectSpan(index);
+            if (spanClass) item.classList.add(spanClass);
+        }
     });
 }
