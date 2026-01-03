@@ -15,10 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.scrollTo(0, 0);
 
-    // Clear URL hash without jumping
-    if (window.location.hash) {
-        window.history.replaceState(null, null, ' ');
-    }
+    // 2. Handle URL hash routing for SEO project pages
+    // Format: #project/Category/ProjectName
+    handleHashRouting();
 
 
     // Scroll Reveal Animation (Premium)
@@ -75,14 +74,70 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Reusable pattern for both main gallery and project sub-gallery
+// Pattern designed to fill a 3-column grid without gaps
 const layoutPattern = [
-    'span-2-2', 'span-2-1', '', 'span-2-2', '', 'span-2-1', '', '', 'span-2-1'
+    'span-2-2', 'span-1-2', '', '', '', 'span-2-2', '', ''
 ];
-// Slightly randomized pattern or just fixed
-// Using the previous requested one:
+// Project view pattern - avoid gaps. user requested no 2x1 (too long) and no 1x2 (too tall).
+// mostly squares (1x1)
 const layoutPatternMain = [
-    'span-2-2', '', '', 'span-2-1', '', '', 'span-2-2', '', 'span-2-1', ''
+    '', '', '', '', '', ''
 ];
+
+// --- SEO URL Hash Routing ---
+// Convert project name to URL-safe slug
+function slugify(text) {
+    return text.toLowerCase()
+        .replace(/ - F$| -F$/i, '')  // Remove featured suffix
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dashes
+        .replace(/^-+|-+$/g, '');    // Trim leading/trailing dashes
+}
+
+// Handle URL hash on page load (for SEO redirects and shareable links)
+function handleHashRouting() {
+    const hash = window.location.hash;
+    if (!hash || !hash.startsWith('#project/')) return;
+
+    // Parse hash: #project/Category/ProjectName
+    const parts = hash.substring(9).split('/'); // Remove '#project/'
+    if (parts.length < 2) return;
+
+    const categorySlug = parts[0];
+    const projectSlug = parts[1];
+
+    // Find matching category and project
+    const categories = Object.keys(galleryData);
+    for (const category of categories) {
+        if (slugify(category) !== categorySlug) continue;
+
+        const categoryData = galleryData[category];
+        if (typeof categoryData !== 'object' || Array.isArray(categoryData)) continue;
+
+        for (const projectName of Object.keys(categoryData)) {
+            if (projectName === '_standalone') continue;
+            if (slugify(projectName) === projectSlug) {
+                // Found it! Open the gallery after a short delay (let page render first)
+                setTimeout(() => {
+                    openGallery(category, projectName);
+                }, 100);
+                return;
+            }
+        }
+    }
+}
+
+// Update URL hash when opening a project (for shareable links)
+function updateUrlHash(category, projectName) {
+    const categorySlug = slugify(category);
+    const projectSlug = slugify(projectName);
+    const newHash = `#project/${categorySlug}/${projectSlug}`;
+    window.history.replaceState(null, null, newHash);
+}
+
+// Clear URL hash when closing project view
+function clearUrlHash() {
+    window.history.replaceState(null, null, window.location.pathname);
+}
 
 // Helper to parse folder name format: "Project Name - Location - Year - F"
 // Returns { name, location, date }
@@ -169,8 +224,17 @@ function renderGalleryGrid() {
             // Check if featured (ends with - F or -F)
             const isFeatured = / - F$| -F$/.test(projectName);
 
-            // Get thumbnail (first image)
+            // Get thumbnail: prioritize image starting with "1." or "1 "
             let thumbSrc = files[0];
+            const numberedImage = files.find(f => {
+                const name = typeof f === 'object' ? f.src : f;
+                return name.startsWith('1.') || name.startsWith('1 ');
+            });
+
+            if (numberedImage) {
+                thumbSrc = numberedImage;
+            }
+
             if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
 
             const project = {
@@ -212,20 +276,23 @@ function renderGalleryGrid() {
         const item = document.createElement('div');
 
         // Apply layout: 
-        // - Featured projects: alternate between left and right 2x2
-        // - Regular projects: alternate between span-2-1 and span-1-2
+        // - Featured projects: always 2x2
+        // - Normal project folders: cycle between 2x1, 1x2, 2x2 (never 1x1)
         // - Standalone images: 1x1 (no span class)
         // - Videos: 1x1 (no span class)
         let spanClass = '';
         if (itemData.type === 'project') {
             if (itemData.featured) {
-                // Alternate featured items between left and right
+                // Alternate featured items between left and right 2x2
                 spanClass = index % 2 === 0 ? 'span-2-2' : 'span-2-2-right';
             } else {
-                // Alternate between 2x1 and 1x2 for regular projects
-                spanClass = index % 2 === 0 ? 'span-2-1' : 'span-1-2';
+                // Normal project folders: cycle between 1x1, 1x2, 2x2. 
+                // Removed 2x1 as it looks too long with 3:2 ratio.
+                const projectSpanPatterns = ['', '', 'span-2-2', '', 'span-1-2'];
+                spanClass = projectSpanPatterns[index % projectSpanPatterns.length];
             }
         }
+        // Standalone images and videos get no span class (1x1)
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering
@@ -494,7 +561,8 @@ function openGallery(category, projectName) {
         info.className = 'item-info';
 
         const h4 = document.createElement('h4');
-        h4.textContent = filename.replace(/\.[^/.]+$/, ""); // Strip extension
+        // Strip extension AND leading numbers (e.g., "1. Name" -> "Name")
+        h4.textContent = filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
 
         info.appendChild(h4);
         item.appendChild(info);
@@ -506,6 +574,11 @@ function openGallery(category, projectName) {
     // Save scroll position before showing overlay
     savedScrollPosition = window.scrollY || document.documentElement.scrollTop;
 
+    // Update URL hash for shareable links (only for project views, not legacy)
+    if (category && projectName) {
+        updateUrlHash(category, projectName);
+    }
+
     // Show Overlay
     projectView.style.display = 'block';
     setTimeout(() => projectView.classList.add('active'), 10);
@@ -515,6 +588,10 @@ function openGallery(category, projectName) {
 function closeProjectView() {
     const projectView = document.getElementById('project-view');
     projectView.classList.remove('active');
+
+    // Clear URL hash when closing
+    clearUrlHash();
+
     setTimeout(() => {
         projectView.style.display = 'none';
         document.body.style.overflow = 'auto'; // Re-enable scroll
@@ -523,6 +600,40 @@ function closeProjectView() {
     }, 300);
 }
 
+
+// Custom Mobile Dropdown Logic
+function toggleDropdown() {
+    const list = document.getElementById('mobile-filter-options');
+    list.classList.toggle('active');
+}
+
+function selectFilter(categorySlug) {
+    const list = document.getElementById('mobile-filter-options');
+    const selectedText = document.querySelector(`.option-item[onclick="selectFilter('${categorySlug}')"]`).textContent;
+    const selectedDisplay = document.querySelector('.selected-option');
+
+    // Update Display Text
+    selectedDisplay.textContent = selectedText.toUpperCase();
+
+    // Update Active State
+    document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+    document.querySelector(`.option-item[onclick="selectFilter('${categorySlug}')"]`).classList.add('selected');
+
+    // Close Dropdown
+    list.classList.remove('active');
+
+    // Trigger actual filter (pass null so filterGallery uses fallback button activation)
+    filterGallery(categorySlug, null);
+}
+
+// Close custom dropdown when clicking outside
+window.addEventListener('click', function (e) {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const list = document.getElementById('mobile-filter-options');
+    if (dropdown && !dropdown.contains(e.target) && list.classList.contains('active')) {
+        list.classList.remove('active');
+    }
+});
 
 // --- Lightbox Functions (Modified to be opened from Project View) ---
 
@@ -572,7 +683,8 @@ function updateLightboxContent() {
     }
 
     container.appendChild(contentElement);
-    caption.textContent = imgName.replace(/\.[^/.]+$/, "");
+    // Strip extension AND leading numbers
+    caption.textContent = imgName.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
 }
 
 function changeImage(direction) {

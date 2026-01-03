@@ -433,37 +433,62 @@ body::after {
     background-color: var(--accent-color);
 }
 
-/* Mobile Filter Dropdown - Hidden on desktop */
-.filter-dropdown {
+/* Custom Mobile Filter Dropdown */
+.custom-dropdown {
     display: none;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--text-primary);
+    /* Hidden on desktop */
+    position: relative;
     font-family: var(--font-main);
-    font-size: 0.9rem;
-    padding: 0.75rem 1.25rem;
-    border-radius: 4px;
-    cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    appearance: none;
-    -webkit-appearance: none;
+    cursor: pointer;
+    z-index: 1001;
+    /* Ensure above grid */
+}
+
+.selected-option {
+    color: var(--text-primary);
+    font-size: 1rem;
+    padding-right: 1.5rem;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.5rem;
+    background-position: right 0 center;
+    user-select: none;
+}
+
+.options-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
     min-width: 200px;
+    background-color: var(--bg-color);
+    /* Match body bg */
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    list-style: none;
+    /* max-height: 300px; Removed to show all items */
+    /* overflow-y: auto; Removed for same reason */
 }
 
-.filter-dropdown:focus {
-    outline: none;
-    border-color: var(--accent-color);
+.options-list.active {
+    display: block;
 }
 
-.filter-dropdown option {
-    background: var(--bg-color);
+.option-item {
+    padding: 0.4rem 1rem;
+    /* Reduced vertical padding */
+    color: var(--text-secondary);
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.option-item:hover,
+.option-item.selected {
     color: var(--text-primary);
-    padding: 0.5rem;
+    background-color: #222;
+    /* Dark grey highlight as requested */
 }
 
 .work-section .container {
@@ -479,6 +504,8 @@ body::after {
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: calc((min(95vw, 1800px) - 3rem) / 3 * 0.666);
+    /* Fixed row height 3:2 ratio: ((Width - Gaps) / 3)*0.666 */
     gap: 1.5rem;
     /* Tighter gap looks more professional */
     grid-auto-flow: dense;
@@ -570,44 +597,47 @@ body::after {
 }
 
 /* Masonry Spans */
+/* Masonry Spans - Global (since mobile is now 3 cols too) */
+.span-2-2 {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.span-2-2-right {
+    grid-column: 2 / span 2;
+    grid-row: span 2;
+}
+
+.span-2-1 {
+    grid-column: span 2;
+}
+
+.span-1-2 {
+    grid-row: span 2;
+}
+
+.small-item {
+    grid-column: span 1;
+    grid-row: span 1;
+    aspect-ratio: 1/1;
+}
+
 @media (min-width: 768px) {
-    .span-2-2 {
-        grid-column: span 2;
-        grid-row: span 2;
-    }
-
-    .span-2-2-right {
-        grid-column: 2 / span 2;
-        grid-row: span 2;
-    }
-
-    .span-2-1 {
-        grid-column: span 2;
-    }
-
-    .span-1-2 {
-        grid-row: span 2;
-    }
-
-    /* Small items for Other Works - 1x1 square thumbnails at bottom */
-    .small-item {
-        grid-column: span 1;
-        grid-row: span 1;
-        aspect-ratio: 1/1;
-    }
+    /* Desktop specific adjustments if any (currently none needed for spans) */
 }
 
 @media (max-width: 768px) {
-    .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-sm);
+
+    .gallery-grid,
+    .project-view .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: calc((95vw - 1rem) / 3 * 0.666);
+        /* 3 cols, 3:2 ratio, 0.5rem gap */
+        gap: 0.5rem;
     }
 
-    .span-2-2,
-    .span-2-1 {
-        grid-column: span 2;
-        grid-row: auto;
-    }
+
+    /* Mobile span overrides removed to allow global alternating layout */
 
     /* Mobile: Always show title overlay at bottom-left, smaller font */
     .gallery-item .item-info {
@@ -621,12 +651,12 @@ body::after {
         font-size: 0.75rem;
     }
 
-    /* Mobile: Hide filter buttons, show dropdown */
+    /* Mobile: Hide filter buttons, show custom dropdown */
     .filter-bar {
         display: none;
     }
 
-    .filter-dropdown {
+    .custom-dropdown {
         display: block;
     }
 
@@ -948,11 +978,15 @@ iframe.lightbox-content {
 
 /* Ensure reusable grid works inside project view */
 .project-view .gallery-grid {
-    padding: 0 5% 4rem;
+    padding: 0;
+    /* Remove extra padding, width handles it */
     max-width: 1800px;
     width: 95%;
+    /* Match main container width */
     margin: 0 auto;
     gap: 1.5rem;
+    grid-auto-rows: calc((min(95vw, 1800px) - 3rem) / 3 * 0.666);
+    /* Enforce 3:2 ratio here too */
 }
 
 /* Adjust Lightbox z-index to be strictly above project view */

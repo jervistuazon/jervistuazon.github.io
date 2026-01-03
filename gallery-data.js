@@ -5,28 +5,61 @@
             "Lounge.jpeg",
             "Meeting Room.png"
         ],
+        "Hafary Singapore": [
+            "1. Display.png",
+            "Dining Display.png"
+        ],
         "Prism+": [
             "Office Workspace.png",
             "Pantry.png",
             "Workspace.png"
         ],
+        "Taiga Sushi Bar Singapore": [
+            "1. Sunshi Bar View.png",
+            "Foyer.png",
+            "Sushi Bar.png"
+        ],
         "_standalone": [
+            "Batam Malaysia Terminal.png",
+            "Batam Malaysia.png",
             "Bradell Office Singapore.png",
+            "CEO Office Guang Xi China.png",
+            "Castlery Singapore.png",
             "Clubhouse China.png",
+            "Clubhouse Front China.png",
             "Country Club Siingapore.png",
             "Funeral Parlour Singapore.png",
-            "Oceanrium Singapore.png"
+            "Hub Synergy Point Sinngapore.png",
+            "NSRCC Front.png",
+            "NSRCC.png",
+            "Oceanrium Singapore.png",
+            "Offiice Thailand.png"
         ]
     },
     "Hospitality": {
+        "Clemenceau Citadines Singapore -F": [
+            "Front Elevation.png",
+            "Mezanine Restaurant.png",
+            "Rear Side.png",
+            "Room 1970s.png",
+            "Walkway.png"
+        ],
+        "Crowne Plaza - Sinngapore - 2023": [
+            "1. Feature Oven.png",
+            "All Day Dining.png",
+            "Lobby.png",
+            "Outdoor.png",
+            "Restaurant.png",
+            "Specialty Restaurant.png"
+        ],
         "Fiji Island Resort": [
             "Aerial View.jpg",
             "Pool View Evening.png",
             "Pool View.png"
         ],
         "Maldives Samarafushi Island Resort - F": [
+            "1. Aerial View.png",
             "Aerial View Island.png",
-            "Aerial View.png",
             "Arrival.png",
             "Beach House.png",
             "Private Island Aerial.png",
@@ -36,11 +69,15 @@
             "Specialty Spa.png"
         ],
         "_standalone": [
-            "Clemenceau Citadines Singapore.png",
             "Hotel Extension Arrival Singapore.png",
             "Hotel Extension Drop-off Singapore.png",
             "Hotel Extension Lobby Singapore.png",
-            "Male Hotel.png"
+            "Hotel Lobby Siam.png",
+            "Hotel Malaysia.png",
+            "Male Hotel.png",
+            "Palau Resort.png",
+            "Scarlet Hotel Bar Singapore.png",
+            "Scarlet Lobby Hotel Singapore.png"
         ]
     },
     "Institutional": {
@@ -52,7 +89,13 @@
         ],
         "_standalone": [
             "Academy China.png",
-            "Ancient Tree China.png"
+            "Academy Drop-off.png",
+            "Adaptive  Reuse China.png",
+            "Ancient Tree China.png",
+            "Football Academy Singapore.png",
+            "Kindergarten China.png",
+            "School China.png",
+            "School Thailand.png"
         ]
     },
     "Mix Used Development": {
@@ -72,14 +115,33 @@
             "Lobby.png",
             "Overall View Night Scene.png",
             "Perspective.png"
+        ],
+        "The Oxley Singapore - F": [
+            "Shops Elevation.png",
+            "Atrium.png",
+            "Facade.png",
+            "1. Shops Ground Floor.png",
+            "Shops.png"
+        ],
+        "_standalone": [
+            "Hotel annd Residence Lobby Thailand.png"
         ]
     },
     "Residential": {
-        "1953 - SIngapore - 2022": [
+        "1953 - SIngapore - 2022 - F": [
             "Corner View.jpeg",
             "Facade  Closeup.jpeg",
             "Rooftop  Swimming Pool.png",
             "Street View Night.png"
+        ],
+        "2nd  Avenue Singapore": [
+            "1. Front  Elevation.png",
+            "Courtyard.png",
+            "Rear  View.png"
+        ],
+        "Chatsworth 16E Singapore": [
+            "Front.png",
+            "Rear Pool.png"
         ],
         "House 28 - Singapore - 2021 - F": [
             "Corner View.png",
@@ -89,51 +151,66 @@
             "Master Bathroom.png",
             "Perspective.png"
         ],
-        "House 4B - Singapore - 2021": [
+        "House 4B - Singapore - 2021 - F": [
             "Arrival.png",
             "Front Facade.png",
             "Rear View.png"
         ],
         "House in Contours - Thailand - 2023 - F": [
+            "1. Overview.png",
             "Corner View.png",
             "Drop-Off.png",
             "Grand Stair.png",
-            "Lviing Area.png",
-            "Overview.png",
+            "Living Area.png",
             "Wine Bar.png"
         ],
-        "ME House - Singapore - 2020": [
+        "ME House - Singapore - 2020  -  F": [
+            "1. Courtyard.jpeg",
             "Courtyard View.jpeg",
-            "Courtyard.jpeg",
             "Elevation.jpeg",
             "Foyer.png",
             "Greenhouse.png"
         ],
-        "Nyon - Singapore - 2022": [
+        "Mansion Saudi Arabia": [
+            "1. Side.png",
+            "Front.png",
+            "Rear View.png"
+        ],
+        "Nyon - Singapore - 2022 - F": [
+            "1. Street View.png",
             "Corner View.png",
             "Sky Bar Evening.png",
-            "Sky Bar.png",
-            "Street View.png"
+            "Sky Bar.png"
         ],
         "Parc Komo -Singapore - 2022 - F": [
+            "1. Boardwalk.png",
             "Boardwalk View.png",
-            "Boardwalk.png",
             "Elevation View.png",
             "Overall View Day Scene.png",
             "Overall View.png",
             "Pool View.png"
         ],
         "_standalone": [
+            "3D Printed House QR3D Singapore.png",
             "Amber Road Singapore.png",
+            "Avon Road Singapore.png",
             "Bayshore Apartment Tower Singapore.png",
             "Changi Singapore.png",
+            "Cheehon Ave Singapore.png",
             "Chong Kuo Rd Singapore.png",
+            "Cove Drive Singapore.png",
             "Everton Singapore.png",
             "Farrer Rd  Singapore.png",
             "Gilstead Rd Singapore.png",
+            "Huangshan China.png",
+            "Jln Lim Tai See Singapore.png",
+            "Mattlock Rise Singapore.png",
             "Old Tampines Road Singapore.png",
+            "Pnomh Penh Cambodia.png",
             "Rangood Road SIngapore.png",
-            "Siglap Rd Singapore.png"
+            "Rangoon Road Singapore.png",
+            "Siglap Rd Singapore.png",
+            "Tembelling Road Singapore.png"
         ]
     },
     "Residential Development": {
@@ -154,16 +231,12 @@
             "Singapore Residential Tower.png"
         ],
         "Singapore HDB Development": [
+            "1. Aerial View.png",
             "Aerial View Park.jpg",
-            "Aerial View.png",
             "Garden.png",
             "Overall View.jpg",
             "Park.png",
             "Playground.png"
-        ],
-        "_standalone": [
-            "Huangshan China.png",
-            "Mansion Saudi Arabia.png"
         ]
     },
     "Video": [

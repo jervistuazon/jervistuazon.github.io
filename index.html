@@ -60,17 +60,23 @@
                         <button class="filter-btn" onclick="filterGallery('video', event)">Video</button>
                     </div>
                     <!-- Mobile filter dropdown -->
-                    <select class="filter-dropdown fade-in-scroll delay-1" onchange="filterGallery(this.value, event)">
-                        <option value="all">All</option>
-                        <option value="featured">Featured</option>
-                        <option value="commercial">Commercial</option>
-                        <option value="hospitality">Hospitality</option>
-                        <option value="institutional">Institutional</option>
-                        <option value="mix-used-development">Mix Used Development</option>
-                        <option value="residential">Residential</option>
-                        <option value="residential-development">Residential Development</option>
-                        <option value="video">Video</option>
-                    </select>
+                    <!-- Mobile filter dropdown (Custom) -->
+                    <div class="custom-dropdown fade-in-scroll delay-1">
+                        <div class="selected-option" onclick="toggleDropdown()">ALL</div>
+                        <ul class="options-list" id="mobile-filter-options">
+                            <li class="option-item" onclick="selectFilter('all')">All</li>
+                            <li class="option-item" onclick="selectFilter('featured')">Featured</li>
+                            <li class="option-item" onclick="selectFilter('commercial')">Commercial</li>
+                            <li class="option-item" onclick="selectFilter('hospitality')">Hospitality</li>
+                            <li class="option-item" onclick="selectFilter('institutional')">Institutional</li>
+                            <li class="option-item" onclick="selectFilter('mix-used-development')">Mix Used Development
+                            </li>
+                            <li class="option-item" onclick="selectFilter('residential')">Residential</li>
+                            <li class="option-item" onclick="selectFilter('residential-development')">Residential
+                                Development</li>
+                            <li class="option-item" onclick="selectFilter('video')">Video</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="gallery-grid" id="gallery-grid">
