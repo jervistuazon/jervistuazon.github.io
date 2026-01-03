@@ -211,8 +211,21 @@ function renderGalleryGrid() {
     sortedProjects.forEach((itemData, index) => {
         const item = document.createElement('div');
 
-        // Apply layout pattern (standalone items get small 1x1)
-        const spanClass = itemData.type === 'standalone' ? '' : layoutPatternMain[index % layoutPatternMain.length];
+        // Apply layout: 
+        // - Featured projects: alternate between left and right 2x2
+        // - Regular projects: alternate between span-2-1 and span-1-2
+        // - Standalone images: 1x1 (no span class)
+        // - Videos: 1x1 (no span class)
+        let spanClass = '';
+        if (itemData.type === 'project') {
+            if (itemData.featured) {
+                // Alternate featured items between left and right
+                spanClass = index % 2 === 0 ? 'span-2-2' : 'span-2-2-right';
+            } else {
+                // Alternate between 2x1 and 1x2 for regular projects
+                spanClass = index % 2 === 0 ? 'span-2-1' : 'span-1-2';
+            }
+        }
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering

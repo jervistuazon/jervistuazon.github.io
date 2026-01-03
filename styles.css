@@ -576,8 +576,17 @@ body::after {
         grid-row: span 2;
     }
 
+    .span-2-2-right {
+        grid-column: 2 / span 2;
+        grid-row: span 2;
+    }
+
     .span-2-1 {
         grid-column: span 2;
+    }
+
+    .span-1-2 {
+        grid-row: span 2;
     }
 
     /* Small items for Other Works - 1x1 square thumbnails at bottom */
