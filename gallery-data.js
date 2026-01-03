@@ -1,14 +1,5 @@
 ﻿window.galleryData = {
     "Render": {
-        "China Anji Theme Park": [
-            "Aerial View.png",
-            "Arrival.jpg",
-            "Atraction View.png",
-            "Lobby.jpg",
-            "Mansion View.png",
-            "Nautical Exhibition.png",
-            "Outdoor Bar.png"
-        ],
         "Fiji Island Resort": [
             "Aerial View.jpg",
             "Pool View Evening.png",
@@ -30,14 +21,6 @@
             "Lobby.png",
             "Overall View Night Scene.png",
             "Perspective.png"
-        ],
-        "Malaysia Racecourse": [
-            "Aerial View.jpg",
-            "Birds Eye View.jpg",
-            "Exhibit.png",
-            "Garage.png",
-            "Office View.png",
-            "Pitstop View.jpg"
         ],
         "Maldives Samarafushi Island Resort": [
             "Aerial View Island.png",
@@ -78,7 +61,6 @@
         ]
     },
     "Animation": [
-        "Malaysia Racecourse.mp4",
         "Singapore Housing.mp4"
     ],
     "Interactive Presentation": [
