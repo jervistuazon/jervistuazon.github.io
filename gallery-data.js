@@ -1,10 +1,31 @@
 ﻿window.galleryData = {
-    "Render": {
+    "Hospitality": {
         "Fiji Island Resort": [
             "Aerial View.jpg",
             "Pool View Evening.png",
             "Pool View.png"
         ],
+        "Maldives Samarafushi Island Resort": [
+            "Aerial View Island.png",
+            "Aerial View.png",
+            "Arrival.png",
+            "Beach House.png",
+            "Private Island Aerial.png",
+            "Private Island.png",
+            "Specialty Restaurant Aerial View.png",
+            "Specialty Restaurant.png",
+            "Specialty Spa.png"
+        ]
+    },
+    "Institutional": {
+        "China Dormitory": [
+            "China Dormitory Overview.png",
+            "China Dormitory School Aerial.png",
+            "China Dormitory School Ground Floor.png",
+            "China Dormitory School.jpg"
+        ]
+    },
+    "Mix Used Development": {
         "India Kohlshet Development": [
             "Aerial View Clubhouse Evening.png",
             "Aerial View Clubhouse.png",
@@ -21,16 +42,40 @@
             "Lobby.png",
             "Overall View Night Scene.png",
             "Perspective.png"
+        ]
+    },
+    "Offices": {
+        "Certis": [
+            "Exhibition.jpeg",
+            "Lounge.jpeg",
+            "Meeting Room.png"
         ],
-        "Maldives Samarafushi Island Resort": [
-            "Aerial View Island.png",
-            "Aerial View.png",
+        "Prism+": [
+            "Office Workspace.png",
+            "Pantry.png",
+            "Workspace.png"
+        ]
+    },
+    "Residential": {
+        "House 4B - Singapore - 2021 - F": [
             "Arrival.png",
-            "Beach House.png",
-            "Private Island Aerial.png",
-            "Private Island.png",
-            "Specialty Restaurant.png",
-            "Specialty Spa.png"
+            "Front Facade.png",
+            "Rear View.png"
+        ],
+        "Parc Komo -Singapore - 2022 - F": [
+            "Boardwalk View.png",
+            "Boardwalk.png",
+            "Elevation View.png",
+            "Overall View Day Scene.png",
+            "Overall View.png",
+            "Pool View.png"
+        ]
+    },
+    "Residential Development": {
+        "Banyan Balley Sabah Terrace Malaysia": [
+            "Aerial.png",
+            "Corner View.png",
+            "Street View.png"
         ],
         "Moscow Residence": [
             "Aerial View Winter.png",
@@ -39,15 +84,7 @@
             "Atrium View.png",
             "Sales Office.png"
         ],
-        "Other Works": [
-            "Bayshore Apartment Tower.png",
-            "Bradell Office.png",
-            "China Dormitory Overview.png",
-            "China Dormitory School Aerial.png",
-            "China Dormitory School Ground Floor.png",
-            "China Dormitory School.jpg",
-            "Saudi Arabia Mansion.png",
-            "Singapore Clemenceau Citadines.png",
+        "Serangoon Tower Singapore": [
             "Singapore Residential Tower Aerial.png",
             "Singapore Residential Tower.png"
         ],
@@ -60,14 +97,23 @@
             "Playground.png"
         ]
     },
-    "Animation": [
-        "Singapore Housing.mp4"
-    ],
-    "Interactive Presentation": [
+    "Video": [
         "Interactive Presentation Apartment Interior.mp4",
-        "Interactive Presentation Singapore House.mp4"
+        "Interactive Presentation Singapore House.mp4",
+        "Singapore HDB Development.mp4"
     ],
     "HERO SHOT": [
         "Hero Shot.jpg"
     ]
 };
+
+// Categories for filter (order matters for display)
+window.galleryCategories = [
+    "Hospitality",
+    "Institutional",
+    "Mix Used Development",
+    "Offices",
+    "Residential",
+    "Residential Development",
+    "Video"
+];

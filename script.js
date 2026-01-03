@@ -89,153 +89,100 @@ function renderGalleryGrid() {
         });
     }, { threshold: 0.1 });
 
-    // === NEW LOGIC: Custom Layout ===
-    if (window.galleryLayout && Array.isArray(window.galleryLayout)) {
-        window.galleryLayout.forEach((layoutItem, index) => {
-            const item = document.createElement('div');
-            // Use config span or default
-            const spanClass = layoutItem.span || 'span-1-1';
-            item.className = `gallery-item fade-in-scroll ${spanClass}`;
+    // Collect all projects from all categories
+    const allProjects = [];
+    const featuredProjects = [];
 
-            // Render logic based on type
-            if (layoutItem.type === 'folder') {
-                const folderName = layoutItem.folder;
-                const files = galleryData[folderName];
-                if (!files || !files.length) return;
+    // Categories to process (exclude HERO SHOT and Video separately)
+    const categoriesToProcess = [
+        'Hospitality',
+        'Institutional',
+        'Mix Used Development',
+        'Offices',
+        'Residential',
+        'Residential Development'
+    ];
 
-                // Thumbnail is usually first item
-                let thumbSrc = files[0];
-                if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
+    // Process each category
+    categoriesToProcess.forEach(categoryName => {
+        const categoryData = galleryData[categoryName];
+        if (!categoryData || typeof categoryData !== 'object') return;
 
-                item.setAttribute('data-category', 'render');
-                item.onclick = () => openGallery(folderName);
+        // Each category contains project folders
+        for (const [projectName, files] of Object.entries(categoryData)) {
+            if (!files || files.length === 0) continue;
 
-                renderMedia(item, folderName, thumbSrc);
-                renderInfo(item, folderName);
+            // Check if featured (ends with - F or -F)
+            const isFeatured = / - F$| -F$/.test(projectName);
 
-            } else if (layoutItem.type === 'item') {
-                const folderName = layoutItem.folder;
-                const filename = layoutItem.src;
+            // Get thumbnail (first image)
+            let thumbSrc = files[0];
+            if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
 
-                // Determine Category for filter
-                let category = 'render';
-                if (folderName === 'Animation') category = 'animation';
-                if (folderName === 'Interactive Presentation') category = 'interactive';
-                item.setAttribute('data-category', category);
+            const project = {
+                type: 'project',
+                category: categoryName,
+                categorySlug: categoryName.toLowerCase().replace(/ /g, '-'),
+                projectName: projectName,
+                thumbSrc: thumbSrc,
+                files: files,
+                featured: isFeatured
+            };
 
-                // Find index in original data for Lightbox?
-                // Lightbox needs a list of images.
-                // If we click a single item on Home Page, do we open the Folder's lightbox or just that item?
-                // Usually just that item in context of its folder.
-
-                // Let's find index in the original folder data
-                const folderFiles = galleryData[folderName];
-                // Assume normalized strings for search
-                const fileIndex = folderFiles.findIndex(f => {
-                    const fName = (typeof f === 'object') ? f.src : f;
-                    return fName === filename;
-                });
-
-                item.onclick = () => {
-                    currentFolder = folderName;
-                    // Prepare lightbox list from the folder
-                    currentGalleryImages = folderFiles.map(f => typeof f === 'object' ? f.src : f);
-                    openLightbox(fileIndex !== -1 ? fileIndex : 0);
-                };
-
-                renderMedia(item, folderName, filename);
-                renderInfo(item, filename.replace(/\.[^/.]+$/, ""));
+            if (isFeatured) {
+                featuredProjects.push(project);
             }
-
-            grid.appendChild(item);
-            observer.observe(item);
-        });
-
-        return; // Exit, do not run legacy loop
-    }
-
-    // === FALLBACK: Automatic Loop ===
-    // Collect all items first, then shuffle to distribute videos throughout
-    const allItems = [];
-
-    // Define category folders
-    const videoCategories = ['Animation', 'Interactive Presentation'];
-
-    // Collect items from all categories
-    for (const [categoryName, categoryData] of Object.entries(galleryData)) {
-        // Skip special folders
-        if (categoryName === 'HERO SHOT') continue;
-
-        // Handle Render category (nested folders)
-        if (categoryName === 'Render' && typeof categoryData === 'object' && !Array.isArray(categoryData)) {
-            for (const [projectName, files] of Object.entries(categoryData)) {
-                if (!files || files.length === 0) continue;
-
-                let thumbSrc = files[0];
-                if (typeof thumbSrc === 'object') thumbSrc = thumbSrc.src;
-
-                allItems.push({
-                    type: 'render',
-                    category: 'render',
-                    projectName: projectName,
-                    thumbSrc: thumbSrc,
-                    files: files
-                });
-            }
+            allProjects.push(project);
         }
-        // Handle video categories
-        else if (videoCategories.includes(categoryName) && Array.isArray(categoryData)) {
-            const category = categoryName === 'Animation' ? 'animation' : 'interactive';
+    });
 
-            categoryData.forEach((fileData, fileIndex) => {
-                const filename = typeof fileData === 'object' ? fileData.src : fileData;
-
-                allItems.push({
-                    type: 'video',
-                    category: category,
-                    categoryName: categoryName,
-                    filename: filename,
-                    fileIndex: fileIndex,
-                    categoryData: categoryData
-                });
+    // Process Videos
+    if (galleryData['Video'] && Array.isArray(galleryData['Video'])) {
+        galleryData['Video'].forEach((filename, fileIndex) => {
+            allProjects.push({
+                type: 'video',
+                category: 'Video',
+                categorySlug: 'video',
+                filename: filename,
+                fileIndex: fileIndex,
+                featured: false
             });
-        }
+        });
     }
 
-    // Shuffle array to mix videos with render projects
-    function shuffleArray(array) {
-        const shuffled = [...array];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-    }
-
-    const shuffledItems = shuffleArray(allItems);
+    // Sort: Featured first, then the rest
+    const sortedProjects = [...featuredProjects, ...allProjects.filter(p => !p.featured)];
 
     // Render all items
-    shuffledItems.forEach((itemData, index) => {
+    sortedProjects.forEach((itemData, index) => {
         const item = document.createElement('div');
 
         // Apply layout pattern
         const spanClass = layoutPatternMain[index % layoutPatternMain.length];
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
-        item.setAttribute('data-category', itemData.category);
 
-        if (itemData.type === 'render') {
-            // Render project folder
-            item.onclick = () => openGallery('Render', itemData.projectName);
-            renderMediaNested(item, 'Render', itemData.projectName, itemData.thumbSrc);
-            renderInfo(item, itemData.projectName);
-        } else {
+        // Set category for filtering
+        item.setAttribute('data-category', itemData.categorySlug);
+        if (itemData.featured) {
+            item.setAttribute('data-featured', 'true');
+        }
+
+        if (itemData.type === 'project') {
+            // Project folder
+            item.onclick = () => openGallery(itemData.category, itemData.projectName);
+            renderMediaNested(item, itemData.category, itemData.projectName, itemData.thumbSrc);
+
+            // Display name: strip the " - F" suffix for display
+            const displayName = itemData.projectName.replace(/ - F$| -F$/, '');
+            renderInfo(item, displayName);
+        } else if (itemData.type === 'video') {
             // Video item
             item.onclick = () => {
-                currentFolder = itemData.categoryName;
-                currentGalleryImages = itemData.categoryData.map(f => typeof f === 'object' ? f.src : f);
+                currentFolder = 'Video';
+                currentGalleryImages = galleryData['Video'];
                 openLightbox(itemData.fileIndex);
             };
-            renderMedia(item, itemData.categoryName, itemData.filename);
+            renderMedia(item, 'Video', itemData.filename);
             renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, ""));
         }
 
@@ -351,22 +298,22 @@ function renderInfo(container, text) {
 */
 
 // Open Project View (Sub-Gallery)
-// For Render projects: openGallery('Render', 'ProjectName')
-// For video categories: openGallery('Animation') - but these open lightbox directly
+// For category projects: openGallery('Hospitality', 'Fiji Island Resort')
 function openGallery(category, projectName) {
     let rawData;
     let displayName;
     let basePath;
 
-    // Handle Render nested structure
-    if (category === 'Render' && projectName) {
-        if (!galleryData.Render || !galleryData.Render[projectName]) return;
-        rawData = galleryData.Render[projectName];
-        displayName = projectName;
-        basePath = `assets/Render/${projectName}`;
-        currentFolder = `Render/${projectName}`;
+    // Handle category nested structure (Category/ProjectName)
+    if (category && projectName) {
+        if (!galleryData[category] || !galleryData[category][projectName]) return;
+        rawData = galleryData[category][projectName];
+        // Display name: strip the " - F" suffix for display
+        displayName = projectName.replace(/ - F$| -F$/, '');
+        basePath = `assets/${category}/${projectName}`;
+        currentFolder = `${category}/${projectName}`;
     } else {
-        // Legacy fallback for flat structure
+        // Legacy fallback for flat structure (e.g., Video)
         if (!galleryData[category]) return;
         rawData = galleryData[category];
         displayName = category;
@@ -619,9 +566,20 @@ function filterGallery(category, evt) {
     const items = document.querySelectorAll('.gallery-item');
     items.forEach(item => {
         const itemCategory = item.getAttribute('data-category');
-        if (category === 'all' || itemCategory === category) {
+        const isFeatured = item.getAttribute('data-featured') === 'true';
+
+        let shouldShow = false;
+
+        if (category === 'all') {
+            shouldShow = true;
+        } else if (category === 'featured') {
+            shouldShow = isFeatured;
+        } else {
+            shouldShow = itemCategory === category;
+        }
+
+        if (shouldShow) {
             item.style.display = 'block';
-            // Optional: restart animation?
             item.style.opacity = '1';
             item.style.transform = 'translateY(0)';
         } else {
@@ -629,12 +587,7 @@ function filterGallery(category, evt) {
         }
     });
 
-    // Re-layout is handled by CSS grid/flex automatically, 
-    // but the pattern classes (span-2-2 etc) might look weird if gaps appear.
-    // For a masonry layout, we might need to re-apply classes based on visible items.
-    // But user didn't ask for that yet, and CSS grid dense packing might help if enabled.
-    // Current CSS (styles.css) uses grid-template-columns with span classes.
-    // Ideally we should re-assign span classes to visible items to maintain the layout rhythm.
+    // Re-assign span classes to maintain layout rhythm
     reassignLayoutPattern();
 }
 
