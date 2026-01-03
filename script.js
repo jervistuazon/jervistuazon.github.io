@@ -292,11 +292,14 @@ function renderGalleryGrid() {
         });
     }
 
-    // Sort: Featured first, then project folders, then standalone/videos (1x1) last
+    // Sort: Featured first, then Video (2x2), then project folders, then standalone (1x1) last
     const nonFeatured = allProjects.filter(p => !p.featured);
+    const videos = nonFeatured.filter(p => p.type === 'video');
     const projectFolders = nonFeatured.filter(p => p.type === 'project');
-    const standaloneAndVideos = nonFeatured.filter(p => p.type === 'standalone' || p.type === 'video');
-    const sortedProjects = [...featuredProjects, ...projectFolders, ...standaloneAndVideos];
+    const standalone = nonFeatured.filter(p => p.type === 'standalone');
+
+    // Concatenate in order: Featured -> Videos -> Projects -> Standalone
+    const sortedProjects = [...featuredProjects, ...videos, ...projectFolders, ...standalone];
 
     // Render all items
     sortedProjects.forEach((itemData, index) => {
@@ -317,8 +320,11 @@ function renderGalleryGrid() {
                 // Normal project folders: check for manual override first, else random sizing
                 spanClass = getRandomProjectSpan(index, itemData.projectName);
             }
+        } else if (itemData.type === 'video') {
+            // Videos are always 2x2
+            spanClass = 'span-2-2';
         }
-        // Standalone images and videos get no span class (1x1)
+        // Standalone images get no span class (1x1)
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering
