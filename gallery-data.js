@@ -15,7 +15,7 @@
             "Workspace.png"
         ],
         "Taiga Sushi Bar Singapore": [
-            "1. Sunshi Bar View.png",
+            "1. Sushi Bar View.png",
             "Foyer.png",
             "Sushi Bar.png"
         ],
@@ -29,18 +29,18 @@
         "_standalone": [
             "Batam Malaysia Terminal.png",
             "Batam Malaysia.png",
-            "Bradell Office Singapore.png",
+            "Braddell Office Singapore.png",
             "CEO Office Guang Xi China.png",
             "Castlery Singapore.png",
             "Clubhouse China.png",
             "Clubhouse Front China.png",
-            "Country Club Siingapore.png",
+            "Country Club Singapore.png",
             "Funeral Parlour Singapore.png",
-            "Hub Synergy Point Sinngapore.png",
+            "Hub Synergy Point Singapore.png",
             "NSRCC Front.png",
             "NSRCC.png",
-            "Oceanrium Singapore.png",
-            "Offiice Thailand.png"
+            "Oceanarium Singapore.png",
+            "Office Thailand.png"
         ]
     },
     "Hospitality": {
@@ -51,7 +51,7 @@
             "Room 1970s.png",
             "Walkway.png"
         ],
-        "Crowne Plaza - Sinngapore - 2023 - F": [
+        "Crowne Plaza - Singapore - 2023 - F": [
             "1. Feature Oven.png",
             "All Day Dining.png",
             "Lobby.png",
@@ -102,11 +102,11 @@
         ]
     },
     "Residential": {
-        "1953 - SIngapore - 2022 - F": [
-            "Corner View.jpeg",
+        "1953 - Singapore - 2022 - F": [
+            "1. Corner View.jpeg",
             "Facade  Closeup.jpeg",
             "Rooftop  Swimming Pool.png",
-            "Street View Night.png"
+            "2. Street View Night.png"
         ],
         "2nd  Avenue Singapore": [
             "1. Front  Elevation.png",
@@ -168,7 +168,7 @@
             "Boardwalk View.png",
             "Elevation View.png",
             "Overall View Day Scene.png",
-            "Overall View.png",
+            "2. Overall View.png",
             "Pool View.png"
         ],
         "Serangoon Tower Singapore": [
@@ -183,7 +183,7 @@
             "Park.png",
             "Playground.png"
         ],
-        "Banyan Balley Sabah Terrace Malaysia": [
+        "Banyan Valley Sabah Terrace Malaysia": [
             "Aerial.png",
             "Corner View.png",
             "Street View.png"
@@ -212,11 +212,10 @@
             "Jln Lim Tai See Singapore.png",
             "Mattlock Rise Singapore.png",
             "Old Tampines Road Singapore.png",
-            "Pnomh Penh Cambodia.png",
-            "Rangood Road SIngapore.png",
+            "Phnom Penh Cambodia.png",
             "Rangoon Road Singapore.png",
             "Siglap Rd Singapore.png",
-            "Tembelling Road Singapore.png"
+            "Tembeling Road Singapore.png"
         ]
     },
     "Video": [

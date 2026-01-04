@@ -22,15 +22,15 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/clemenceau-citadines-singapore.html</loc>
+    <loc>https://jervistuazon.com/projects/the-oxley-singapore.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/crowne-plaza-sinngapore-2023.html</loc>
+    <loc>https://jervistuazon.com/projects/clemenceau-citadines-singapore-2022.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/fiji-island-resort.html</loc>
+    <loc>https://jervistuazon.com/projects/crowne-plaza-singapore-2023.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -42,19 +42,15 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/india-kohlshet-development.html</loc>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://jervistuazon.com/projects/india-mix-use-development.html</loc>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://jervistuazon.com/projects/the-oxley-singapore.html</loc>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
     <loc>https://jervistuazon.com/projects/1953-singapore-2022.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/2nd-avenue-singapore.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/chatsworth-16e-singapore.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -70,7 +66,15 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/me-house-singapore-2020.html</loc>
+    <loc>https://jervistuazon.com/projects/me-house-singapore-2020-f.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/mansion-saudi-arabia.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/moscow-residence.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -82,19 +86,19 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://jervistuazon.com/projects/banyan-balley-sabah-terrace-malaysia.html</loc>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://jervistuazon.com/projects/moscow-residence.html</loc>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
     <loc>https://jervistuazon.com/projects/serangoon-tower-singapore.html</loc>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://jervistuazon.com/projects/singapore-hdb-development.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/banyan-valley-sabah-terrace-malaysia.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://jervistuazon.com/projects/india-kohlshet-development.html</loc>
     <changefreq>monthly</changefreq>
   </url>
 </urlset>

@@ -73,6 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Utility function to encode file paths for URLs (handle spaces and special characters)
+function encodePath(path) {
+    return path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+}
+
+// Utility function to check if a file is a video
+function isVideo(filename) {
+    const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv'];
+    return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+}
+
 // Reusable pattern for both main gallery and project sub-gallery
 // Pattern designed to fill a 3-column grid without gaps
 const layoutPattern = [
@@ -89,7 +100,12 @@ const projectSpanOptions = ['span-2-2', 'span-2-1', 'span-1-2'];
 
 // Manual size overrides for specific projects (to fill gaps or customize layout)
 const projectSizeOverrides = {
-    'Banyan Balley Sabah Terrace Malaysia': 'span-1-2'
+    'Banyan Valley Sabah Terrace Malaysia': 'span-1-2'
+};
+
+// Manual size overrides for specific standalone images
+const standaloneSizeOverrides = {
+    'Siglap Rd Singapore.png': 'span-1-2'
 };
 
 // Simple seeded random for consistent layout on page reload
@@ -108,6 +124,25 @@ function getRandomProjectSpan(index, projectName = null) {
     }
     const rand = seededRandom(index * 1337 + 42);
     return projectSpanOptions[Math.floor(rand * projectSpanOptions.length)];
+}
+
+// Get a random span class for standalone images
+// 50% chance of being 1x1, 50% chance of being 1x2 or 2x1
+// Checks for manual overrides first
+function getRandomStandaloneSpan(index, filename = null) {
+    // Check for manual override first
+    if (filename && standaloneSizeOverrides[filename]) {
+        return standaloneSizeOverrides[filename];
+    }
+    const rand = seededRandom(index * 7919 + 123);
+    if (rand < 0.5) {
+        return ''; // 1x1 (no span class)
+    } else {
+        // Choose between span-1-2 and span-2-1
+        const spanOptions = ['span-1-2', 'span-2-1'];
+        const spanRand = seededRandom(index * 3571 + 789);
+        return spanOptions[Math.floor(spanRand * spanOptions.length)];
+    }
 }
 
 // --- SEO URL Hash Routing ---
@@ -323,8 +358,11 @@ function renderGalleryGrid() {
         } else if (itemData.type === 'video') {
             // Videos are always 2x2
             spanClass = 'span-2-2';
+        } else if (itemData.type === 'standalone') {
+            // Standalone images: 50% get varied sizing (1x2 or 2x1), 50% stay 1x1
+            spanClass = getRandomStandaloneSpan(index, itemData.filename);
         }
-        // Standalone images get no span class (1x1)
+        // Other items default to 1x1 (no span class)
         item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering
@@ -342,13 +380,11 @@ function renderGalleryGrid() {
             const displayName = parseProjectName(itemData.projectName).name;
             renderInfo(item, displayName);
 
-            // Add image count badge to indicate multiple images
+            // Auto-run slideshow for multi-image projects
             const imageCount = itemData.files.length;
             if (imageCount > 1) {
-                const badge = document.createElement('div');
-                badge.className = 'image-count-badge';
-                badge.textContent = `${imageCount} images`;
-                item.appendChild(badge);
+                // Add auto-running slideshow for multi-image projects
+                setupHoverSlideshow(item, itemData.category, itemData.projectName, itemData.files);
             }
         } else if (itemData.type === 'standalone') {
             // Standalone image in category folder - mark for desaturated styling
@@ -359,7 +395,7 @@ function renderGalleryGrid() {
                 openLightbox(itemData.fileIndex);
             };
             renderMedia(item, itemData.category, itemData.filename);
-            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, ""));
+            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
         } else if (itemData.type === 'video') {
             // Video item
             item.onclick = () => {
@@ -368,13 +404,97 @@ function renderGalleryGrid() {
                 openLightbox(itemData.fileIndex);
             };
             renderMedia(item, 'Video', itemData.filename);
-            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, ""));
+            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
         }
 
         grid.appendChild(item);
         observer.observe(item);
     });
 }
+
+// Setup auto-running slideshow for project folders with multiple images
+function setupHoverSlideshow(container, category, folder, files) {
+    let currentSlideIndex = 0;
+    let slideshowInterval = null;
+    let useSecondImage = false;
+
+    // Take up to 3 images for the slideshow
+    const slideshowImages = files.slice(0, 3).map(f => typeof f === 'object' ? f.src : f);
+
+    if (slideshowImages.length <= 1) return; // No slideshow needed
+
+    // Start slideshow on hover
+    container.addEventListener('mouseenter', () => {
+        currentSlideIndex = 0;
+        useSecondImage = false;
+
+        // Immediately show the second image on hover for instant feedback
+        const img1 = container.querySelector('.gallery-img');
+        const img2 = container.querySelector('.gallery-img-alt');
+
+        if (img1 && img2 && slideshowImages.length > 1) {
+            // Show second image immediately
+            currentSlideIndex = 1;
+            const nextImage = slideshowImages[1];
+            const path = `assets/${category}/${folder}/${nextImage}`;
+
+            img2.src = encodePath(path);
+            img2.style.opacity = '1';
+            img1.style.opacity = '0';
+            // Keep useSecondImage false so next interval will use img1
+            // This ensures proper alternation: img2 -> img1 -> img2 -> img1...
+        }
+
+        // Start cycling through images on hover
+        slideshowInterval = setInterval(() => {
+            currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
+            const nextImage = slideshowImages[currentSlideIndex];
+
+            // Find both image elements (primary and secondary for crossfade)
+            const img1 = container.querySelector('.gallery-img');
+            const img2 = container.querySelector('.gallery-img-alt');
+
+            if (img1 && img2) {
+                const path = `assets/${category}/${folder}/${nextImage}`;
+
+                if (useSecondImage) {
+                    // Load into img2, fade it in
+                    img2.src = encodePath(path);
+                    img2.style.opacity = '1';
+                    img1.style.opacity = '0';
+                } else {
+                    // Load into img1, fade it in
+                    img1.src = encodePath(path);
+                    img1.style.opacity = '1';
+                    img2.style.opacity = '0';
+                }
+
+                useSecondImage = !useSecondImage;
+            }
+        }, 2200); // Change image every 2.2 seconds
+    });
+
+    // Stop slideshow when mouse leaves
+    container.addEventListener('mouseleave', () => {
+        if (slideshowInterval) {
+            clearInterval(slideshowInterval);
+            slideshowInterval = null;
+        }
+
+        // Reset to first image
+        const img1 = container.querySelector('.gallery-img');
+        const img2 = container.querySelector('.gallery-img-alt');
+
+        if (img1 && img2) {
+            const firstImage = slideshowImages[0];
+            const path = `assets/${category}/${folder}/${firstImage}`;
+            img1.src = encodePath(path);
+            img1.style.opacity = '1';
+            img2.style.opacity = '0';
+        }
+    });
+}
+
 
 // Helper for nested paths (Render/ProjectName/file)
 function renderMediaNested(container, category, folder, filename) {
@@ -403,20 +523,29 @@ function renderMediaNested(container, category, folder, filename) {
 
         container.appendChild(video);
     } else {
-        const img = document.createElement('img');
-        img.src = encodedPath;
-        img.alt = filename;
-        img.className = 'gallery-img';
+        // Create two images for crossfade effect (slideshow support)
+        const img1 = document.createElement('img');
+        img1.src = encodedPath;
+        img1.alt = filename;
+        img1.className = 'gallery-img';
+        img1.style.opacity = '1';
 
-        img.addEventListener('load', () => {
+        const img2 = document.createElement('img');
+        img2.src = encodedPath;
+        img2.alt = filename;
+        img2.className = 'gallery-img-alt';  // ONLY gallery-img-alt, not both classes!
+        img2.style.opacity = '0';
+
+        img1.addEventListener('load', () => {
             container.classList.remove('loading');
             container.classList.add('loaded');
         });
-        img.addEventListener('error', () => {
+        img1.addEventListener('error', () => {
             container.classList.remove('loading');
         });
 
-        container.appendChild(img);
+        container.appendChild(img2); // Add second image first (behind)
+        container.appendChild(img1); // Add first image on top
     }
 }
 

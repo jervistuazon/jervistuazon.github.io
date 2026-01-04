@@ -7,6 +7,8 @@
     --cursor-color: #ffffff;
 
     --font-main: 'Manrope', sans-serif;
+    --font-display: 'Raleway', sans-serif;
+
 
     --spacing-sm: 1.5rem;
     --spacing-md: 3rem;
@@ -54,15 +56,16 @@ h1,
 h2,
 h3,
 h4 {
+    font-family: var(--font-display);
     font-weight: 300;
-    /* Lighter weights are sleeker */
+    /* Raleway looks great light */
     line-height: 1.1;
-    letter-spacing: -0.02em;
-    /* Tighter tracking */
+    letter-spacing: 0.02em;
+    /* Raleway benefits from slightly open tracking */
 }
 
 h1 {
-    letter-spacing: -0.03em;
+    letter-spacing: 0.05em;
 }
 
 a {
@@ -205,13 +208,15 @@ a:hover {
 }
 
 .hero-content h1 {
+    font-family: var(--font-display);
     font-size: clamp(3rem, 6.5vw, 8rem);
-    font-weight: 200;
-    /* Super sleek thin font */
+    font-weight: 300;
     margin-bottom: 1rem;
     line-height: 1.1;
     white-space: nowrap;
-
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    /* Reduced spacing as requested */
 }
 
 .hero-content .subtitle {
@@ -241,8 +246,8 @@ a:hover {
 
 /* About Section */
 .about-section {
-    padding: 9rem 0;
-    /* Adjusted to intermediate */
+    padding: 11rem 0;
+    /* Increased to 11rem */
     min-height: auto;
     background-color: var(--bg-color);
     position: relative;
@@ -326,9 +331,10 @@ body::after {
 
 /* Skill/Services Section (New) */
 .column-header {
+    font-family: var(--font-display);
     font-size: 3rem;
     text-transform: none;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.02em;
     margin-bottom: 2rem;
     /* Reduced from 3rem slightly as text is smaller */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -381,8 +387,8 @@ body::after {
 
 /* Work Section */
 .work-section {
-    padding: var(--spacing-xl) 0 9rem 0;
-    /* Adjusted to intermediate */
+    padding: var(--spacing-xl) 0 11rem 0;
+    /* Increased to 11rem */
     background-color: var(--bg-color);
 }
 
@@ -527,9 +533,12 @@ body::after {
     position: relative;
     cursor: pointer;
     overflow: hidden;
+    /* Changed back to hidden */
     height: 100%;
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
 
 /* Filter Animation Class */
 .gallery-item.hide {
@@ -543,14 +552,32 @@ body::after {
 /* Better grid filtering usually requires Isotope or robust JS. Simple method: toggle display check JS. */
 
 .gallery-img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2;
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.gallery-item:hover .gallery-img {
+.gallery-img-alt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    z-index: 1;
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Zoom effect on hover - both images zoom together */
+.gallery-item:hover .gallery-img,
+.gallery-item:hover .gallery-img-alt {
     transform: scale(1.05);
 }
 
@@ -560,6 +587,8 @@ body::after {
     height: 100%;
     object-fit: cover;
     display: block;
+    position: relative;
+    z-index: 1;
     transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -578,6 +607,7 @@ body::after {
     transform: translateY(20px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
+    z-index: 3;
     /* Let clicks pass through to video if needed, though surrounding div handles click */
 }
 
@@ -587,10 +617,12 @@ body::after {
 }
 
 .item-info h4 {
+    font-family: var(--font-display);
     font-size: 1.3rem;
     color: #fff;
     margin-bottom: 0.3rem;
     font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
 .item-info p {
@@ -600,27 +632,9 @@ body::after {
     letter-spacing: 0.05em;
 }
 
-/* Image count badge for project folders */
+/* Image count badge for project folders - HIDDEN */
 .image-count-badge {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: rgba(0, 0, 0, 0.7);
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.7rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 400;
-    backdrop-filter: blur(4px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.gallery-item:hover .image-count-badge {
-    opacity: 1;
+    display: none;
 }
 
 /* Masonry Spans */
@@ -946,11 +960,12 @@ iframe.lightbox-content {
 }
 
 .project-view-header h2 {
+    font-family: var(--font-display);
     font-size: 2rem;
     font-weight: 300;
     margin: 0;
     color: #fff;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.02em;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -962,6 +977,7 @@ iframe.lightbox-content {
     display: block;
     font-size: 2.5rem;
     font-weight: 300;
+    letter-spacing: 0.05em;
 }
 
 /* Location and date - smaller text */
@@ -1110,4 +1126,49 @@ iframe.lightbox-content {
     .lightbox-content {
         width: 95%;
     }
+}
+
+/* Multi-image Stack Effect */
+.gallery-item.multi-image {
+    overflow: visible;
+    /* Allow stack to show */
+    /* Ensure z-index handling for stack */
+    transform-style: preserve-3d;
+}
+
+.gallery-item.multi-image::before,
+.gallery-item.multi-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #222;
+    /* Card color */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: -1;
+    transition: transform 0.4s ease, opacity 0.4s ease, background-color 0.4s ease;
+    opacity: 1;
+    /* Always visible */
+}
+
+.gallery-item.multi-image::before {
+    transform: rotate(3deg) translate(6px, 6px);
+}
+
+.gallery-item.multi-image::after {
+    transform: rotate(-2deg) translate(-4px, 4px);
+    z-index: -2;
+}
+
+/* Hover effect for stack */
+.gallery-item.multi-image:hover::before {
+    transform: rotate(5deg) translate(8px, 8px);
+    background-color: #333;
+}
+
+.gallery-item.multi-image:hover::after {
+    transform: rotate(-4deg) translate(-6px, 6px);
+    background-color: #2a2a2a;
 }
