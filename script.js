@@ -1107,3 +1107,41 @@ function reassignLayoutPattern() {
         }
     });
 }
+
+// Obfuscated Contact Info Injection
+document.addEventListener('DOMContentLoaded', function () {
+    const contactContainer = document.getElementById('contact-container');
+    if (contactContainer) {
+        // Obfuscate email: "jervistuazon" + "@" + "gmail.com"
+        const user = 'jervistuazon';
+        const domain = 'gmail.com';
+        const email = `${user}@${domain}`;
+
+        // Obfuscate phone: "+65" + " " + "9447" + " " + "4504"
+        const p1 = '+65';
+        const p2 = '9447';
+        const p3 = '4504';
+        const phone = `${p1} ${p2} ${p3}`;
+        const phoneLink = `${p1}${p2}${p3}`;
+
+        // Create Email Link
+        const emailP = document.createElement('p');
+        emailP.className = 'contact-link';
+        const emailA = document.createElement('a');
+        emailA.href = `mailto:${email}`;
+        emailA.textContent = email;
+        emailP.appendChild(emailA);
+
+        // Create Phone Link
+        const phoneP = document.createElement('p');
+        phoneP.className = 'contact-link';
+        const phoneA = document.createElement('a');
+        phoneA.href = `tel:${phoneLink}`;
+        phoneA.textContent = phone;
+        phoneP.appendChild(phoneA);
+
+        // Append to container
+        contactContainer.appendChild(emailP);
+        contactContainer.appendChild(phoneP);
+    }
+});
