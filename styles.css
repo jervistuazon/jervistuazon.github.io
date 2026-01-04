@@ -153,7 +153,7 @@ a:hover {
     position: relative;
     overflow: hidden;
     /* Immersive Background */
-    background-image: url('assets/HERO SHOT/Hero Shot.jpg');
+    background-image: url('assets/HERO SHOT/Hero Shot.webp');
     /* Fallback / Static */
     background-size: cover;
     background-position: center;
@@ -1067,12 +1067,14 @@ iframe.lightbox-content {
 /* Loading Animation for Gallery Items */
 .gallery-item.loading {
     background: linear-gradient(110deg,
-            #1a1a1a 8%,
-            #252525 18%,
-            #1a1a1a 33%);
+            #151515 8%,
+            #222222 18%,
+            #151515 33%);
     background-size: 200% 100%;
     animation: shimmer 1.5s linear infinite;
     min-height: 250px;
+    border-radius: 2px;
+    /* Slight radius for premium feel */
 }
 
 .gallery-item.loading .gallery-img,
@@ -1100,27 +1102,7 @@ iframe.lightbox-content {
     }
 }
 
-/* Pulse animation for loading indicator */
-.gallery-item.loading::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-top-color: rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    z-index: 1;
-}
-
-@keyframes spin {
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
+/* Pulse animation removed - keeping just the sleek shimmer */
 
 @media (max-width: 700px) {
     .lightbox-content {

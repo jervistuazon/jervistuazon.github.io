@@ -374,7 +374,7 @@ function renderGalleryGrid() {
         if (itemData.type === 'project') {
             // Project folder
             item.onclick = () => openGallery(itemData.category, itemData.projectName);
-            renderMediaNested(item, itemData.category, itemData.projectName, itemData.thumbSrc);
+            renderMediaItem(item, itemData.category, itemData.projectName, itemData.thumbSrc);
 
             // Display name: extract just the project name (before first dash)
             const displayName = parseProjectName(itemData.projectName).name;
@@ -394,7 +394,7 @@ function renderGalleryGrid() {
                 currentGalleryImages = itemData.standaloneFiles;
                 openLightbox(itemData.fileIndex);
             };
-            renderMedia(item, itemData.category, itemData.filename);
+            renderMediaItem(item, itemData.category, '.', itemData.filename);
             renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
         } else if (itemData.type === 'video') {
             // Video item
@@ -403,7 +403,7 @@ function renderGalleryGrid() {
                 currentGalleryImages = galleryData['Video'];
                 openLightbox(itemData.fileIndex);
             };
-            renderMedia(item, 'Video', itemData.filename);
+            renderMediaItem(item, 'Video', '.', itemData.filename);
             renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
         }
 
@@ -496,9 +496,17 @@ function setupHoverSlideshow(container, category, folder, files) {
 }
 
 
-// Helper for nested paths (Render/ProjectName/file)
-function renderMediaNested(container, category, folder, filename) {
-    const path = `assets/${category}/${folder}/${filename}`;
+// Unified Helper for rendering media (images/video)
+// Supports both nested paths (assets/Category/Project/File) and flat paths (assets/Category/File)
+// If folder is '.', it treats it as a direct child of category
+function renderMediaItem(container, category, folder, filename) {
+    let path;
+    if (folder === '.' || !folder) {
+        path = `assets/${category}/${filename}`;
+    } else {
+        path = `assets/${category}/${folder}/${filename}`;
+    }
+
     const encodedPath = encodePath(path);
 
     // Add loading state
@@ -528,12 +536,15 @@ function renderMediaNested(container, category, folder, filename) {
         img1.src = encodedPath;
         img1.alt = filename;
         img1.className = 'gallery-img';
+        img1.loading = 'lazy'; // Optimization: Lazy load
         img1.style.opacity = '1';
 
+        // Second image for hover slideshow (initially hidden)
         const img2 = document.createElement('img');
-        img2.src = encodedPath;
+        img2.src = encodedPath; // Placeholder, will be swapped on hover
         img2.alt = filename;
-        img2.className = 'gallery-img-alt';  // ONLY gallery-img-alt, not both classes!
+        img2.className = 'gallery-img-alt';
+        img2.loading = 'lazy'; // Optimization: Lazy load
         img2.style.opacity = '0';
 
         img1.addEventListener('load', () => {
@@ -546,53 +557,6 @@ function renderMediaNested(container, category, folder, filename) {
 
         container.appendChild(img2); // Add second image first (behind)
         container.appendChild(img1); // Add first image on top
-    }
-}
-
-
-// Helper to clean up render code
-function renderMedia(container, folder, filename) {
-    const path = `assets/${folder}/${filename}`;
-    const encodedPath = encodePath(path);
-
-    // Add loading state
-    container.classList.add('loading');
-
-    if (isVideo(filename)) {
-        const video = document.createElement('video');
-        video.src = encodedPath;
-        video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.autoplay = true;
-        video.className = 'gallery-video';
-
-        // Handle video load
-        video.addEventListener('loadeddata', () => {
-            container.classList.remove('loading');
-            container.classList.add('loaded');
-        });
-        video.addEventListener('error', () => {
-            container.classList.remove('loading');
-        });
-
-        container.appendChild(video);
-    } else {
-        const img = document.createElement('img');
-        img.src = encodedPath;
-        img.alt = filename;
-        img.className = 'gallery-img';
-
-        // Handle image load
-        img.addEventListener('load', () => {
-            container.classList.remove('loading');
-            container.classList.add('loaded');
-        });
-        img.addEventListener('error', () => {
-            container.classList.remove('loading');
-        });
-
-        container.appendChild(img);
     }
 }
 
