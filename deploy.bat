@@ -12,6 +12,17 @@ if %errorlevel% neq 0 (
     pause
     exit /b %errorlevel%
 )
+)
+echo.
+
+REM 0a. Minify Assets (Auto-Build)
+echo [INFO] Minifying assets (CSS/JS)...
+call node build.js
+if %errorlevel% neq 0 (
+    echo [ERROR] Minification failed!
+    pause
+    exit /b %errorlevel%
+)
 echo.
 
 REM 1. Set Repository URL (Hardcoded)

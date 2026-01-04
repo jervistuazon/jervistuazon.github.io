@@ -822,6 +822,20 @@ function updateLightboxContent() {
     caption.textContent = imgName.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
 }
 
+// Keyboard Navigation Support
+document.addEventListener('keydown', (e) => {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox.classList.contains('active')) {
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+            changeImage(-1);
+        } else if (e.key === 'ArrowRight') {
+            changeImage(1);
+        }
+    }
+});
+
 function changeImage(direction) {
     currentImageIndex += direction;
     if (currentImageIndex < 0) {
