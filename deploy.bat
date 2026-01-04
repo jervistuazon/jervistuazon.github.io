@@ -4,6 +4,16 @@ echo      GITHUB PORTFOLIO DEPLOYER
 echo ==========================================
 echo.
 
+REM 0. Generate Project Pages
+echo [INFO] Generating SEO Project Pages...
+call node generate-project-pages.js
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to generate project pages!
+    pause
+    exit /b %errorlevel%
+)
+echo.
+
 REM 1. Set Repository URL (Hardcoded)
 set REPO_URL=https://github.com/jervistuazon/jervistuazon.github.io.git
 
