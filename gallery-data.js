@@ -138,7 +138,7 @@
             "Living Area.webp",
             "Wine Bar.webp"
         ],
-        "ME House - Singapore - 2020  -  F": [
+        "ME House - Singapore - 2020 - F": [
             "1. Courtyard.webp",
             "Courtyard View.webp",
             "Elevation.webp",

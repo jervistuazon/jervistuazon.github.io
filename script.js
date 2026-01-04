@@ -5,6 +5,11 @@ let currentImageIndex = 0;
 let currentFolder = '';
 let savedScrollPosition = 0; // For scroll position memory
 
+// Load More / Pagination Globals
+const ITEMS_PER_PAGE = 24;
+let visibleLimit = ITEMS_PER_PAGE;
+let currentFilter = 'all';
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Render Gallery Grid from Data
     renderGalleryGrid();
@@ -114,6 +119,22 @@ function seededRandom(seed) {
     return x - Math.floor(x);
 }
 
+// Fisher-Yates shuffle with seeded random to randomize order but keep it consistent
+function seededShuffle(array, seed) {
+    let m = array.length, t, i;
+    // While there remain elements to shuffle…
+    while (m) {
+        // Pick a remaining element…
+        i = Math.floor(seededRandom(seed + m) * m--);
+
+        // And swap it with the current element.
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
+}
+
 // Get a random span class for a project based on its index
 // Uses index as seed for deterministic randomness (same layout on refresh)
 // Checks for manual overrides first
@@ -127,7 +148,7 @@ function getRandomProjectSpan(index, projectName = null) {
 }
 
 // Get a random span class for standalone images
-// 50% chance of being 1x1, 50% chance of being 1x2 or 2x1
+// 30% 1x2, 30% 2x1, 40% 1x1
 // Checks for manual overrides first
 function getRandomStandaloneSpan(index, filename = null) {
     // Check for manual override first
@@ -135,13 +156,14 @@ function getRandomStandaloneSpan(index, filename = null) {
         return standaloneSizeOverrides[filename];
     }
     const rand = seededRandom(index * 7919 + 123);
-    if (rand < 0.5) {
-        return ''; // 1x1 (no span class)
+
+    // Distribution: 30% 1x2, 30% 2x1, 40% 1x1
+    if (rand < 0.4) {
+        return ''; // 40% Chance of 1x1 (no span class)
+    } else if (rand < 0.7) {
+        return 'span-1-2'; // 30% Chance of 1x2
     } else {
-        // Choose between span-1-2 and span-2-1
-        const spanOptions = ['span-1-2', 'span-2-1'];
-        const spanRand = seededRandom(index * 3571 + 789);
-        return spanOptions[Math.floor(spanRand * spanOptions.length)];
+        return 'span-2-1'; // 30% Chance of 2x1
     }
 }
 
@@ -203,8 +225,8 @@ function clearUrlHash() {
 // Helper to parse folder name format: "Project Name - Location - Year - F"
 // Returns { name, location, date }
 function parseProjectName(folderName) {
-    // Remove the - F suffix first
-    const cleaned = folderName.replace(/ - F$| -F$/, '');
+    // Remove the - F suffix first (tolerant of whitespace)
+    const cleaned = folderName.replace(/\s-\s*F\s*$/, '');
 
     // Split by " - " pattern
     const parts = cleaned.split(/ - /);
@@ -280,8 +302,8 @@ function renderGalleryGrid() {
                 continue;
             }
 
-            // Check if featured (ends with - F or -F)
-            const isFeatured = / - F$| -F$/.test(projectName);
+            // Check if featured (ends with - F or -F, tolerant of spaces)
+            const isFeatured = /\s-\s*F\s*$/.test(projectName);
 
             // Get thumbnail: prioritize image starting with "1." or "1 "
             let thumbSrc = files[0];
@@ -331,7 +353,22 @@ function renderGalleryGrid() {
     const nonFeatured = allProjects.filter(p => !p.featured);
     const videos = nonFeatured.filter(p => p.type === 'video');
     const projectFolders = nonFeatured.filter(p => p.type === 'project');
-    const standalone = nonFeatured.filter(p => p.type === 'standalone');
+    let standalone = nonFeatured.filter(p => p.type === 'standalone');
+
+    // Manually move 'Rangoon Road Singapore.webp' to projectFolders group to appear with Mansion/ME House
+    const changenowIndex = standalone.findIndex(p => p.filename === 'Rangoon Road Singapore.webp');
+    if (changenowIndex !== -1) {
+        const itemToMove = standalone.splice(changenowIndex, 1)[0];
+        // Trick: treat it as a project type for layout? 
+        // If we don't change type, renderGalleryGrid treats it as standalone (which is fine, it just stays 1x1 or random).
+        // But we assume the user wants it visually grouped with projects.
+        // Let's just push it to projectFolders.
+        projectFolders.push(itemToMove);
+        // Optional: Sort projectFolders if needed, but they are already roughly sorted by data order.
+    }
+
+    // Randomize standalone images order
+    standalone = seededShuffle(standalone, 999);
 
     // Concatenate in order: Featured -> Videos -> Projects -> Standalone
     const sortedProjects = [...featuredProjects, ...videos, ...projectFolders, ...standalone];
@@ -348,6 +385,9 @@ function renderGalleryGrid() {
         let spanClass = '';
         if (itemData.type === 'project') {
             item.setAttribute('data-project', 'true');
+            // Store project name for layout persistence
+            item.setAttribute('data-project-name', itemData.projectName);
+
             if (itemData.featured) {
                 // Featured items are full width (3 cols) x 2 rows
                 spanClass = 'span-3-2';
@@ -358,7 +398,13 @@ function renderGalleryGrid() {
         } else if (itemData.type === 'video') {
             // Videos are always 2x2
             spanClass = 'span-2-2';
+            item.setAttribute('data-type', 'video');
         } else if (itemData.type === 'standalone') {
+            // Standalone items
+            item.setAttribute('data-standalone', 'true');
+            // Store filename for size override checks
+            item.setAttribute('data-filename', itemData.filename);
+
             // Standalone images: 50% get varied sizing (1x2 or 2x1), 50% stay 1x1
             spanClass = getRandomStandaloneSpan(index, itemData.filename);
         }
@@ -410,6 +456,9 @@ function renderGalleryGrid() {
         grid.appendChild(item);
         observer.observe(item);
     });
+
+    // Initialize view with limit (hide items beyond limit)
+    filterGallery('all');
 }
 
 // Setup auto-running slideshow for project folders with multiple images
@@ -889,7 +938,13 @@ function raf(time) {
 requestAnimationFrame(raf);
 
 // Filter Gallery Function
-function filterGallery(category, evt) {
+function filterGallery(category, evt, isLoadMore = false) {
+    // 0. Update Current Filter State
+    if (!isLoadMore) {
+        currentFilter = category;
+        visibleLimit = ITEMS_PER_PAGE; // Reset limit on new filter
+    }
+
     // 1. Update Buttons
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
@@ -907,66 +962,125 @@ function filterGallery(category, evt) {
         });
     }
 
-    // 2. Filter Items
-    const items = document.querySelectorAll('.gallery-item');
+    // 2. Filter Items and Apply Count Limit
+    const items = Array.from(document.querySelectorAll('.gallery-item'));
 
-    items.forEach(item => {
+    // First, identify all matching items for this category
+    const matchingItems = items.filter(item => {
         const itemCategory = item.getAttribute('data-category');
         const isFeatured = item.getAttribute('data-featured') === 'true';
 
-        let shouldShow = false;
+        if (category === 'all') return true;
+        if (category === 'featured') return isFeatured;
+        return itemCategory === category;
+    });
 
-        if (category === 'all') {
-            shouldShow = true;
-        } else if (category === 'featured') {
-            shouldShow = isFeatured;
-        } else {
-            shouldShow = itemCategory === category;
-        }
+    // Determine which to show based on visibleLimit
+    // (Load More increases visibleLimit)
+    const itemsToShow = matchingItems.slice(0, visibleLimit);
 
-        if (shouldShow) {
+    // Apply visibility
+    items.forEach(item => {
+        if (itemsToShow.includes(item)) {
+            // SHOW
+            item.classList.remove('hidden-item');
             item.style.display = 'block';
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0)';
 
+            // Trigger animation
+            requestAnimationFrame(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            });
         } else {
+            // HIDE
+            item.classList.add('hidden-item');
             item.style.display = 'none';
         }
     });
 
-    // 3. Adjust grid columns
+    // 3. Handle "See More" Button Visibility
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const loadMoreContainer = document.getElementById('load-more-container');
+
+    if (loadMoreBtn && loadMoreContainer) {
+        if (matchingItems.length > visibleLimit) {
+            loadMoreBtn.classList.remove('hidden');
+            loadMoreContainer.style.display = 'flex';
+        } else {
+            loadMoreBtn.classList.add('hidden');
+            loadMoreContainer.style.display = 'none';
+        }
+    }
+
+    // 4. Adjust grid columns
     const grid = document.getElementById('gallery-grid');
-    // Ensure we are always on default grid (remove specific column overrides if any were present)
     grid.style.gridTemplateColumns = '';
 
     // Re-assign span classes to maintain layout rhythm for visible items
     reassignLayoutPattern();
 }
 
+function loadMoreItems() {
+    visibleLimit += ITEMS_PER_PAGE;
+    filterGallery(currentFilter, null, true);
+}
+
 function reassignLayoutPattern() {
     const visibleItems = Array.from(document.querySelectorAll('.gallery-item')).filter(item => item.style.display !== 'none');
 
     visibleItems.forEach((item, index) => {
-        // Remove old span classes
+        // Remove old span classes BUT keep the logic if we want to respect original "random" assignment
+        // Actually, the original assignment was seeded by index. 
+        // If we filter, index changes.
+        // We really want to RESPECT the original assignment if possible, OR re-randomize nicely.
+        // The previous code claimed to random size.
+        // Let's try to stick to the original plan: 
+        // "Update to read data-project-name so that manual size overrides are respected"
+
         item.classList.remove('span-3-2', 'span-2-2', 'span-2-1', 'span-1-2');
 
         // Check item type based on data attributes
         const isFeatured = item.getAttribute('data-featured') === 'true';
-        // Check if it is a project folder (has data-project attribute)
         const isProject = item.getAttribute('data-project') === 'true';
+        const projectName = item.getAttribute('data-project-name');
 
         // Featured projects: always 3x2 (full width x 2 rows)
         if (isFeatured) {
             item.classList.add('span-3-2');
         }
-        // Non-featured project folders: random dynamic sizing
+        // Non-featured project folders: respect original random sizing or override
         else if (isProject) {
-            // Use the visible index to ensure good distribution, or just original?
-            // User seems to prefer stable shapes? Let's stick to the reassign logic for now 
-            // but ensure we identify projects correctly.
-            // Using text content or hash is better than index for stability, but index is okay for packing.
-            const spanClass = getRandomProjectSpan(index);
-            if (spanClass) item.classList.add(spanClass);
+            // We use the current visual index for the seed to ensure packing is tight?
+            // No, if we use visual index, the shape changes when you filter.
+            // If we use projectName, the shape adheres to the project.
+            // BUT, if we use projectName, we might get a sequence of incompatible shapes (e.g. 5 'span-2-2' in a row) creating gaps.
+            // The safest packing strategy for Masonry without JS library is to use dense, 
+            // OR simply re-calculate based on current index (dense packing).
+            // Let's use the current index (visual packing) BUT check for overrides (Banyan).
+
+            // Check override first (using name)
+            if (projectName && projectSizeOverrides[projectName]) {
+                item.classList.add(projectSizeOverrides[projectName]);
+            } else {
+                // Default random sizing based on visual index to keep grid tight
+                const spanClass = getRandomProjectSpan(index);
+                if (spanClass) item.classList.add(spanClass);
+            }
+        }
+        else if (item.getAttribute('data-standalone') === 'true') {
+            // Standalone: Re-randomize or keep? 
+            // Let's re-randomize based on index to fill gaps
+            // Adjusted seed and probabilities to prevent clustering
+            const rand = seededRandom(index * 773 + 42); // Changed multiplier/offset again
+
+            // New distribution target: ~40% non-square (20% 1x2, 20% span-2-1), 60% 1x1
+            if (rand < 0.20) item.classList.add('span-1-2');
+            else if (rand < 0.40) item.classList.add('span-2-1');
+            // else 1x1 (no class)
+        }
+        // Videos are always 2x2
+        else if (item.getAttribute('data-type') === 'video') {
+            item.classList.add('span-2-2');
         }
     });
 }

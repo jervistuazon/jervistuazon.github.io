@@ -209,20 +209,25 @@ a:hover {
 
 .hero-content h1 {
     font-family: var(--font-display);
-    font-size: clamp(3rem, 6.5vw, 8rem);
+    font-size: clamp(2.5rem, 8vw, 8rem);
+    /* Lowered minimum and variable rate */
     font-weight: 300;
     margin-bottom: 1rem;
     line-height: 1.1;
-    white-space: nowrap;
+    white-space: normal;
+    word-wrap: break-word;
+    /* Ensure long words break if necessary */
+    overflow-wrap: break-word;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    /* Reduced spacing as requested */
 }
 
 .hero-content .subtitle {
-    font-size: 1.3rem;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    /* Responsive subtitle */
     color: rgba(255, 255, 255, 0.8);
-    max-width: 500px;
+    max-width: 100%;
+    /* Ensure it doesn't exceed container */
     font-weight: 300;
     letter-spacing: 0.02em;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -230,7 +235,8 @@ a:hover {
 }
 
 .hero-tagline {
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    /* Responsive tagline */
     font-weight: 300;
     letter-spacing: 0.2em;
     color: var(--accent-color);
@@ -332,7 +338,7 @@ body::after {
 /* Skill/Services Section (New) */
 .column-header {
     font-family: var(--font-display);
-    font-size: 3rem;
+    font-size: clamp(2rem, 5vw, 3rem);
     text-transform: none;
     letter-spacing: 0.02em;
     margin-bottom: 2rem;
@@ -402,7 +408,7 @@ body::after {
 }
 
 .section-title {
-    font-size: 3rem;
+    font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 300;
 }
 
@@ -674,11 +680,23 @@ body::after {
 
 @media (max-width: 768px) {
 
+    /* Standardize container padding on mobile */
+    .container {
+        padding: 0 1.5rem;
+    }
+
+    /* Align work section container with others */
+    .work-section .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 1.5rem;
+    }
+
     .gallery-grid,
     .project-view .gallery-grid {
         grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: calc((95vw - 1rem) / 3 * 0.666);
-        /* 3 cols, 3:2 ratio, 0.5rem gap */
+        /* Adjusted for 1.5rem padding x2 + 0.5rem gap x2 = 4rem total deduction approx */
+        grid-auto-rows: calc((100vw - 4rem) / 3 * 0.666);
         gap: 0.5rem;
     }
 
@@ -730,7 +748,7 @@ body::after {
 }
 
 .contact-section h2 {
-    font-size: 3rem;
+    font-size: clamp(2rem, 5vw, 3rem);
     margin-bottom: var(--spacing-md);
 }
 
@@ -778,6 +796,55 @@ body::after {
 
 .delay-1 {
     animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Load More Button */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Ensure vertical alignment if needed */
+    margin-top: 4rem;
+    width: 100%;
+    text-align: center;
+    /* Backup for flex issues */
+}
+
+#load-more-btn {
+    background: transparent;
+    border: none;
+    /* No border/outline as requested */
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    /* Increased from 1.1rem */
+    letter-spacing: 0.1em;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    /* text-transform: uppercase; Removed to avoid ALL CAPS */
+}
+
+#load-more-btn:hover {
+    color: var(--accent-color);
+    letter-spacing: 0.15em;
+    /* Subtle expansion */
+    background: transparent;
+}
+
+#load-more-btn.hidden {
+    display: none !important;
+}
+
+.gallery-item.hidden-item {
+    display: none !important;
 }
 
 @keyframes fadeInUp {
