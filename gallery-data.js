@@ -104,8 +104,8 @@
     "Residential": {
         "1953 - Singapore - 2022 - F": [
             "1. Corner View.jpeg",
-            "Facade  Closeup.jpeg",
-            "Rooftop  Swimming Pool.png",
+            "Facade Closeup.jpeg",
+            "Rooftop Swimming Pool.png",
             "2. Street View Night.png"
         ],
         "2nd  Avenue Singapore": [
