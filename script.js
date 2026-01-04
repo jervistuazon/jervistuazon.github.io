@@ -980,21 +980,44 @@ function filterGallery(category, evt, isLoadMore = false) {
     const itemsToShow = matchingItems.slice(0, visibleLimit);
 
     // Apply visibility
+    // Apply visibility with Staggered Cascading Animation
+    let staggerCount = 0;
+
     items.forEach(item => {
-        if (itemsToShow.includes(item)) {
+        const shouldShow = itemsToShow.includes(item);
+        // Check visibility BEFORE modifying it to identify new items
+        const isCurrentlyVisible = item.style.display !== 'none' && !item.classList.contains('hidden-item');
+
+        if (shouldShow) {
             // SHOW
             item.classList.remove('hidden-item');
             item.style.display = 'block';
 
+            if (!isCurrentlyVisible) {
+                // New item appearing: Apply stagger delay
+                // 50ms interval for quick cascade
+                item.style.transitionDelay = `${staggerCount * 50}ms`;
+                staggerCount++;
+            } else {
+                // Already visible: No delay
+                item.style.transitionDelay = '0s';
+            }
+
             // Trigger animation
             requestAnimationFrame(() => {
                 item.style.opacity = '1';
-                item.style.transform = 'translateY(0)';
+                item.style.transform = 'translateY(0) scale(1)';
             });
         } else {
             // HIDE
             item.classList.add('hidden-item');
             item.style.display = 'none';
+
+            // Reset state for next time it appears
+            item.style.opacity = '0';
+            // Match CSS .fade-in-scroll initial state
+            item.style.transform = 'translateY(50px) scale(0.95)';
+            item.style.transitionDelay = '0s';
         }
     });
 
