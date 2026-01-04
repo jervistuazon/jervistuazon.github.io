@@ -117,6 +117,10 @@
             "Front.webp",
             "Rear Pool.webp"
         ],
+        "Chestnut Cres Singapore": [
+            "1. Arrival.webp",
+            "Rear View.webp"
+        ],
         "Ewart Park Singapore": [
             "1. Front.webp",
             "Corner View.webp",
@@ -216,6 +220,7 @@
             "Pool View.webp"
         ],
         "_standalone": [
+            "3rd Ave Singapore.webp",
             "3D Printed House QR3D Singapore.webp",
             "Amber Road Singapore.webp",
             "Avon Road Singapore.webp",
@@ -224,16 +229,27 @@
             "Cheehon Ave Singapore.webp",
             "Chong Kuo Rd Singapore.webp",
             "Cove Drive Singapore.webp",
+            "Duchess Road Singapore.webp",
+            "Eng Kong Garden Singapore.webp",
             "Everton Singapore.webp",
             "Farrer Rd  Singapore.webp",
+            "Farrer Rd Singapore.webp",
             "Gilstead Rd Singapore.webp",
+            "Grove Lane Singapore.webp",
             "Huangshan China.webp",
             "Jln Lim Tai See Singapore.webp",
+            "Labu Manis Singapore.webp",
+            "Leedon Park Singapore.webp",
             "Mattlock Rise Singapore.webp",
+            "Noto Italy.webp",
             "Old Tampines Road Singapore.webp",
+            "Oriole Singapore.webp",
             "Phnom Penh Cambodia.webp",
             "Rangoon Road Singapore.webp",
+            "Sian Tuan Singapore.webp",
             "Siglap Rd Singapore.webp",
+            "Springleaf Singapore.webp",
+            "Sunset Drive Singapore.webp",
             "Tembeling Road Singapore.webp"
         ]
     },
