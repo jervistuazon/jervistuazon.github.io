@@ -117,6 +117,12 @@
             "Front.webp",
             "Rear Pool.webp"
         ],
+        "Ewart Park Singapore": [
+            "1. Front.webp",
+            "Corner View.webp",
+            "Rear View.webp",
+            "Side View.webp"
+        ],
         "House 28 - Singapore - 2021 - F": [
             "Corner View.webp",
             "Courtyard.webp",
@@ -137,6 +143,12 @@
             "Grand Stair.webp",
             "Living Area.webp",
             "Wine Bar.webp"
+        ],
+        "Kew Drive Singapore": [
+            "1. Front Elevation.webp",
+            "Bathroom.webp",
+            "Living Area.webp",
+            "Master Bathroom.webp"
         ],
         "ME House - Singapore - 2020 - F": [
             "1. Courtyard.webp",
@@ -174,6 +186,13 @@
         "Serangoon Tower Singapore": [
             "Singapore Residential Tower Aerial.webp",
             "Singapore Residential Tower.webp"
+        ],
+        "Stevens Rd Singapore": [
+            "1. Front View.webp",
+            "Corner View.webp",
+            "Living Area.webp",
+            "Master Bethroom.webp",
+            "Rear View.webp"
         ],
         "Singapore HDB Development": [
             "1. Aerial View.webp",
