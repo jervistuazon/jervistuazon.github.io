@@ -170,13 +170,21 @@ function getRandomStandaloneSpan(index, filename = null) {
 // Mobile Aspect Ratio Classes for Pinterest-style masonry
 // Ratios: 4:5, 5:4, 2:3, 5:7 (vertical/portrait, excluding 1:2 which is too tall)
 const mobileAspectRatios = ['mobile-ar-4-5', 'mobile-ar-5-4', 'mobile-ar-2-3', 'mobile-ar-5-7'];
+// Project specific ratios (Tallest options only for prominence)
+const mobileProjectAspectRatios = ['mobile-ar-2-3', 'mobile-ar-5-7'];
 
-function getMobileAspectRatioClass(index) {
+function getMobileAspectRatioClass(index, itemType) {
     const rand = seededRandom(index * 2803 + 77);
+
+    if (itemType === 'project') {
+        return mobileProjectAspectRatios[Math.floor(rand * mobileProjectAspectRatios.length)];
+    }
+
     return mobileAspectRatios[Math.floor(rand * mobileAspectRatios.length)];
 }
 
-// --- SEO URL Hash Routing ---
+
+
 // Convert project name to URL-safe slug
 function slugify(text) {
     return text.toLowerCase()
@@ -419,7 +427,7 @@ function renderGalleryGrid() {
         }
         // Other items default to 1x1 (no span class)
         // Add mobile aspect ratio class for Pinterest-style masonry on mobile (except featured)
-        const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index);
+        const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index, itemData.type);
         item.className = `gallery-item fade-in-scroll ${spanClass} ${mobileArClass}`.trim();
 
         // Set category for filtering
