@@ -483,12 +483,15 @@ function setupHoverSlideshow(container, category, folder, files) {
 
     if (slideshowImages.length <= 1) return; // No slideshow needed
 
-    // Start slideshow on hover
-    container.addEventListener('mouseenter', () => {
+    // Define slideshow logic
+    const startSlideshow = () => {
+        // Avoid starting multiple intervals
+        if (slideshowInterval) return;
+
         currentSlideIndex = 0;
         useSecondImage = false;
 
-        // Immediately show the second image on hover for instant feedback
+        // Immediately show the second image on hover/touch for instant feedback
         const img1 = container.querySelector('.gallery-img');
         const img2 = container.querySelector('.gallery-img-alt');
 
@@ -505,7 +508,7 @@ function setupHoverSlideshow(container, category, folder, files) {
             // This ensures proper alternation: img2 -> img1 -> img2 -> img1...
         }
 
-        // Start cycling through images on hover
+        // Start cycling through images
         slideshowInterval = setInterval(() => {
             currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
             const nextImage = slideshowImages[currentSlideIndex];
@@ -532,10 +535,9 @@ function setupHoverSlideshow(container, category, folder, files) {
                 useSecondImage = !useSecondImage;
             }
         }, 2200); // Change image every 2.2 seconds
-    });
+    };
 
-    // Stop slideshow when mouse leaves
-    container.addEventListener('mouseleave', () => {
+    const stopSlideshow = () => {
         if (slideshowInterval) {
             clearInterval(slideshowInterval);
             slideshowInterval = null;
@@ -552,7 +554,17 @@ function setupHoverSlideshow(container, category, folder, files) {
             img1.style.opacity = '1';
             img2.style.opacity = '0';
         }
-    });
+    };
+
+    // Desktop: Mouse events
+    container.addEventListener('mouseenter', startSlideshow);
+    container.addEventListener('mouseleave', stopSlideshow);
+
+    // Mobile: Touch events (Touch = Hover)
+    // passive: true allows scrolling to continue smoothly while logic runs
+    container.addEventListener('touchstart', startSlideshow, { passive: true });
+    container.addEventListener('touchend', stopSlideshow);
+    container.addEventListener('touchcancel', stopSlideshow);
 }
 
 
