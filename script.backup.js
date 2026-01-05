@@ -167,15 +167,6 @@ function getRandomStandaloneSpan(index, filename = null) {
     }
 }
 
-// Mobile Aspect Ratio Classes for Pinterest-style masonry
-// Ratios: 4:5, 5:4, 2:3, 5:7 (vertical/portrait, excluding 1:2 which is too tall)
-const mobileAspectRatios = ['mobile-ar-4-5', 'mobile-ar-5-4', 'mobile-ar-2-3', 'mobile-ar-5-7'];
-
-function getMobileAspectRatioClass(index) {
-    const rand = seededRandom(index * 2803 + 77);
-    return mobileAspectRatios[Math.floor(rand * mobileAspectRatios.length)];
-}
-
 // --- SEO URL Hash Routing ---
 // Convert project name to URL-safe slug
 function slugify(text) {
@@ -418,9 +409,7 @@ function renderGalleryGrid() {
             spanClass = getRandomStandaloneSpan(index, itemData.filename);
         }
         // Other items default to 1x1 (no span class)
-        // Add mobile aspect ratio class for Pinterest-style masonry on mobile (except featured)
-        const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index);
-        item.className = `gallery-item fade-in-scroll ${spanClass} ${mobileArClass}`.trim();
+        item.className = `gallery-item fade-in-scroll ${spanClass}`;
 
         // Set category for filtering
         item.setAttribute('data-category', itemData.categorySlug);
@@ -776,38 +765,13 @@ function openGallery(category, projectName) {
 
     // Show Overlay
     projectView.style.display = 'block';
-    setTimeout(() => {
-        projectView.classList.add('active');
-        // Initialize Lenis for Project View Overlay
-        if (!projectLenis) {
-            projectLenis = new Lenis({
-                wrapper: projectView,
-                content: projectView,
-                duration: 1.2,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                direction: 'vertical',
-                gestureDirection: 'vertical',
-                smooth: true,
-                mouseMultiplier: 1,
-                smoothTouch: false,
-                touchMultiplier: 2,
-                infinite: false,
-                // Prevent over-scroll
-            });
-        }
-    }, 10);
+    setTimeout(() => projectView.classList.add('active'), 10);
     document.body.style.overflow = 'hidden';
 }
 
 function closeProjectView() {
     const projectView = document.getElementById('project-view');
     projectView.classList.remove('active');
-
-    // Destroy Project Lenis Instance
-    if (projectLenis) {
-        projectLenis.destroy();
-        projectLenis = null;
-    }
 
     // Clear URL hash when closing
     clearUrlHash();
@@ -966,11 +930,8 @@ const lenis = new Lenis({
     touchMultiplier: 2,
 });
 
-let projectLenis = null;
-
 function raf(time) {
     lenis.raf(time);
-    if (projectLenis) projectLenis.raf(time);
     requestAnimationFrame(raf);
 }
 
@@ -1005,19 +966,12 @@ function filterGallery(category, evt, isLoadMore = false) {
     const items = Array.from(document.querySelectorAll('.gallery-item'));
 
     // First, identify all matching items for this category
-    // First, identify all matching items for this category
     const matchingItems = items.filter(item => {
         const itemCategory = item.getAttribute('data-category');
         const isFeatured = item.getAttribute('data-featured') === 'true';
 
-        // 'All' shows everything
         if (category === 'all') return true;
-
-        // 'Featured' shows only featured items
         if (category === 'featured') return isFeatured;
-
-        // Specific category match
-        // Note: Some items might have category slugs like 'residential'
         return itemCategory === category;
     });
 
