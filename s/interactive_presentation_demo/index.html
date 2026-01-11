@@ -509,10 +509,24 @@ window.exportedAssets['a_15368606_uUadYsyjCZ5Jesd8fZ'] = "assets/a_15368606_uUad
         // Reset state
         modalContent.classList.remove('animate-zoom-from-marker');
         
-        if (e && (e.clientX || (e.touches && e.touches[0]))) {
-            const clientX = e.clientX || e.touches[0].clientX;
-            const clientY = e.clientY || e.touches[0].clientY;
-            
+        // Robust extraction of client coordinates for Mouse, Touch, and TouchEnd
+        let clientX, clientY;
+        
+        if (e) {
+            if (e.clientX !== undefined) {
+                 clientX = e.clientX;
+                 clientY = e.clientY;
+            } else if (e.touches && e.touches.length > 0) {
+                 clientX = e.touches[0].clientX;
+                 clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                 // Important for 'touchend'
+                 clientX = e.changedTouches[0].clientX;
+                 clientY = e.changedTouches[0].clientY;
+            }
+        }
+        
+        if (clientX !== undefined && clientY !== undefined) {
             // Calculate vector from viewport center to click position
             // This is robust because it doesn't depend on the modal's own rect
             const vx = clientX - window.innerWidth / 2;
@@ -1068,9 +1082,10 @@ function updateTransform() {
         
         el.addEventListener('touchend', function(e) { 
             e.preventDefault(); e.stopPropagation();
-            if(item.link) { openLink(item.link); }
-            else if(item.images && item.images.length > 0) { openGallery(item.images); }
-            else if(item.image) { openGallery([item.image]); }
+            // Pass 'e' to handlers so they can extract touch coordinates
+            if(item.link) { openLink(item.link, e); }
+            else if(item.images && item.images.length > 0) { openGallery(item.images, 0, e); }
+            else if(item.image) { openGallery([item.image], 0, e); }
         });
     };
 
