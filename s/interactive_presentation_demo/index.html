@@ -89,13 +89,55 @@
     }
     
     .animate-zoom-from-marker {
-        animation: sleek-zoom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        animation: sleek-zoom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     }
     
     .zoom-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;  }
     .zoom-wrapper:active {  }
     
-    .viewer-image { max-width: 77vw; max-height: 77vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform-origin: center; transition: transform 0.1s linear; border-radius: 12px; }
+    .viewer-image { max-width: 77vw; max-height: 77vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform-origin: center; transition: transform 0.1s linear; border-radius: 12px; background: #111; }
+    video.viewer-image { background: #000; transition: opacity 0.3s ease; }
+    
+    .media-card-wrapper {
+        position: relative;
+        max-width: 77vw; 
+        max-height: 77vh;
+        min-width: 320px;
+        min-height: 200px;
+        background: #111;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    
+    .thumb-layer {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        object-fit: contain;
+        filter: blur(10px);
+        transform: scale(1.02); /* Hide blur edges */
+        border-radius: 12px;
+        z-index: 1;
+        transition: opacity 0.4s ease;
+    }
+    
+    /* When fully loaded, we fade full layer in */
+    .full-layer {
+        position: relative;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        border-radius: 12px;
+    }
+    .full-layer.loaded { opacity: 1; }
+    
+    .placeholder-layer {
+        position: absolute; inset: 0; 
+        background: #18181b; 
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 12px;
+        z-index: 0;
+    }
     video.viewer-image { background: #000; transition: opacity 0.3s ease; }
     .media-loading-wrapper { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
     .media-loader { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s cubic-bezier(0.76, 0, 0.24, 1) infinite; }
@@ -383,7 +425,7 @@ window.exportedAssets['a_15368606_uUadYsyjCZ5Jesd8fZ'] = "assets/a_15368606_uUad
     };
     window.rehydrate = rehydrate;
     
-    const appData = rehydrate({"plan":"{{REF:a_15368606_uUadYsyjCZ5Jesd8fZ}}","planName":"remix_1767761244288.png","nightPlan":"{{REF:a_12714618_W1GGLh7ywHvDwADtZ}}","isNightMode":true,"markers":[{"id":"m-1767760801433-107","type":"marker","name":"Video Project 17","images":[{"src":"{{REF:a_27906062_ZW8gY29udmVydGVyLg}}","name":"Video Project 17.mp4","type":"video","thumbnail":"{{REF:a_424323_afmlSqVHGaWGpUqCfZ}}"}],"x":53.540848419684096,"y":72.03202160072236,"customIcon":"{{REF:a_424323_afmlSqVHGaWGpUqCfZ}}","showPreview":false},{"id":"m-1767668144003-904","type":"marker","name":"Add_fading_effect_2k_202601061032","images":[{"src":"{{REF:a_244127_VQ4pQLF6p6taYRBAAA}}","name":"Add_fading_effect_2k_202601061032.jpeg","type":"image"}],"x":33.05667892229024,"y":80.20194799107006,"customIcon":"{{REF:a_244127_VQ4pQLF6p6taYRBAAA}}","showPreview":false},{"id":"m-1767758189129-113","type":"marker","name":"Photorealistic_architectural_wide_2k_20260106","images":[{"src":"{{REF:a_271007_Tqjl9T1Y1tDOiUCQAA}}","name":"Photorealistic_architectural_wide_2k_20260106.jpeg","type":"image"}],"x":32.656306738669265,"y":69.31277337420889,"customIcon":"{{REF:a_271007_Tqjl9T1Y1tDOiUCQAA}}","showPreview":false},{"id":"m-1767668085482-763","type":"marker","name":"Reduce_the_fog_2k_202601061032","images":[{"src":"{{REF:a_266451_HKyTZPsctnWpE3QAAAA}}","name":"Reduce_the_fog_2k_202601061032.jpeg","type":"image"}],"x":37.68273774505739,"y":44.76981192849425,"customIcon":"{{REF:a_266451_HKyTZPsctnWpE3QAAAA}}","showPreview":false},{"id":"m-1767758183677-830","type":"marker","name":"Photorealistic_architectural_render_2k_202601","images":[{"src":"{{REF:a_364527_cd3bjmJck40MAAAAA}}","name":"Photorealistic_architectural_render_2k_202601.jpeg","type":"image"}],"x":65.45669300358865,"y":35.88178514258673,"customIcon":"{{REF:a_364527_cd3bjmJck40MAAAAA}}","showPreview":false},{"id":"m-1767668093408-114","type":"marker","name":"Fade_the_towers_2k_202601061032","images":[{"src":"{{REF:a_295735_3JXsX4DaisqIN1w9EAAA}}","name":"Fade_the_towers_2k_202601061032.jpeg","type":"image"}],"x":68.37668890870485,"y":55.62654919001115,"customIcon":"{{REF:a_295735_3JXsX4DaisqIN1w9EAAA}}","showPreview":false},{"id":"m-1767767139946-847","type":"marker","name":"Streetlevel_architectural_shot_2k_2026010714","images":[{"src":"{{REF:a_409063_gKQmWkeBwN8wtlGAAA}}","name":"Streetlevel_architectural_shot_2k_2026010714.jpeg","type":"image"}],"x":64.23409587354014,"y":70.04555947069754,"customIcon":"{{REF:a_409063_gKQmWkeBwN8wtlGAAA}}","showPreview":false},{"id":"m-1767767076068-673","type":"marker","name":"Interior_architectural_shot_2k_202601071422","images":[{"src":"{{REF:a_251779_uJLLU2sq5pKNqh5ygAA}}","name":"Interior_architectural_shot_2k_202601071422.jpeg","type":"image"}],"x":20.844441975241285,"y":35.92012183188908,"customIcon":"{{REF:a_251779_uJLLU2sq5pKNqh5ygAA}}","showPreview":false},{"id":"m-1767758160027-932","type":"marker","name":"Interior_view_of_2k_202601071129","images":[{"src":"{{REF:a_222047_bZIIyE8qnw0j5zVMvAAA}}","name":"Interior_view_of_2k_202601071129.jpeg","type":"image"}],"x":36.13256637799889,"y":18.4013171880914,"customIcon":"{{REF:a_222047_bZIIyE8qnw0j5zVMvAAA}}","showPreview":false},{"id":"m-1767758376800-382","type":"marker","name":"A_photorealistic_closeup_2k_202601071129","images":[{"src":"{{REF:a_157171_QPVvYLxqg2muudzEAA}}","name":"A_photorealistic_closeup_2k_202601071129.jpeg","type":"image"}],"x":52.92971221260579,"y":14.674226381119103,"customIcon":"{{REF:a_157171_QPVvYLxqg2muudzEAA}}","showPreview":false},{"id":"m-1767758201160-856","type":"marker","name":"Interior_view_from_2k_202601071120","images":[{"src":"{{REF:a_244995_xqhGEIR2QAdIftoAAA}}","name":"Interior_view_from_2k_202601071120.jpeg","type":"image"}],"x":74.05044260466629,"y":33.993764360993545,"customIcon":"{{REF:a_244995_xqhGEIR2QAdIftoAAA}}","showPreview":false},{"id":"m-1767668104277-225","type":"marker","name":"Change_the_camera_2k_202601061033","images":[{"src":"{{REF:a_28115210_ZW8gY29udmVydGVyLg}}","name":"aerial_drone.mp4","type":"video","thumbnail":"{{REF:a_492383_jbeopUq6czsYar2Q}}"}],"x":73.6652541458367,"y":92.28207107114052,"customIcon":"{{REF:a_407407_pJhm5MjCaSR2AAAAA}}","showPreview":false}],"textLabels":[{"id":"t-1767758016514-207","type":"label","x":9.851948732803384,"y":25.321269850415547,"text":"Schematic Masterplan","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_417207_bCXZfVdqAZZEzLK1x0AA}}","name":"Schematic Masterplan.jpeg","type":"image"}],"image":{"src":"{{REF:a_417207_bCXZfVdqAZZEzLK1x0AA}}","name":"Schematic Masterplan.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758020810-535","type":"label","x":8.882767548663741,"y":30.42109603665556,"text":"Schematic Section","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_332891_HIkeRgV8QUQP4AAAAA}}","name":"Schematic Section.jpeg","type":"image"}],"image":{"src":"{{REF:a_332891_HIkeRgV8QUQP4AAAAA}}","name":"Schematic Section.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758025302-592","type":"label","x":9.625693669735574,"y":35.84644304329389,"text":"Sustainability Section","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_148815_6fSCQHes99UwAAAA}}","name":"Sustainability Section.jpeg","type":"image"}],"image":{"src":"{{REF:a_148815_6fSCQHes99UwAAAA}}","name":"Sustainability Section.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758040298-462","type":"label","x":8.539551543880288,"y":14.404696113179178,"text":"Schematic Model","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_178399_2pGZWICs9YP8PJJAAAA}}","name":"Schematic Model.jpeg","type":"image"}],"image":{"src":"{{REF:a_178399_2pGZWICs9YP8PJJAAAA}}","name":"Schematic Model.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758042057-826","type":"label","x":8.547216978089294,"y":8.767105773040544,"text":"Massing Diagram","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_100775_MiA4RgyPmXv5sAQAAA}}","name":"Massing Diagram.jpeg","type":"image"}],"image":{"src":"{{REF:a_100775_MiA4RgyPmXv5sAQAAA}}","name":"Massing Diagram.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758059822-141","type":"label","x":8.196335539096836,"y":19.94212639033898,"text":"Zoning Program","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_132331_GEOc9WKqM1H7z7IAAAA}}","name":"Zoning Program.jpeg","type":"image"}],"image":{"src":"{{REF:a_132331_GEOc9WKqM1H7z7IAAAA}}","name":"Zoning Program.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767765944451-987","type":"label","x":26.65334109714563,"y":94.81336604846925,"text":"INTERACTIVE PRESENTATION DEMO - SAMPLE PROJECT ONLY","fontSize":20,"color":"#e3e3e3","bold":true,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[],"image":null,"bgColor":"#000000","bgOpacity":0}],"customIcons":[],"selectedIds":[],"color":"#ffffff","numberColor":"#000000","markerSize":38,"fontSize":19,"markerFontFamily":"\"Inter\", sans-serif","markerBold":true,"markerItalic":false,"opacity":1,"showNumber":true,"shape":"circle","showOutline":true,"outlineColor":"#ebebeb","outlineWidth":6,"showSidebar":true,"enableExportSidebar":false,"enableImageZoom":false,"previewScale":77,"exportPadding":92,"hoverPreviewSize":802,"showSplash":false,"splashText":"BEGIN","splashImage":null,"splashFontSize":14,"splashFontFamily":"\"Inter\", sans-serif","splashBold":false,"splashItalic":false,"splashColor":"#ffffff","indexingType":"number","transitionSpeed":2,"toggleButton":{"x":91.85644336732734,"y":43.4895833333333,"scale":3,"opacity":1,"borderless":false,"bgColor":"#7a7a7a","bgOpacity":0.4},"viewTransform":{"scale":0.20000000000000004,"x":203.77188390992296,"y":137.14108029600118},"enableMarkerPulse":true,"markerPulseSize":34,"allowFullResolution":false});
+    const appData = rehydrate({"plan":"{{REF:a_15368606_uUadYsyjCZ5Jesd8fZ}}","planName":"remix_1767761244288.png","nightPlan":"{{REF:a_12714618_W1GGLh7ywHvDwADtZ}}","isNightMode":true,"markers":[{"id":"m-1767760801433-107","type":"marker","name":"Video Project 17","images":[{"src":"{{REF:a_27906062_ZW8gY29udmVydGVyLg}}","name":"Video Project 17.mp4","type":"video","thumbnail":"{{REF:a_424323_afmlSqVHGaWGpUqCfZ}}"}],"x":53.540848419684096,"y":72.03202160072236,"customIcon":"{{REF:a_424323_afmlSqVHGaWGpUqCfZ}}","showPreview":false},{"id":"m-1767668144003-904","type":"marker","name":"Add_fading_effect_2k_202601061032","images":[{"src":"{{REF:a_244127_VQ4pQLF6p6taYRBAAA}}","name":"Add_fading_effect_2k_202601061032.jpeg","type":"image"}],"x":33.05667892229024,"y":80.20194799107006,"customIcon":"{{REF:a_244127_VQ4pQLF6p6taYRBAAA}}","showPreview":false},{"id":"m-1767758189129-113","type":"marker","name":"Photorealistic_architectural_wide_2k_20260106","images":[{"src":"{{REF:a_271007_Tqjl9T1Y1tDOiUCQAA}}","name":"Photorealistic_architectural_wide_2k_20260106.jpeg","type":"image"}],"x":32.656306738669265,"y":69.31277337420889,"customIcon":"{{REF:a_271007_Tqjl9T1Y1tDOiUCQAA}}","showPreview":false},{"id":"m-1767668085482-763","type":"marker","name":"Reduce_the_fog_2k_202601061032","images":[{"src":"{{REF:a_266451_HKyTZPsctnWpE3QAAAA}}","name":"Reduce_the_fog_2k_202601061032.jpeg","type":"image"}],"x":37.68273774505739,"y":44.76981192849425,"customIcon":"{{REF:a_266451_HKyTZPsctnWpE3QAAAA}}","showPreview":false},{"id":"m-1767758183677-830","type":"marker","name":"Photorealistic_architectural_render_2k_202601","images":[{"src":"{{REF:a_364527_cd3bjmJck40MAAAAA}}","name":"Photorealistic_architectural_render_2k_202601.jpeg","type":"image"}],"x":65.45669300358865,"y":35.88178514258673,"customIcon":"{{REF:a_364527_cd3bjmJck40MAAAAA}}","showPreview":false},{"id":"m-1767668093408-114","type":"marker","name":"Fade_the_towers_2k_202601061032","images":[{"src":"{{REF:a_295735_3JXsX4DaisqIN1w9EAAA}}","name":"Fade_the_towers_2k_202601061032.jpeg","type":"image"}],"x":68.37668890870485,"y":55.62654919001115,"customIcon":"{{REF:a_295735_3JXsX4DaisqIN1w9EAAA}}","showPreview":false},{"id":"m-1767767139946-847","type":"marker","name":"Streetlevel_architectural_shot_2k_2026010714","images":[{"src":"{{REF:a_409063_gKQmWkeBwN8wtlGAAA}}","name":"Streetlevel_architectural_shot_2k_2026010714.jpeg","type":"image"}],"x":64.23409587354014,"y":70.04555947069754,"customIcon":"{{REF:a_409063_gKQmWkeBwN8wtlGAAA}}","showPreview":false},{"id":"m-1767767076068-673","type":"marker","name":"Interior_architectural_shot_2k_202601071422","images":[{"src":"{{REF:a_251779_uJLLU2sq5pKNqh5ygAA}}","name":"Interior_architectural_shot_2k_202601071422.jpeg","type":"image"}],"x":20.844441975241285,"y":35.92012183188908,"customIcon":"{{REF:a_251779_uJLLU2sq5pKNqh5ygAA}}","showPreview":false},{"id":"m-1767758160027-932","type":"marker","name":"Interior_view_of_2k_202601071129","images":[{"src":"{{REF:a_222047_bZIIyE8qnw0j5zVMvAAA}}","name":"Interior_view_of_2k_202601071129.jpeg","type":"image"}],"x":36.13256637799889,"y":18.4013171880914,"customIcon":"{{REF:a_222047_bZIIyE8qnw0j5zVMvAAA}}","showPreview":false},{"id":"m-1767758376800-382","type":"marker","name":"A_photorealistic_closeup_2k_202601071129","images":[{"src":"{{REF:a_157171_QPVvYLxqg2muudzEAA}}","name":"A_photorealistic_closeup_2k_202601071129.jpeg","type":"image"}],"x":52.92971221260579,"y":14.674226381119103,"customIcon":"{{REF:a_157171_QPVvYLxqg2muudzEAA}}","showPreview":false},{"id":"m-1767758201160-856","type":"marker","name":"Interior_view_from_2k_202601071120","images":[{"src":"{{REF:a_244995_xqhGEIR2QAdIftoAAA}}","name":"Interior_view_from_2k_202601071120.jpeg","type":"image"}],"x":74.05044260466629,"y":33.993764360993545,"customIcon":"{{REF:a_244995_xqhGEIR2QAdIftoAAA}}","showPreview":false},{"id":"m-1767668104277-225","type":"marker","name":"Change_the_camera_2k_202601061033","images":[{"src":"{{REF:a_28115210_ZW8gY29udmVydGVyLg}}","name":"aerial_drone.mp4","type":"video","thumbnail":"{{REF:a_492383_jbeopUq6czsYar2Q}}"}],"x":73.6652541458367,"y":92.28207107114052,"customIcon":"{{REF:a_407407_pJhm5MjCaSR2AAAAA}}","showPreview":false}],"textLabels":[{"id":"t-1767758016514-207","type":"label","x":9.851948732803384,"y":25.321269850415547,"text":"Schematic Masterplan","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_417207_bCXZfVdqAZZEzLK1x0AA}}","name":"Schematic Masterplan.jpeg","type":"image"}],"image":{"src":"{{REF:a_417207_bCXZfVdqAZZEzLK1x0AA}}","name":"Schematic Masterplan.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758020810-535","type":"label","x":8.882767548663741,"y":30.42109603665556,"text":"Schematic Section","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_332891_HIkeRgV8QUQP4AAAAA}}","name":"Schematic Section.jpeg","type":"image"}],"image":{"src":"{{REF:a_332891_HIkeRgV8QUQP4AAAAA}}","name":"Schematic Section.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758025302-592","type":"label","x":9.625693669735574,"y":35.84644304329389,"text":"Sustainability Section","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_148815_6fSCQHes99UwAAAA}}","name":"Sustainability Section.jpeg","type":"image"}],"image":{"src":"{{REF:a_148815_6fSCQHes99UwAAAA}}","name":"Sustainability Section.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758040298-462","type":"label","x":8.539551543880288,"y":14.404696113179178,"text":"Schematic Model","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_178399_2pGZWICs9YP8PJJAAAA}}","name":"Schematic Model.jpeg","type":"image"}],"image":{"src":"{{REF:a_178399_2pGZWICs9YP8PJJAAAA}}","name":"Schematic Model.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758042057-826","type":"label","x":8.547216978089294,"y":8.767105773040544,"text":"Massing Diagram","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_100775_MiA4RgyPmXv5sAQAAA}}","name":"Massing Diagram.jpeg","type":"image"}],"image":{"src":"{{REF:a_100775_MiA4RgyPmXv5sAQAAA}}","name":"Massing Diagram.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767758059822-141","type":"label","x":8.196335539096836,"y":19.94212639033898,"text":"Zoning Program","fontSize":16,"color":"#ffffff","bold":false,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[{"src":"{{REF:a_132331_GEOc9WKqM1H7z7IAAAA}}","name":"Zoning Program.jpeg","type":"image"}],"image":{"src":"{{REF:a_132331_GEOc9WKqM1H7z7IAAAA}}","name":"Zoning Program.jpeg","type":"image"},"bgColor":"#000000","bgOpacity":0.5},{"id":"t-1767765944451-987","type":"label","x":26.65334109714563,"y":94.81336604846925,"text":"INTERACTIVE PRESENTATION DEMO - SAMPLE PROJECT ONLY","fontSize":20,"color":"#e3e3e3","bold":true,"italic":false,"shadow":true,"padding":4,"fontFamily":"Inter, sans-serif","images":[],"image":null,"bgColor":"#000000","bgOpacity":0}],"customIcons":[],"selectedIds":[],"color":"#ffffff","numberColor":"#000000","markerSize":38,"fontSize":19,"markerFontFamily":"\"Inter\", sans-serif","markerBold":true,"markerItalic":false,"opacity":1,"showNumber":true,"shape":"circle","showOutline":true,"outlineColor":"#ebebeb","outlineWidth":6,"showSidebar":true,"enableExportSidebar":false,"enableImageZoom":false,"previewScale":77,"exportPadding":92,"hoverPreviewSize":802,"showSplash":false,"splashText":"BEGIN","splashImage":null,"splashFontSize":14,"splashFontFamily":"\"Inter\", sans-serif","splashBold":false,"splashItalic":false,"splashColor":"#ffffff","indexingType":"number","transitionSpeed":2,"toggleButton":{"x":91.85644336732734,"y":43.4895833333333,"scale":3,"opacity":1,"borderless":false,"bgColor":"#7a7a7a","bgOpacity":0.4},"viewTransform":{"scale":0.20000000000000004,"x":210.84331248135152,"y":71.0315564864776},"enableMarkerPulse":true,"markerPulseSize":34,"allowFullResolution":false});
     let currentImages = []; let currentLink = null; let currentEmbed = null; 
     let currentIndex = 0; let zoomLevel = 1; let isDragging = false; let startX = 0, startY = 0; let translateX = 0, translateY = 0; const enableZoom = false;
     let pannellumViewer = null; // 360 Viewer Instance
@@ -576,39 +618,78 @@ window.exportedAssets['a_15368606_uUadYsyjCZ5Jesd8fZ'] = "assets/a_15368606_uUad
             
             container.appendChild(mediaEl);
         } else {
-            mediaEl = document.createElement('img');
-            mediaEl.src = currentItem.src;
-            mediaEl.className = 'viewer-image';
-            mediaEl.id = 'modal-img'; 
+            // IMAGE HANDLING WITH THUMBNAILS/PLACEHOLDERS
+            const wrapper = document.createElement('div');
+            wrapper.className = 'media-card-wrapper';
+            wrapper.id = 'modal-img-wrapper';
+
+            // Placeholder Layer (Dark BG + Spinner if no thumb)
+            const placeholder = document.createElement('div');
+            placeholder.className = 'placeholder-layer';
+            // Only show spinner if no thumbnail to avoid visual clutter
+            if (!currentItem.thumbnail) {
+                placeholder.innerHTML = '<span class="media-loader" style="width:30px;height:30px;border-width:2px;"></span>';
+            }
+            wrapper.appendChild(placeholder);
+
+            // Thumbnail Layer
+            if (currentItem.thumbnail) {
+                const thumb = document.createElement('img');
+                thumb.className = 'thumb-layer';
+                thumb.src = currentItem.thumbnail;
+                wrapper.appendChild(thumb);
+            }
+
+            // Full Image Layer
+            const fullImg = document.createElement('img');
+            fullImg.src = currentItem.src;
+            fullImg.className = 'viewer-image full-layer';
+            fullImg.id = 'modal-img'; // ID for Zoom Logic
+            
+            // For now, we apply zoom transforms to the wrapper effectively by targeting the ID inside updates
+            // But wait, the zoom logic targets 'modal-img'.
+            // Let's attach the ID to the wrapper instead so the WHOLE THING zooms
+            fullImg.id = ''; // clear
+            wrapper.id = 'modal-img'; // The wrapper is now the "image" being zoomed
+
+            fullImg.onload = () => {
+                fullImg.classList.add('loaded');
+                // Optional: remove thumb layer after transition to save memory? 
+                // Leaving it is fine for z-index covering.
+            };
+            
+            wrapper.appendChild(fullImg);
+
             resetZoom(); 
             if (animate) { 
-                mediaEl.classList.add(direction === 'right' ? 'slide-enter-right' : 'slide-enter-left'); 
+                wrapper.classList.add(direction === 'right' ? 'slide-enter-right' : 'slide-enter-left'); 
             } 
-            container.appendChild(mediaEl);
+            container.appendChild(wrapper);
         }
         
         counter.textContent = `${currentIndex + 1} / ${currentImages.length}`; updateNavButtons(); 
     }
 
-    function changeSlide(dir) { if(currentLink) return; const newIndex = currentIndex + dir; if (newIndex >= 0 && newIndex < currentImages.length) { currentIndex = newIndex; updateModalImage(true, dir > 0 ? 'right' : 'left'); } }
-    
-    function updateNavButtons() { 
-        const prevBtn = document.querySelector('.prev-btn');
-        const nextBtn = document.querySelector('.next-btn');
-        const counter = document.getElementById('img-counter');
-        if(currentLink) {
-            if (prevBtn) prevBtn.style.display = 'none';
-            if (nextBtn) nextBtn.style.display = 'none';
-            if (counter) counter.style.display = 'none';
-            return;
-        }
-        if (prevBtn) prevBtn.style.display = currentIndex > 0 ? 'block' : 'none';
-        if (nextBtn) nextBtn.style.display = currentIndex < currentImages.length - 1 ? 'block' : 'none';
-        if (counter) counter.style.display = currentImages.length > 1 ? 'block' : 'none';
+function changeSlide(dir) { if (currentLink) return; const newIndex = currentIndex + dir; if (newIndex >= 0 && newIndex < currentImages.length) { currentIndex = newIndex; updateModalImage(true, dir > 0 ? 'right' : 'left'); } }
+
+function updateNavButtons() {
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    const counter = document.getElementById('img-counter');
+    if (currentLink) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (counter) counter.style.display = 'none';
+        return;
     }
-    
-    function resetZoom() { zoomLevel = 1; translateX = 0; translateY = 0; updateTransform(); }
-    function updateTransform() { const img = document.getElementById('modal-img'); if(img) img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`; }
+    if (prevBtn) prevBtn.style.display = currentIndex > 0 ? 'block' : 'none';
+    if (nextBtn) nextBtn.style.display = currentIndex < currentImages.length - 1 ? 'block' : 'none';
+    if (counter) counter.style.display = currentImages.length > 1 ? 'block' : 'none';
+}
+
+function resetZoom() { zoomLevel = 1; translateX = 0; translateY = 0; updateTransform(); }
+function updateTransform() {
+    const img = document.getElementById('modal-img'); if (img) img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`; }
     
     if (enableZoom) { const wrapper = document.getElementById('modal-content'); if (wrapper) { wrapper.addEventListener('wheel', (e) => { if(currentLink || currentEmbed) return; e.preventDefault(); const scaleAmount = -e.deltaY * 0.001; zoomLevel = Math.min(Math.max(1, zoomLevel + scaleAmount), 5); if (zoomLevel === 1) { translateX = 0; translateY = 0; } updateTransform(); }); wrapper.addEventListener('mousedown', (e) => { if(currentLink || currentEmbed) return; if (zoomLevel > 1) { e.preventDefault(); isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } }); } window.addEventListener('mousemove', (e) => { if (isDragging && zoomLevel > 1) { e.preventDefault(); translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform(); } }); window.addEventListener('mouseup', () => { isDragging = false; }); }
     
