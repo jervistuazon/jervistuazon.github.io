@@ -4,7 +4,6 @@
     --text-primary: #f5f5f5;
     --text-secondary: #888888;
     --accent-color: #ffffff;
-    --cursor-color: #ffffff;
 
     --font-main: 'Manrope', sans-serif;
     --font-display: 'Raleway', sans-serif;
@@ -32,6 +31,31 @@ body {
     cursor: default;
     -webkit-font-smoothing: antialiased;
     /* Crisper text */
+}
+
+/* Custom Scrollbar - Consistent across all views */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #333 var(--bg-color);
 }
 
 
@@ -785,6 +809,11 @@ body::after {
         align-items: flex-start;
         gap: 1rem;
     }
+
+    /* Performance: Disable parallax on mobile */
+    .hero-section {
+        background-attachment: scroll;
+    }
 }
 
 /* Contact Section */
@@ -901,13 +930,6 @@ body::after {
 
 .gallery-item.hidden-item {
     display: none !important;
-}
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .fade-in-scroll {
@@ -1241,6 +1263,7 @@ iframe.lightbox-content {
 .gallery-item.loading .gallery-img,
 .gallery-item.loading .gallery-video {
     opacity: 0;
+    visibility: hidden;
 }
 
 .gallery-item .gallery-img,
@@ -1251,6 +1274,7 @@ iframe.lightbox-content {
 .gallery-item.loaded .gallery-img,
 .gallery-item.loaded .gallery-video {
     opacity: 1;
+    visibility: visible;
 }
 
 @keyframes shimmer {

@@ -25,13 +25,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Raleway:wght@300;400;500;600&display=block"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Raleway:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Favicon for browser tab and Google search -->
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/favicon.png">
+
+    <!-- Preload hero image for faster LCP -->
+    <link rel="preload" href="assets/HERO%20SHOT/Hero%20Shot.webp" as="image">
 
     <!-- Structured Data (JSON-LD) for SEO -->
     <script type="application/ld+json">
@@ -55,7 +58,7 @@
 
     <nav class="navbar">
         <div class="nav-content">
-            <a href="#hero" class="logo"></a>
+            <a href="#hero" class="logo" aria-label="Go to top"></a>
             <div class="nav-links">
                 <a href="#work">Work</a>
                 <a href="#about">About</a>

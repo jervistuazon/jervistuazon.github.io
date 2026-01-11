@@ -649,12 +649,6 @@ function renderInfo(container, text) {
     container.appendChild(info);
 }
 
-// Modified renderGalleryGrid (Legacy Part below for matching)
-/* 
-   Since the codebase is large, let's just insert the new logic at the top of renderGalleryGrid 
-   and put the old logic in a block that runs if no layout found.
-*/
-
 // Open Project View (Sub-Gallery)
 // For category projects: openGallery('Hospitality', 'Fiji Island Resort')
 function openGallery(category, projectName) {
@@ -927,19 +921,7 @@ function updateLightboxContent() {
     caption.textContent = imgName.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
 }
 
-// Keyboard Navigation Support
-document.addEventListener('keydown', (e) => {
-    const lightbox = document.getElementById('lightbox');
-    if (lightbox.classList.contains('active')) {
-        if (e.key === 'Escape') {
-            closeLightbox();
-        } else if (e.key === 'ArrowLeft') {
-            changeImage(-1);
-        } else if (e.key === 'ArrowRight') {
-            changeImage(1);
-        }
-    }
-});
+// Note: Keyboard navigation is handled by the main keydown listener in DOMContentLoaded
 
 function changeImage(direction) {
     currentImageIndex += direction;
@@ -965,14 +947,7 @@ function closeLightbox() {
     }, 300);
 }
 
-// Helper to encode paths properly (fixing spaces)
-function encodePath(path) {
-    return path.split('/').map(part => encodeURIComponent(part)).join('/');
-}
-
-function isVideo(filename) {
-    return /\.(mp4|webm|mov)$/i.test(filename);
-}
+// Note: encodePath() and isVideo() are defined at the top of this file (lines 82-90)
 
 // Lenis Smooth Scrolling
 const lenis = new Lenis({
