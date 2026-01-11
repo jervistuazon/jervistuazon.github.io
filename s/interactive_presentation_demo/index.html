@@ -74,7 +74,9 @@
     .zoom-wrapper:active { cursor: grabbing; }
     
     .viewer-image { max-width: 77vw; max-height: 77vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform-origin: center; transition: transform 0.1s linear; border-radius: 12px; }
-    video.viewer-image { background: #000; }
+    video.viewer-image { background: #000; transition: opacity 0.3s ease; }
+    .media-loading-wrapper { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .media-loader { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s cubic-bezier(0.76, 0, 0.24, 1) infinite; }
     .viewer-iframe { width: 90vw; height: 90vh; border: none; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); background: black; }
 
     .close-btn { position: absolute; top: 20px; right: 20px; color: white; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 50%; cursor: pointer; z-index: 220; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
@@ -475,17 +477,31 @@ window.exportedAssets['a_15368606_uUadYsyjCZ5Jesd8fZ'] = "assets/a_15368606_uUad
             }, 50);
 
         } else if (isVideo) {
+            // Create loading spinner wrapper
+            const loadingWrapper = document.createElement('div');
+            loadingWrapper.className = 'media-loading-wrapper';
+            loadingWrapper.innerHTML = '<span class="media-loader"></span>';
+            container.appendChild(loadingWrapper);
+            
             mediaEl = document.createElement('video');
             mediaEl.src = currentItem.src;
             mediaEl.controls = true;
             mediaEl.autoplay = true;
             mediaEl.className = 'viewer-image';
             mediaEl.style.backgroundColor = 'black';
+            mediaEl.style.opacity = '0'; // Initially hidden
             mediaEl.id = 'modal-img'; 
             resetZoom(); 
             if (animate) { 
                 mediaEl.classList.add(direction === 'right' ? 'slide-enter-right' : 'slide-enter-left'); 
-            } 
+            }
+            
+            // Show video when ready and hide loader
+            mediaEl.addEventListener('canplay', function() {
+                loadingWrapper.style.display = 'none';
+                mediaEl.style.opacity = '1';
+            }, { once: true });
+            
             container.appendChild(mediaEl);
         } else {
             mediaEl = document.createElement('img');
