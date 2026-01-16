@@ -57,6 +57,27 @@ async function build() {
         console.error('[FAIL] CSS Minification failed:', err);
     }
 
+    // 4. Update index.html versioning for Cache Busting
+    console.log('[INFO] Updating index.html versioning...');
+    try {
+        const version = Date.now();
+        let indexHtml = fs.readFileSync('index.html', 'utf8');
+
+        // Update CSS references
+        indexHtml = indexHtml.replace(/(href="styles(?:\.min)?\.css)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        // Update JS references
+        indexHtml = indexHtml.replace(/(src="script(?:\.min)?\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        // Update gallery-data.js reference
+        indexHtml = indexHtml.replace(/(src="gallery-data\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        fs.writeFileSync('index.html', indexHtml);
+        console.log(`[OK] index.html updated with version: ${version}`);
+    } catch (err) {
+        console.error('[FAIL] index.html version update failed:', err);
+    }
+
     console.log('==========================================');
     console.log('       BUILD COMPLETE                     ');
     console.log('==========================================');
