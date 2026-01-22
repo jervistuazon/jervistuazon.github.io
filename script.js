@@ -76,6 +76,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Filter button interactions (desktop)
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const category = button.dataset.filter || button.textContent.toLowerCase();
+            filterGallery(category, event);
+        });
+    });
+
+    // Custom dropdown interactions (mobile)
+    const dropdownButton = document.querySelector('.selected-option');
+    if (dropdownButton) {
+        dropdownButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleDropdown();
+        });
+    }
+
+    const optionButtons = document.querySelectorAll('.option-item');
+    optionButtons.forEach(button => {
+        const isDefault = button.dataset.filter === 'all';
+        button.classList.toggle('selected', isDefault);
+        button.setAttribute('aria-selected', isDefault.toString());
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const category = button.dataset.filter || button.textContent.toLowerCase();
+            selectFilter(category, button.textContent);
+        });
+    });
 });
 
 // Utility function to encode file paths for URLs (handle spaces and special characters)
@@ -392,7 +422,8 @@ function renderGalleryGrid() {
 
     // Render all items
     sortedProjects.forEach((itemData, index) => {
-        const item = document.createElement('div');
+        const item = document.createElement('button');
+        item.type = 'button';
 
         // Apply layout: 
         // - Featured projects: always 2x2, alternating left/right
@@ -444,6 +475,7 @@ function renderGalleryGrid() {
             // Display name: extract just the project name (before first dash)
             const displayName = parseProjectName(itemData.projectName).name;
             renderInfo(item, displayName);
+            item.setAttribute('aria-label', `Open project: ${displayName}`);
 
             // Auto-run slideshow for multi-image projects
             const imageCount = itemData.files.length;
@@ -460,7 +492,9 @@ function renderGalleryGrid() {
                 openLightbox(itemData.fileIndex);
             };
             renderMediaItem(item, itemData.category, '.', itemData.filename);
-            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
+            const standaloneLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+            renderInfo(item, standaloneLabel);
+            item.setAttribute('aria-label', `Open image: ${standaloneLabel}`);
         } else if (itemData.type === 'video') {
             // Video item
             item.onclick = () => {
@@ -469,7 +503,9 @@ function renderGalleryGrid() {
                 openLightbox(itemData.fileIndex);
             };
             renderMediaItem(item, 'Video', '.', itemData.filename);
-            renderInfo(item, itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, ""));
+            const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+            renderInfo(item, videoLabel);
+            item.setAttribute('aria-label', `Play video: ${videoLabel}`);
         }
 
         grid.appendChild(item);
@@ -706,7 +742,8 @@ function openGallery(category, projectName) {
         const filename = isObject ? itemData.src : itemData;
         const spanConfig = isObject ? itemData.span : null;
 
-        const item = document.createElement('div');
+        const item = document.createElement('button');
+        item.type = 'button';
         // Use custom span if available, else fallback to pattern
         const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
 
@@ -771,10 +808,12 @@ function openGallery(category, projectName) {
 
         const h4 = document.createElement('h4');
         // Strip extension AND leading numbers (e.g., "1. Name" -> "Name")
-        h4.textContent = filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+        const lightboxLabel = filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+        h4.textContent = lightboxLabel;
 
         info.appendChild(h4);
         item.appendChild(info);
+        item.setAttribute('aria-label', `Open image: ${lightboxLabel}`);
 
         projectGrid.appendChild(item);
         observer.observe(item);
@@ -838,23 +877,32 @@ function closeProjectView() {
 // Custom Mobile Dropdown Logic
 function toggleDropdown() {
     const list = document.getElementById('mobile-filter-options');
-    list.classList.toggle('active');
+    const dropdownButton = document.querySelector('.selected-option');
+    const isOpen = list.classList.toggle('active');
+    if (dropdownButton) {
+        dropdownButton.setAttribute('aria-expanded', isOpen.toString());
+    }
 }
 
-function selectFilter(categorySlug) {
+function selectFilter(categorySlug, selectedText) {
     const list = document.getElementById('mobile-filter-options');
-    const selectedText = document.querySelector(`.option-item[onclick="selectFilter('${categorySlug}')"]`).textContent;
     const selectedDisplay = document.querySelector('.selected-option');
 
     // Update Display Text
     selectedDisplay.textContent = selectedText.toUpperCase();
 
     // Update Active State
-    document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
-    document.querySelector(`.option-item[onclick="selectFilter('${categorySlug}')"]`).classList.add('selected');
+    document.querySelectorAll('.option-item').forEach(item => {
+        const isSelected = item.dataset.filter === categorySlug;
+        item.classList.toggle('selected', isSelected);
+        item.setAttribute('aria-selected', isSelected.toString());
+    });
 
     // Close Dropdown
     list.classList.remove('active');
+    if (selectedDisplay) {
+        selectedDisplay.setAttribute('aria-expanded', 'false');
+    }
 
     // Trigger actual filter (pass null so filterGallery uses fallback button activation)
     filterGallery(categorySlug, null);
@@ -981,20 +1029,11 @@ function filterGallery(category, evt, isLoadMore = false) {
 
     // 1. Update Buttons
     const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-
-    // Mark clicked button as active
-    if (evt && evt.target) {
-        evt.target.classList.add('active');
-    } else {
-        // Fallback: find button by category
-        buttons.forEach(btn => {
-            if (btn.textContent.toLowerCase().includes(category.toLowerCase()) ||
-                (category === 'all' && btn.textContent === 'All')) {
-                btn.classList.add('active');
-            }
-        });
-    }
+    buttons.forEach(btn => {
+        const isActive = btn.dataset.filter === category || (category === 'all' && btn.dataset.filter === 'all');
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive.toString());
+    });
 
     // 2. Filter Items and Apply Count Limit
     const items = Array.from(document.querySelectorAll('.gallery-item'));

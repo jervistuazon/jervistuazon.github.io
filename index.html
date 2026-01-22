@@ -27,7 +27,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Raleway:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.min.css?v=1768579901041">
+    <link rel="stylesheet" href="styles.min.css?v=1769068074699">
     <link rel="manifest" href="site.webmanifest">
     <link rel="canonical" href="https://jervistuazon.github.io/">
 
@@ -86,27 +86,34 @@
                     <h2 class="section-title fade-in-scroll">Selected Work</h2>
                     <!-- Desktop filter buttons -->
                     <div class="filter-bar fade-in-scroll delay-1">
-                        <button class="filter-btn active" onclick="filterGallery('all', event)">All</button>
-                        <button class="filter-btn" onclick="filterGallery('featured', event)">Featured</button>
-                        <button class="filter-btn" onclick="filterGallery('residential', event)">Residential</button>
-                        <button class="filter-btn" onclick="filterGallery('commercial', event)">Commercial</button>
-                        <button class="filter-btn" onclick="filterGallery('hospitality', event)">Hospitality</button>
-                        <button class="filter-btn"
-                            onclick="filterGallery('institutional', event)">Institutional</button>
-                        <button class="filter-btn" onclick="filterGallery('video', event)">Video</button>
+                        <button class="filter-btn active" type="button" data-filter="all">All</button>
+                        <button class="filter-btn" type="button" data-filter="featured">Featured</button>
+                        <button class="filter-btn" type="button" data-filter="residential">Residential</button>
+                        <button class="filter-btn" type="button" data-filter="commercial">Commercial</button>
+                        <button class="filter-btn" type="button" data-filter="hospitality">Hospitality</button>
+                        <button class="filter-btn" type="button" data-filter="institutional">Institutional</button>
+                        <button class="filter-btn" type="button" data-filter="video">Video</button>
                     </div>
                     <!-- Mobile filter dropdown -->
                     <!-- Mobile filter dropdown (Custom) -->
                     <div class="custom-dropdown fade-in-scroll delay-1">
-                        <div class="selected-option" onclick="toggleDropdown()">ALL</div>
-                        <ul class="options-list" id="mobile-filter-options">
-                            <li class="option-item" onclick="selectFilter('all')">All</li>
-                            <li class="option-item" onclick="selectFilter('featured')">Featured</li>
-                            <li class="option-item" onclick="selectFilter('residential')">Residential</li>
-                            <li class="option-item" onclick="selectFilter('commercial')">Commercial</li>
-                            <li class="option-item" onclick="selectFilter('hospitality')">Hospitality</li>
-                            <li class="option-item" onclick="selectFilter('institutional')">Institutional</li>
-                            <li class="option-item" onclick="selectFilter('video')">Video</li>
+                        <button class="selected-option" type="button" aria-haspopup="listbox"
+                            aria-expanded="false">ALL</button>
+                        <ul class="options-list" id="mobile-filter-options" role="listbox">
+                            <li><button class="option-item" type="button" data-filter="all"
+                                    role="option">All</button></li>
+                            <li><button class="option-item" type="button" data-filter="featured"
+                                    role="option">Featured</button></li>
+                            <li><button class="option-item" type="button" data-filter="residential"
+                                    role="option">Residential</button></li>
+                            <li><button class="option-item" type="button" data-filter="commercial"
+                                    role="option">Commercial</button></li>
+                            <li><button class="option-item" type="button" data-filter="hospitality"
+                                    role="option">Hospitality</button></li>
+                            <li><button class="option-item" type="button" data-filter="institutional"
+                                    role="option">Institutional</button></li>
+                            <li><button class="option-item" type="button" data-filter="video"
+                                    role="option">Video</button></li>
                         </ul>
                     </div>
                 </div>
@@ -230,8 +237,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
-    <script src="gallery-data.js?v=1768579901041"></script>
-    <script src="script.min.js?v=1768579901041"></script>
+    <script src="gallery-data.js?v=1769068074699"></script>
+    <script src="script.min.js?v=1769068074699"></script>
 </body>
 
 </html>

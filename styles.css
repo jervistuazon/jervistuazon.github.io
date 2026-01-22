@@ -492,6 +492,11 @@ body::after {
     background-repeat: no-repeat;
     background-position: right 0 center;
     user-select: none;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
 }
 
 .options-list {
@@ -520,6 +525,12 @@ body::after {
     /* Reduced vertical padding */
     color: var(--text-secondary);
     transition: color 0.2s, background-color 0.2s;
+    border: 0;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
 }
 
 .option-item:hover,
@@ -566,6 +577,18 @@ body::after {
     /* Changed back to hidden */
     height: 100%;
     transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 0;
+    background: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+}
+
+.gallery-item:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 4px;
 }
 
 
