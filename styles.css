@@ -170,19 +170,26 @@ a:hover {
 
 /* Hero Section - Immersive */
 .hero-section {
+    --hero-fade: 1;
     height: 100vh;
     display: flex;
     align-items: center;
     padding: 0 5%;
     position: relative;
     overflow: hidden;
-    /* Immersive Background */
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: url('assets/HERO SHOT/Hero Shot.webp');
-    /* Fallback / Static */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    /* Simple Parallax */
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
+    z-index: 0;
 }
 
 /* Lightbox Nav Buttons */
@@ -222,11 +229,15 @@ a:hover {
     height: 100%;
     background: linear-gradient(to right, rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 0.3));
     /* Gradient Overlay */
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
     z-index: 1;
 }
 
 .hero-content {
     position: relative;
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
     z-index: 2;
     max-width: 800px;
 }
@@ -834,7 +845,7 @@ body::after {
     }
 
     /* Performance: Disable parallax on mobile */
-    .hero-section {
+    .hero-section::before {
         background-attachment: scroll;
     }
 }

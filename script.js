@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    initHeroFade();
+
     // Keyboard Support (ESC + Arrow Keys)
     document.addEventListener('keydown', (e) => {
         const lightbox = document.getElementById('lightbox');
@@ -107,6 +109,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function initHeroFade() {
+    const heroSection = document.querySelector('.hero-section');
+    if (!heroSection) {
+        return;
+    }
+
+    let isTicking = false;
+
+    const updateHeroFade = () => {
+        const scrollY = window.scrollY || window.pageYOffset;
+        const heroHeight = heroSection.offsetHeight || 1;
+        const fadeDistance = heroHeight * 0.8;
+        const progress = Math.min(scrollY / fadeDistance, 1);
+        const opacity = Math.max(1 - progress, 0);
+
+        heroSection.style.setProperty('--hero-fade', opacity.toFixed(3));
+        isTicking = false;
+    };
+
+    const onScroll = () => {
+        if (!isTicking) {
+            window.requestAnimationFrame(updateHeroFade);
+            isTicking = true;
+        }
+    };
+
+    updateHeroFade();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+}
 
 // Utility function to encode file paths for URLs (handle spaces and special characters)
 function encodePath(path) {
