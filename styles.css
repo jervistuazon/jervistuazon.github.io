@@ -1,0 +1,1406 @@
+:root {
+    --bg-color: #121212;
+    /* Slightly lighter/richer black */
+    --text-primary: #f5f5f5;
+    --text-secondary: #888888;
+    --accent-color: #ffffff;
+
+    --font-main: 'Manrope', sans-serif;
+    --font-display: 'Raleway', sans-serif;
+
+
+    --spacing-sm: 1.5rem;
+    --spacing-md: 3rem;
+    --spacing-lg: 8rem;
+    --spacing-xl: 12rem;
+    /* Luxury spacing */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    line-height: 1.5;
+    overflow-x: hidden;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+    /* Crisper text */
+}
+
+/* Custom Scrollbar - Consistent across all views */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #333 var(--bg-color);
+}
+
+
+
+/* Layout Utilities */
+.container {
+    max-width: 1400px;
+    /* Wider container for modern look */
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    align-items: start;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    /* Raleway looks great light */
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    /* Raleway benefits from slightly open tracking */
+}
+
+h1 {
+    letter-spacing: 0.05em;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.3s ease;
+}
+
+a:hover {
+    opacity: 0.6;
+}
+
+/* Navbar - Glassmorphism */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+    background: rgba(18, 18, 18, 0.0);
+    transition: background 0.3s ease;
+    mix-blend-mode: difference;
+}
+
+.nav-content {
+    width: 100%;
+    max-width: 1400px;
+    /* Constrained width */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5%;
+    transition: padding 0.3s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(10px);
+    mix-blend-mode: normal;
+}
+
+.navbar.scrolled .nav-content {
+    padding: 1rem 5%;
+}
+
+.logo {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.nav-links a {
+    margin-left: 3rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* Hero Section - Immersive */
+.hero-section {
+    --hero-fade: 1;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('assets/HERO SHOT/Hero Shot.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
+    z-index: 0;
+}
+
+/* Lightbox Nav Buttons */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    font-size: 3rem;
+    cursor: pointer;
+    z-index: 10002;
+    padding: 20px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.nav-btn:hover {
+    opacity: 1;
+}
+
+.prev-btn {
+    left: 20px;
+}
+
+.next-btn {
+    right: 20px;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 0.3));
+    /* Gradient Overlay */
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    opacity: var(--hero-fade);
+    transition: opacity 0.2s linear;
+    z-index: 2;
+    max-width: 800px;
+}
+
+.hero-content h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 8vw, 8rem);
+    /* Lowered minimum and variable rate */
+    font-weight: 300;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+    white-space: normal;
+    word-wrap: break-word;
+    /* Ensure long words break if necessary */
+    overflow-wrap: break-word;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.hero-content .subtitle {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    /* Responsive subtitle */
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 100%;
+    /* Ensure it doesn't exceed container */
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    padding-left: 1.5rem;
+}
+
+.hero-tagline {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    /* Responsive tagline */
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+    display: block;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.delay-2 {
+    animation-delay: 0.4s;
+}
+
+/* About Section */
+.about-section {
+    padding: 11rem 0;
+    /* Increased to 11rem */
+    min-height: auto;
+    background-color: var(--bg-color);
+    position: relative;
+    z-index: 2;
+}
+
+/* Subtle Favicon Watermark - Behind all content */
+body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40vw;
+    height: 40vw;
+    max-width: 600px;
+    max-height: 600px;
+    background-image: url('assets/favicon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -9999;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 280px 1.5fr 1fr;
+    /* Profile | Bio | Skills */
+    gap: 4rem;
+    align-items: start;
+}
+
+.profile-col {
+    padding-top: 7.5rem;
+    /* Aligns image top with the text content of neighbor columns, accounting for their headers */
+    width: 100%;
+}
+
+.profile-img-container {
+    width: 100%;
+    aspect-ratio: 4/5;
+    /* Professional portrait ratio */
+    overflow: hidden;
+    /* border-radius: 4px; No radius for sleek brutalist/modern feel, or small radius */
+    position: relative;
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+.profile-img-container:hover .profile-img {
+    filter: grayscale(0%);
+    transform: scale(1.03);
+}
+
+.bio-text h2 {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-secondary);
+}
+
+
+.bio-text p {
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
+.bio-text strong {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+
+
+/* Skill/Services Section (New) */
+.column-header {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    margin-bottom: 2rem;
+    /* Reduced from 3rem slightly as text is smaller */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
+    color: var(--accent-color);
+    font-weight: 300;
+}
+
+.skills-list ul {
+    list-style: none;
+}
+
+.skills-list li {
+    margin-bottom: 2.5rem;
+    /* Increased breathing room */
+}
+
+.skill-title {
+    display: block;
+    font-size: 1.15em;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #ffffff;
+    /* Match highlight-tool style */
+}
+
+
+
+.skill-desc {
+    display: block;
+    color: var(--text-primary);
+    /* Matched to bio text color */
+    font-size: 1rem;
+    font-weight: 300;
+    max-width: 90%;
+    line-height: 1.5;
+}
+
+.skill-desc .highlight-tool {
+    font-size: 1em;
+    /* Reset zoom on tools inside desc since title is smaller now */
+}
+
+.highlight-tool {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.15em;
+}
+
+
+/* Work Section */
+.work-section {
+    padding: var(--spacing-xl) 0 11rem 0;
+    /* Increased to 11rem */
+    background-color: var(--bg-color);
+}
+
+.work-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.section-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+}
+
+/* Filter Bar */
+.filter-bar {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.filter-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.3s;
+    font-family: var(--font-main);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    color: var(--text-primary);
+}
+
+.filter-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--accent-color);
+}
+
+/* Custom Mobile Filter Dropdown */
+.custom-dropdown {
+    display: none;
+    /* Hidden on desktop */
+    position: relative;
+    font-family: var(--font-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    z-index: 1001;
+    /* Ensure above grid */
+}
+
+.selected-option {
+    color: var(--text-primary);
+    font-size: 1rem;
+    padding-right: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    user-select: none;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.options-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background-color: var(--bg-color);
+    /* Match body bg */
+    border: none;
+    box-shadow: 0 4px 12px rgba(18, 18, 18, 0.5);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    list-style: none;
+    /* max-height: 300px; Removed to show all items */
+    /* overflow-y: auto; Removed for same reason */
+}
+
+.options-list.active {
+    display: block;
+}
+
+.option-item {
+    padding: 0.4rem 1rem;
+    /* Reduced vertical padding */
+    color: var(--text-secondary);
+    transition: color 0.2s, background-color 0.2s;
+    border: 0;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.option-item:hover,
+.option-item.selected {
+    color: var(--text-primary);
+    background-color: #222;
+    /* Dark grey highlight as requested */
+}
+
+.work-section .container {
+    max-width: 1400px;
+    /* Wider container for gallery but constrained */
+    width: 95%;
+    padding: 0;
+    /* Padding handled by width or internal gaps, or keep padding if needed for mobile edges */
+    margin: 0 auto;
+}
+
+/* Masonry Grid Layout */
+.gallery-grid {
+    display: grid;
+    /* Use fixed column widths instead of 1fr so justify-content: center works */
+    grid-template-columns: repeat(3, calc((min(95vw, 1400px) - 3rem) / 3));
+    grid-auto-rows: calc((min(95vw, 1400px) - 3rem) / 3 * 0.666);
+    /* Fixed row height 3:2 ratio: ((Width - Gaps) / 3)*0.666 */
+    gap: 1.5rem;
+    /* Tighter gap looks more professional */
+    grid-auto-flow: dense;
+    justify-content: center;
+}
+
+/* Hide vertical stack styles */
+.project-stack,
+.project-item,
+.project-img,
+.project-meta {
+    display: none;
+}
+
+.gallery-item {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    /* Changed back to hidden */
+    height: 100%;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 0;
+    background: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+}
+
+.gallery-item:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 4px;
+}
+
+
+
+/* Filter Animation Class */
+.gallery-item.hide {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    position: absolute;
+    /* Take out of flow? No, Grid is tricky. simpler: display:none via JS or just opacity */
+}
+
+/* Better grid filtering usually requires Isotope or robust JS. Simple method: toggle display check JS. */
+
+.gallery-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    z-index: 2;
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-img-alt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    z-index: 1;
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Zoom effect on hover - both images zoom together */
+.gallery-item:hover .gallery-img,
+.gallery-item:hover .gallery-img-alt {
+    transform: scale(1.05);
+}
+
+/* Gallery Video */
+.gallery-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-item:hover .gallery-video {
+    transform: scale(1.05);
+}
+
+.item-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.9), transparent);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    z-index: 3;
+    /* Let clicks pass through to video if needed, though surrounding div handles click */
+}
+
+.gallery-item:hover .item-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.item-info h4 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: #fff;
+    margin-bottom: 0.3rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.item-info p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Presentation Demo Link - Always visible at bottom */
+.presentation-link {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: rgba(18, 18, 18, 0.9);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.presentation-link:hover {
+    background: rgba(40, 40, 40, 0.95);
+    opacity: 0.8;
+}
+
+/* When presentation-link exists, move item-info above it */
+.gallery-item:has(.presentation-link) .item-info {
+    bottom: 2.5rem;
+    /* Height of presentation-link button */
+}
+
+/* Image count badge for project folders - HIDDEN */
+.image-count-badge {
+    display: none;
+}
+
+/* Masonry Spans */
+/* Masonry Spans - Global (since mobile is now 3 cols too) */
+.span-3-2 {
+    grid-column: span 3;
+    grid-row: span 2;
+}
+
+.span-2-2 {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.span-2-2-right {
+    grid-column: 2 / span 2;
+    grid-row: span 2;
+}
+
+.span-2-1 {
+    grid-column: span 2;
+}
+
+.span-1-2 {
+    grid-row: span 2;
+}
+
+.small-item {
+    grid-column: span 1;
+    grid-row: span 1;
+    aspect-ratio: 1/1;
+}
+
+@media (min-width: 768px) {
+    /* Desktop specific adjustments if any (currently none needed for spans) */
+}
+
+@media (max-width: 768px) {
+
+    /* Standardize container padding on mobile */
+    .container {
+        padding: 0 1.5rem;
+    }
+
+    /* Align work section container with others */
+    .work-section .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 1.5rem;
+    }
+
+    .gallery-grid,
+    .project-view .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: calc((100vw - 4rem) / 2 * 0.222);
+        /* Base row unit: 2/9 of column width. 6 rows = 1.33 col = 3:2 for 2-col span */
+        gap: 0.5rem;
+        grid-auto-flow: dense;
+    }
+
+    .gallery-item {
+        grid-column: span 1;
+        grid-row: span 4;
+        /* Default: 4 rows ≈ square */
+        height: auto;
+    }
+
+    /* Featured Project: Full Width 3:2 */
+    /* Width = 2 columns.
+       Span 5 rows is closer to 3:2 ratio when accounting for grid gaps.
+       Ratio ≈ 1.54 */
+    .gallery-item.span-3-2 {
+        grid-column: span 2;
+        grid-row: span 5;
+    }
+
+    /* Mobile Aspect Ratio Classes - Varying Row Spans */
+    /* 4:5 = Width 4, Height 5. On 1 col, span 5 rows. */
+    .gallery-item.mobile-ar-4-5 {
+        grid-row: span 5;
+    }
+
+    /* 5:4 = Width 5, Height 4. On 1 col, span 4 rows (roughly square). */
+    .gallery-item.mobile-ar-5-4 {
+        grid-row: span 3;
+    }
+
+    /* 2:3 = Width 2, Height 3. On 1 col, span 6 rows. */
+    .gallery-item.mobile-ar-2-3 {
+        grid-row: span 6;
+    }
+
+    /* 5:7 = Width 5, Height 7. On 1 col, span 5-6 rows. */
+    .gallery-item.mobile-ar-5-7 {
+        grid-row: span 5;
+    }
+
+    /* Reset span classes on mobile to single column */
+    .gallery-item.span-2-2,
+    .gallery-item.span-2-1,
+    .gallery-item.span-1-2,
+    .gallery-item.span-2-2-right {
+        grid-column: span 1;
+    }
+
+    /* Ensure images fill the container */
+    .gallery-item .gallery-img,
+    .gallery-item .gallery-img-alt,
+    .gallery-item .gallery-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Mobile: Always show title overlay at bottom-left, smaller font */
+    .gallery-item .item-info {
+        opacity: 1;
+        transform: translateY(0);
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+    }
+
+    .gallery-item .item-info h4 {
+        font-size: 0.75rem;
+    }
+
+    /* Mobile: Hide filter buttons, show custom dropdown */
+    .filter-bar {
+        display: none;
+    }
+
+    .custom-dropdown {
+        display: block;
+    }
+
+    .work-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    /* Performance: Disable parallax on mobile */
+    .hero-section::before {
+        background-attachment: scroll;
+    }
+}
+
+/* Contact Section */
+.contact-section {
+    /* scroll-snap-align: center; removed */
+    min-height: 80vh;
+    /* Adjusted to intermediate */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* Ensure no other content is visible */
+    margin-bottom: 0;
+    padding: 0;
+    position: relative;
+}
+
+.contact-section h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: var(--spacing-md);
+}
+
+.contact-details {
+    margin-top: 2rem;
+}
+
+.contact-link {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.contact-link:last-child {
+    margin-bottom: 0;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 1rem 2rem;
+    border: 1px solid var(--text-primary);
+    margin-top: var(--spacing-md);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-color);
+}
+
+.footer {
+    position: absolute;
+    bottom: 2rem;
+    width: 100%;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Animations */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Load More Button */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Ensure vertical alignment if needed */
+    margin-top: 4rem;
+    width: 100%;
+    text-align: center;
+    /* Backup for flex issues */
+}
+
+#load-more-btn {
+    background: transparent;
+    border: none;
+    /* No border/outline as requested */
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    /* Increased from 1.1rem */
+    letter-spacing: 0.1em;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    /* text-transform: uppercase; Removed to avoid ALL CAPS */
+}
+
+#load-more-btn:hover {
+    color: var(--accent-color);
+    letter-spacing: 0.15em;
+    /* Subtle expansion */
+    background: transparent;
+}
+
+#load-more-btn.hidden {
+    display: none !important;
+}
+
+.gallery-item.hidden-item {
+    display: none !important;
+}
+
+.fade-in-scroll {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+}
+
+.fade-in-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    .about-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+    }
+
+    .profile-col {
+        grid-column: span 2;
+        /* Profile on top or side? Let's put profile small or hidden? No, show it. */
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .bio-col {
+        grid-column: 1 / -1;
+    }
+
+    .skills-col {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-2-col {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .profile-col {
+        grid-column: span 1;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+    }
+
+    .cursor-dot,
+    .cursor-outline {
+        display: none;
+        /* Hide custom cursor on touch */
+    }
+
+    body {
+        cursor: auto;
+    }
+}
+
+/* Lightbox Styles - Restored */
+.lightbox {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 10000;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(18, 18, 18, 0.95);
+    /* Black w/ opacity */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox.active {
+    opacity: 1;
+}
+
+.lightbox-content-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    /* Increased from 80% */
+    max-width: none;
+    /* Removed limit of 1200px */
+    max-height: 95vh;
+    /* Increased from 80vh */
+    display: flex;
+    /* Centers content */
+    justify-content: center;
+    align-items: center;
+}
+
+.lightbox-content {
+    /* Base style for img, video, iframe */
+    width: 100%;
+    height: auto;
+    max-height: 95vh;
+    /* Increased from 80vh */
+    object-fit: contain;
+    box-shadow: 0 0 50px rgba(18, 18, 18, 0.5);
+    display: block;
+}
+
+/* Specifics for iframe to ensure it has height */
+iframe.lightbox-content {
+    height: 80vh;
+    background: #fff;
+    border: none;
+}
+
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    position: absolute;
+    bottom: 5%;
+    left: 10%;
+}
+
+/* Project View Overlay */
+.project-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #121212;
+    z-index: 1001;
+    /* Above navbar */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Prevent over-scroll momentum */
+    padding: 2rem;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(30px);
+    /* Start slightly lower */
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.project-view.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.project-view-header {
+    text-align: center;
+    /* Center the title */
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.project-view-header h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 300;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0.02em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Project name - large text */
+.project-view-header .project-name {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+/* Location and date - smaller text */
+.project-view-header .project-meta {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Mobile: Smaller project title */
+@media (max-width: 768px) {
+    .project-view-header h2 {
+        font-size: 1.2rem;
+        padding-right: 3rem;
+    }
+
+    .project-view-header .project-name {
+        font-size: 1.5rem;
+    }
+
+    .project-view-header .project-meta {
+        font-size: 0.7rem;
+    }
+}
+
+.close-project-btn {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: 100;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 1002;
+    /* Above everything in project view */
+    line-height: 1;
+    /* Ensure vertical centering */
+}
+
+.close-project-btn:hover {
+    color: #bbb;
+}
+
+/* Ensure reusable grid works inside project view */
+/* Ensure reusable grid works inside project view - Single Column Override */
+.project-view .gallery-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* Full width of container */
+    max-width: 1400px;
+    /* Constrained only by container max-width */
+    margin: 0 auto;
+    gap: 4rem;
+    /* Generous spacing between images */
+    padding: 2rem 5%;
+    /* Padding as requested ("with padding") */
+}
+
+/* Override Item Styles for Single Column */
+.project-view .gallery-item {
+    width: 100%;
+    height: auto !important;
+    /* Allow natural height */
+    aspect-ratio: auto !important;
+    /* Remove fixed ratio */
+    grid-column: auto !important;
+    grid-row: auto !important;
+    transform: none !important;
+    /* Remove masonry transform if any */
+}
+
+/* Override Media Styles for Natural Flow */
+.project-view .gallery-img,
+.project-view .gallery-video {
+    position: relative !important;
+    /* Sit in flow, not absolute */
+    width: 100%;
+    height: auto !important;
+    max-height: 90vh;
+    /* Prevent overly tall vertical images from taking >1 screen */
+    object-fit: contain;
+    /* Ensure full image is visible */
+    display: block;
+}
+
+/* Adjust Loading State for Variable Heights */
+.project-view .gallery-item.loading {
+    min-height: 60vh;
+    /* Placeholder height */
+}
+
+/* Adjust Lightbox z-index to be strictly above project view */
+.lightbox {
+    z-index: 2000;
+}
+
+
+
+.close-btn {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: 100;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 10001;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Loading Animation for Gallery Items */
+.gallery-item.loading {
+    background: linear-gradient(110deg,
+            #151515 8%,
+            #222222 18%,
+            #151515 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    min-height: 250px;
+    border-radius: 2px;
+    /* Slight radius for premium feel */
+}
+
+.gallery-item.loading .gallery-img,
+.gallery-item.loading .gallery-video {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.gallery-item .gallery-img,
+.gallery-item .gallery-video {
+    transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease, visibility 0s ease 0s;
+}
+
+.gallery-item.loaded .gallery-img,
+.gallery-item.loaded .gallery-video {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Pulse animation removed - keeping just the sleek shimmer */
+
+@media (max-width: 700px) {
+    .lightbox-content {
+        width: 95%;
+    }
+}
+
+/* Multi-image Stack Effect */
+.gallery-item.multi-image {
+    overflow: visible;
+    /* Allow stack to show */
+    /* Ensure z-index handling for stack */
+    transform-style: preserve-3d;
+}
+
+.gallery-item.multi-image::before,
+.gallery-item.multi-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #181818;
+    /* Card color */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: -1;
+    transition: transform 0.4s ease, opacity 0.4s ease, background-color 0.4s ease;
+    opacity: 1;
+    /* Always visible */
+}
+
+.gallery-item.multi-image::before {
+    transform: rotate(3deg) translate(6px, 6px);
+}
+
+.gallery-item.multi-image::after {
+    transform: rotate(-2deg) translate(-4px, 4px);
+    z-index: -2;
+}
+
+/* Hover effect for stack */
+.gallery-item.multi-image:hover::before {
+    transform: rotate(5deg) translate(8px, 8px);
+    background-color: #333;
+}
+
+.gallery-item.multi-image:hover::after {
+    transform: rotate(-4deg) translate(-6px, 6px);
+    background-color: #2a2a2a;
+}

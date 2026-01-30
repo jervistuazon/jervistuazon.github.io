@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jervis Tuazon | 3D Visual Artist</title>
+    <meta name="description"
+        content="3D Visual Artist specializing in architectural visualization and real-time workflows.">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Jervis Tuazon | 3D Visual Artist">
+    <meta property="og:description"
+        content="Portfolio of Jervis Tuazon - Specializing in high-end architectural visualization, cinematic animations, and real-time solutions.">
+    <meta property="og:image" content="https://jervistuazon.github.io/assets/social-preview.webp">
+    <meta property="og:url" content="https://jervistuazon.github.io">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jervis Tuazon | 3D Visual Artist">
+    <meta name="twitter:description" content="High-end 3D Architectural Visualization portfolio.">
+    <meta name="twitter:image" content="https://jervistuazon.github.io/assets/social-preview.webp">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Raleway:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.min.css?v=1769751897036">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="canonical" href="https://jervistuazon.github.io/">
+
+    <!-- Favicon for browser tab and Google search -->
+    <link rel="icon" type="image/png" href="assets/favicon.png?v=1737044000">
+    <link rel="apple-touch-icon" href="assets/favicon.png?v=1737044000">
+    <link rel="icon" sizes="192x192" href="assets/favicon.png?v=1737044000">
+
+    <!-- Preload hero image for faster LCP -->
+    <link rel="preload" href="assets/HERO%20SHOT/Hero%20Shot.webp" as="image">
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Jervis Tuazon",
+      "jobTitle": "Senior Visual Artist",
+      "url": "https://jervistuazon.github.io",
+      "sameAs": [
+        "https://www.linkedin.com/in/jervistuazon", 
+        "https://www.instagram.com/jervistuazon"
+      ],
+      "knowsAbout": ["Architectural Visualization", "3D Rendering", "Interior Design", "Real-time Rendering"],
+      "description": "Senior Visual Artist specializing in architectural visualization, cinematic animations, and real-time presentations."
+    }
+    </script>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="#hero" class="logo" aria-label="Go to top"></a>
+            <div class="nav-links">
+                <a href="#work">Work</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <h1 class="fade-in">JERVIS TUAZON</h1>
+                <p class="hero-tagline fade-in delay-1">VISUALIZING ARCHITECTURE</p>
+                <p class="subtitle fade-in delay-2">I create architectural visuals that balance technical clarity with
+                    mood and narrative.</p>
+            </div>
+        </section>
+
+        <section id="work" class="work-section">
+            <div class="container">
+                <div class="work-header">
+                    <h2 class="section-title fade-in-scroll">Selected Work</h2>
+                    <!-- Desktop filter buttons -->
+                    <div class="filter-bar fade-in-scroll delay-1">
+                        <button class="filter-btn active" type="button" data-filter="all">All</button>
+                        <button class="filter-btn" type="button" data-filter="featured">Featured</button>
+                        <button class="filter-btn" type="button" data-filter="residential">Residential</button>
+                        <button class="filter-btn" type="button" data-filter="commercial">Commercial</button>
+                        <button class="filter-btn" type="button" data-filter="hospitality">Hospitality</button>
+                        <button class="filter-btn" type="button" data-filter="institutional">Institutional</button>
+                        <button class="filter-btn" type="button" data-filter="interactive-presentation">Interactive Presentation</button>
+                    </div>
+                    <!-- Mobile filter dropdown -->
+                    <!-- Mobile filter dropdown (Custom) -->
+                    <div class="custom-dropdown fade-in-scroll delay-1">
+                        <button class="selected-option" type="button" aria-haspopup="listbox"
+                            aria-expanded="false">ALL</button>
+                        <ul class="options-list" id="mobile-filter-options" role="listbox">
+                            <li><button class="option-item" type="button" data-filter="all"
+                                    role="option">All</button></li>
+                            <li><button class="option-item" type="button" data-filter="featured"
+                                    role="option">Featured</button></li>
+                            <li><button class="option-item" type="button" data-filter="residential"
+                                    role="option">Residential</button></li>
+                            <li><button class="option-item" type="button" data-filter="commercial"
+                                    role="option">Commercial</button></li>
+                            <li><button class="option-item" type="button" data-filter="hospitality"
+                                    role="option">Hospitality</button></li>
+                            <li><button class="option-item" type="button" data-filter="institutional"
+                                    role="option">Institutional</button></li>
+                            <li><button class="option-item" type="button" data-filter="interactive-presentation"
+                                    role="option">Interactive Presentation</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="gallery-grid" id="gallery-grid">
+                    <!-- Gallery items will be injected via JS -->
+                </div>
+
+                <!-- Load More Button -->
+                <div id="load-more-container" class="load-more-container fade-in-scroll">
+                    <button id="load-more-btn" onclick="loadMoreItems()">See more</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container about-grid">
+                <!-- 1. Profile Photo -->
+                <div class="profile-col fade-in-scroll delay-1">
+                    <div class="profile-img-container">
+                        <img src="assets/profile.webp"
+                            alt="Jervis Tuazon - Senior Visual Artist with 12+ years experience" class="profile-img">
+                    </div>
+                </div>
+
+                <!-- 2. Bio Text -->
+                <div class="bio-col fade-in-scroll delay-2">
+                    <div class="bio-text">
+                        <h3 class="column-header">About</h3>
+                        <p>My practice focuses on <strong>architectural visualization</strong> across
+                            <strong>high-fidelity renders</strong>, <strong>cinematic animations</strong>, and
+                            <strong>real-time presentations</strong>. Recently, I've been exploring <strong>AI-assisted
+                                workflows</strong> and <strong>custom tools</strong> to push speed and storytelling.
+                        </p>
+                        <p>I'm Jervis, a Senior Visual Artist with <strong>12+ years</strong> of experience in the
+                            design industry. For the last 7 years at <strong>Parks + Associates</strong>, I've worked on
+                            visualizations that help people understand projects clearly before they're built. Prior to
+                            that, I spent 5 years at <strong>HBA Clark Philippines</strong> as a 2D Designer, developing
+                            a strong foundation in composition and detail.</p>
+                        <p>Currently, I'm expanding the craft by integrating <strong>AI</strong> into visual workflows
+                            and exploring <strong>dynamic presentation methods</strong>—aiming to merge traditional
+                            artistry with emerging technology and create deeper, more cohesive visual narratives.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Skills/Services -->
+                <div class="skills-col fade-in-scroll delay-2">
+                    <div class="skills-list">
+                        <h3 class="column-header">Expertise</h3>
+                        <ul>
+                            <li>
+                                <span class="skill-title">Architectural Visualization</span>
+                                <span class="skill-desc">High-end marketing still renders for exterior and interior
+                                    developments, composed in <span class="highlight-tool">SketchUp</span>, rendered
+                                    with <span class="highlight-tool">3Ds Max</span> and <span
+                                        class="highlight-tool">V-Ray</span>, then polished with <span
+                                        class="highlight-tool">Photoshop</span> and <span
+                                        class="highlight-tool">AI</span>.</span>
+                            </li>
+                            <li>
+                                <span class="skill-title">Cinematic Animation</span>
+                                <span class="skill-desc">Story-driven walkthroughs that capture the mood of
+                                    the
+                                    space, produced using <span class="highlight-tool">Twinmotion</span>, <span
+                                        class="highlight-tool">D5</span>, and <span class="highlight-tool">Premiere
+                                        Pro</span>.</span>
+                            </li>
+                            <li>
+                                <span class="skill-title">Real-time Interactive</span>
+                                <span class="skill-desc">Immersive design reviews and interactive solutions powered by
+                                    <span class="highlight-tool">Twinmotion</span> and <span
+                                        class="highlight-tool">custom personal tools</span>.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox"
+            onclick="if(event.target === this) closeLightbox()">
+            <span class="close-btn" onclick="closeLightbox()" role="button" tabindex="0"
+                aria-label="Close lightbox">&times;</span>
+
+            <!-- Navigation Buttons -->
+            <button class="nav-btn prev-btn" onclick="event.stopPropagation(); changeImage(-1)"
+                aria-label="Previous image">&#10094;</button>
+            <button class="nav-btn next-btn" onclick="event.stopPropagation(); changeImage(1)"
+                aria-label="Next image">&#10095;</button>
+
+            <div id="lightbox-content-container" class="lightbox-content-container">
+                <!-- Content injected via JS -->
+            </div>
+            <div id="caption"></div>
+        </div>
+
+        <!-- Project View Overlay (Sub-gallery) -->
+        <div id="project-view" class="project-view" data-lenis-prevent>
+            <span class="close-project-btn" onclick="closeProjectView()" role="button" tabindex="0"
+                aria-label="Close project view">&times;</span>
+            <div class="project-view-header">
+                <h2 id="project-title">Project Name</h2>
+            </div>
+            <div class="gallery-grid" id="project-grid">
+                <!-- Sub-gallery items injected via JS -->
+            </div>
+        </div>
+
+        <section id="contact" class="contact-section">
+            <div class="container fade-in-scroll">
+                <h2>Contact</h2>
+                <div class="contact-details" id="contact-container">
+                    <!-- Contact info injected via JS to prevent scraping -->
+                </div>
+            </div>
+            <footer class="footer">
+                <p>&copy; 2026 Jervis Tuazon. All rights reserved.</p>
+            </footer>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="gallery-data.js?v=1769751897036"></script>
+    <script src="script.min.js?v=1769751897036"></script>
+</body>
+
+</html>

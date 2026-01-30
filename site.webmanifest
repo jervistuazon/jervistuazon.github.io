@@ -1,0 +1,21 @@
+{
+    "name": "Jervis Tuazon | 3D Visual Artist",
+    "short_name": "JT Portfolio",
+    "description": "3D Visual Artist specializing in architectural visualization and real-time workflows.",
+    "icons": [
+        {
+            "src": "assets/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#121212",
+    "background_color": "#121212",
+    "display": "standalone",
+    "start_url": "index.html"
+}
