@@ -552,7 +552,7 @@ function renderGalleryGrid() {
             // Special handling for Interactive Presentation Demo - redirect to presentation page
             if (itemData.filename.includes('Interactive Presentation Demo')) {
                 item.onclick = () => {
-                    window.location.href = 'presentation/interactive_presentation_demo/index.html';
+                    window.location.href = 'presentation/interactive_presentation_demo/';
                 };
             } else {
                 item.onclick = () => {
@@ -576,7 +576,7 @@ function renderGalleryGrid() {
             // Special handling for Interactive Presentation Demo - redirect to presentation page
             if (itemData.filename.includes('Interactive Presentation Demo')) {
                 item.onclick = () => {
-                    window.location.href = 'presentation/interactive_presentation_demo/index.html';
+                    window.location.href = 'presentation/interactive_presentation_demo/';
                 };
             } else {
                 item.onclick = () => {
@@ -773,7 +773,7 @@ function renderInfo(container, text, filename = null) {
     // Add clickable link for Interactive Presentation Demo - placed OUTSIDE item-info
     if (filename && filename.includes('Interactive Presentation Demo')) {
         const link = document.createElement('a');
-        link.href = 'presentation/interactive_presentation_demo/index.html';
+        link.href = 'presentation/interactive_presentation_demo/';
         link.className = 'presentation-link';
         link.textContent = 'CLICK VIDEO FOR LIVE DEMO';
         link.onclick = (e) => e.stopPropagation(); // Prevent triggering gallery item click
