@@ -152,6 +152,41 @@ function isVideo(filename) {
     return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext));
 }
 
+// Video Autoplay on Viewport Visibility
+// Uses Intersection Observer to play videos when 50%+ visible, pause when not
+const videoAutoplayObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target;
+
+        if (entry.isIntersecting) {
+            // Video is at least 50% visible - play it
+            const playPromise = video.play();
+
+            // Handle play promise to avoid console errors
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Autoplay was prevented (browser policy), silently ignore
+                    // Video will remain paused until user interacts
+                });
+            }
+        } else {
+            // Video is less than 50% visible - pause it
+            video.pause();
+        }
+    });
+}, {
+    root: null, // Use viewport as root
+    rootMargin: '0px',
+    threshold: 0.5 // Trigger when 50% of video is visible
+});
+
+// Function to register a video element for viewport-based autoplay
+function observeVideoForAutoplay(videoElement) {
+    if (videoElement && videoElement.hasAttribute('data-autoplay-on-visible')) {
+        videoAutoplayObserver.observe(videoElement);
+    }
+}
+
 // Reusable pattern for both main gallery and project sub-gallery
 // Pattern designed to fill a 3-column grid without gaps
 const layoutPattern = [
@@ -681,8 +716,9 @@ function renderMediaItem(container, category, folder, filename) {
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
-        video.autoplay = true;
+        video.preload = 'metadata'; // Only load metadata until in view
         video.className = 'gallery-video';
+        video.setAttribute('data-autoplay-on-visible', 'true'); // Mark for Intersection Observer
 
         video.addEventListener('loadeddata', () => {
             container.classList.remove('loading');
@@ -693,6 +729,9 @@ function renderMediaItem(container, category, folder, filename) {
         });
 
         container.appendChild(video);
+
+        // Observe this video for viewport-based autoplay
+        observeVideoForAutoplay(video);
     } else {
         // Create two images for crossfade effect (slideshow support)
         const img1 = document.createElement('img');
