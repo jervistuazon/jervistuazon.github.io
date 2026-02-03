@@ -739,6 +739,7 @@ function renderMediaItem(container, category, folder, filename) {
         img1.alt = filename;
         img1.className = 'gallery-img';
         img1.loading = 'lazy'; // Optimization: Lazy load
+        img1.decoding = 'async';
         img1.style.opacity = '1';
 
         // Second image for hover slideshow (initially hidden)
@@ -747,6 +748,7 @@ function renderMediaItem(container, category, folder, filename) {
         img2.alt = filename;
         img2.className = 'gallery-img-alt';
         img2.loading = 'lazy'; // Optimization: Lazy load
+        img2.decoding = 'async';
         img2.style.opacity = '0';
 
         img1.addEventListener('load', () => {

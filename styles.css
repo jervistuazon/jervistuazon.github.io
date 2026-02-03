@@ -321,6 +321,8 @@ body::after {
     /* Profile | Bio | Skills */
     gap: 4rem;
     align-items: start;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 1000px;
 }
 
 .profile-col {
@@ -571,6 +573,8 @@ body::after {
     /* Tighter gap looks more professional */
     grid-auto-flow: dense;
     justify-content: center;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 1200px;
 }
 
 /* Hide vertical stack styles */
@@ -895,6 +899,11 @@ body::after {
     margin-bottom: 0;
     padding: 0;
     position: relative;
+}
+
+.contact-section .container {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 700px;
 }
 
 .contact-section h2 {
