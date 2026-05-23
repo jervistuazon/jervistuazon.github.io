@@ -14,6 +14,7 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - `Video/Sequence 01.mp4` is the original 60 fps source video for re-encoding.
 - `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are project-local portable FFmpeg tools. Keep them in the project when transferring to another PC.
 - `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into desktop and mobile scroll-scrub-friendly MP4s.
+- When `-OnlyMobile` is used and `Video/Sequence 01_scrub.mp4` exists, the script should use that desktop scrub as the input source for the mobile version.
 
 ## Interaction Rules
 
@@ -34,8 +35,8 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - Preserve mobile readability by reserving space for the left rail and avoiding text overlap with the video.
 - For scroll-scrubbed MP4s, avoid files with only one keyframe. Re-encode with frequent keyframes before tuning JavaScript smoothing.
 - Preferred scrub encoding uses H.264, `yuv420p`, no audio, `-g 6`, `-keyint_min 6`, `-sc_threshold 0`, and `-movflags +faststart`.
-- When asked specifically to create a mobile version of the video, generate only `Video/Sequence 01_mobile_scrub.mp4` with the mobile workflow. Do not replace the desktop scrub unless the user asks for a full re-encode.
-- Mobile scrub encoding should prioritize phone performance: about 960px wide, 30 fps, H.264, `yuv420p`, no audio, frequent keyframes, and `+faststart`.
+- When asked specifically to create a mobile version of the video, generate only `Video/Sequence 01_mobile_scrub.mp4` from `Video/Sequence 01_scrub.mp4` with the mobile workflow. Do not replace the desktop scrub unless the user asks for a full re-encode.
+- Mobile scrub encoding should prioritize phone performance and portrait sharpness: center-cropped 9:16 from the desktop scrub, capped around 1080px high, 30 fps, H.264, `yuv420p`, no audio, frequent keyframes, `-tune fastdecode`, no B-frames, and `+faststart`.
 
 ## Design Guidelines
 

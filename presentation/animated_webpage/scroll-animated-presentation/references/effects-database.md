@@ -803,6 +803,7 @@ Make the MP4 seekable enough for scroll-driven scrubbing.
 - Mobile scrub output: `Video/Sequence 01_mobile_scrub.mp4`
 - Re-encode script: `scripts/reencode-scroll-video.ps1`
 - Portable tools: `Tools/ffmpeg/bin/ffmpeg.exe`, `Tools/ffmpeg/bin/ffprobe.exe`
+- Mobile-only source: when `Video/Sequence 01_scrub.mp4` exists, `-OnlyMobile` derives from that desktop scrub.
 
 **Template**
 
@@ -831,18 +832,20 @@ Preferred encoding settings:
 -movflags +faststart
 ```
 
-Mobile scrub variant:
+Mobile portrait scrub variant:
 
 ```powershell
 -an `
--vf "scale='min(960,iw)':-2" `
+-vf "crop='min(iw,ceil(ih*9/16/2)*2)':ih:(iw-ow)/2:0,scale=-2:'min(1080,ih)'" `
 -c:v libx264 `
 -pix_fmt yuv420p `
 -r 30 `
 -preset medium `
--crf 24 `
+-tune fastdecode `
+-crf 22 `
 -g 4 `
 -keyint_min 4 `
+-bf 0 `
 -sc_threshold 0 `
 -movflags +faststart
 ```
@@ -858,8 +861,8 @@ Verify keyframe spacing:
 - `-crf`: lower means higher quality and larger file.
 - `-g` and `-keyint_min`: lower means more keyframes and smoother seeking but larger file.
 - `-r`: current 60 fps source should stay at `60` so scroll can land on every unique frame.
-- Mobile output can use 30 fps and 960px width to reduce random-seek decode cost.
-- Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video.
+- Mobile output uses a center 9:16 portrait crop, capped at 1080px high, to avoid browser-side landscape cropping on phones while keeping random-seek decode cost lower than the full desktop stream.
+- Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video. This derives from `Video/Sequence 01_scrub.mp4` when that desktop scrub exists.
 
 **Watch outs**
 

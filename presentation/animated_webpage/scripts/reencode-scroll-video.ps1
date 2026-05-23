@@ -5,8 +5,9 @@ param(
   [int]$FrameRate = 60,
   [int]$MobileFrameRate = 30,
   [int]$MobileWidth = 960,
+  [int]$MobileHeight = 1080,
   [int]$DesktopCrf = 18,
-  [int]$MobileCrf = 24,
+  [int]$MobileCrf = 22,
   [switch]$OnlyMobile,
   [switch]$SkipMobile
 )
@@ -28,15 +29,11 @@ if (!(Test-Path $Ffmpeg)) {
   throw "Missing FFmpeg executable: $Ffmpeg"
 }
 
-if (!(Test-Path $InputFile)) {
-  $FallbackInputFile = Join-Path $ProjectRoot "Video\New folder\Sequence 01.mp4"
-
-  if (Test-Path $FallbackInputFile) {
-    Write-Warning "Missing input video: $InputFile. Using fallback source: $FallbackInputFile"
-    $InputFile = $FallbackInputFile
-  } else {
-    throw "Missing input video: $InputFile"
-  }
+if ($OnlyMobile -and (Test-Path $OutputFile)) {
+  Write-Host "Using desktop scrub as mobile crop source: $OutputFile"
+  $InputFile = $OutputFile
+} elseif (!(Test-Path $InputFile)) {
+  throw "Missing input video: $InputFile"
 }
 
 if (!$OnlyMobile) {
@@ -57,18 +54,22 @@ if (!$OnlyMobile) {
 }
 
 if (!$SkipMobile) {
+  $MobileVideoFilter = "crop='min(iw,ceil(ih*9/16/2)*2)':ih:(iw-ow)/2:0,scale=-2:'min($MobileHeight,ih)'"
+
   & $Ffmpeg `
     -y `
     -i $InputFile `
     -an `
-    -vf "scale='min($MobileWidth,iw)':-2" `
+    -vf $MobileVideoFilter `
     -c:v libx264 `
     -pix_fmt yuv420p `
     -r $MobileFrameRate `
     -preset medium `
+    -tune fastdecode `
     -crf $MobileCrf `
     -g 4 `
     -keyint_min 4 `
+    -bf 0 `
     -sc_threshold 0 `
     -movflags +faststart `
     $MobileOutputFile
