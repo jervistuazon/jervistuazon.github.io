@@ -3,3 +3,10 @@ placeholder files/
 Thumbs.db
 *.log
 node_modules/
+
+# Generated/exported animated webpage artifacts and local tooling
+presentation/animated_webpage/dist/
+presentation/animated_webpage/single-file-exporter.html
+presentation/animated_webpage/scripts/export-single-html.ps1
+presentation/animated_webpage/Tools/
+presentation/animated_webpage/Video/Sequence 01.mp4

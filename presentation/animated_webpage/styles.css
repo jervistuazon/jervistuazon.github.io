@@ -56,38 +56,6 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-.gallery-close {
-  position: fixed;
-  top: clamp(14px, 2vw, 24px);
-  right: clamp(14px, 2vw, 24px);
-  z-index: 20;
-  display: grid;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font: 300 28px/1 Inter, ui-sans-serif, system-ui, sans-serif;
-  cursor: pointer;
-  background: rgba(6, 7, 8, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 50%;
-  place-items: center;
-  backdrop-filter: blur(14px);
-  transition:
-    color 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.gallery-close:hover,
-.gallery-close:focus-visible {
-  color: #fff;
-  background: rgba(6, 7, 8, 0.56);
-  border-color: rgba(255, 255, 255, 0.46);
-  transform: scale(1.04);
-}
-
 .scroll-stage {
   position: relative;
   isolation: isolate;
@@ -684,6 +652,20 @@ h2 {
 
 /* Responsive Systems & Adaptive Media Queries */
 @media (max-width: 760px) {
+  .scroll-stage::before {
+    opacity: 0.018;
+  }
+
+  .scroll-video {
+    filter: brightness(1.08) contrast(1.04);
+    transform: none;
+    will-change: auto;
+  }
+
+  .scene-asset {
+    animation: none;
+  }
+
   .side-rail {
     right: 12px;
     gap: 22px;

@@ -20,6 +20,7 @@ Map page scroll progress directly to the video timeline so scrolling down advanc
 **Current implementation**
 
 - HTML video: `index.html` `#scrollVideo`
+- Mobile video source: `index.html` `Video/Sequence 01_mobile_scrub.mp4`
 - Stage and sections: `index.html` `.scroll-stage`, `.panel`
 - Progress source: `script.js` `getScrollableDistance()`, `getScrollProgress()`
 - Video time mapping: `script.js` `setVideoTime()`, `flushVideoSeek()`
@@ -32,14 +33,16 @@ Map page scroll progress directly to the video timeline so scrolling down advanc
   <video
     id="scrollVideo"
     class="scroll-video"
-    src="Video/example_scrub.mp4"
     muted
     playsinline
     preload="auto"
     controlslist="nodownload nofullscreen noremoteplayback"
     disablepictureinpicture
     disableremoteplayback
-  ></video>
+  >
+    <source src="Video/example_mobile_scrub.mp4" type="video/mp4" media="(max-width: 760px), (pointer: coarse)">
+    <source src="Video/example_scrub.mp4" type="video/mp4">
+  </video>
   <section class="panel"></section>
   <section class="panel"></section>
 </main>
@@ -103,6 +106,7 @@ Keep direct scroll as the truth while smoothing the visible video seek position 
 - Rendered progress: `script.js` `renderedProgress`
 - Animation loop: `script.js` `drawFrame()`, `requestDraw()`
 - Seek throttling: `script.js` `flushVideoSeek()`
+- Mobile seek profile: `script.js` `isMobileScrub`, `motion.useFastSeek`
 
 **Template**
 
@@ -157,6 +161,7 @@ function drawFrame(timestamp) {
 - `damping`: higher reduces overshoot.
 - `seekInterval`: lower seeks more often but may increase CPU cost.
 - `seekPrecision`: lower allows finer time updates.
+- Mobile/touch devices should use a lower seek rate and `fastSeek()` when available.
 
 **Watch outs**
 
@@ -509,6 +514,7 @@ sections.forEach((section) => {
 - Negative values move up as the scene advances.
 - Larger multipliers create stronger parallax.
 - Mobile should use smaller multipliers and relative positioning.
+- Mobile should reduce nonessential animation and filter work around the fixed video.
 
 **Watch outs**
 
@@ -794,6 +800,7 @@ Make the MP4 seekable enough for scroll-driven scrubbing.
 
 - Source: `Video/Sequence 01.mp4`
 - Scrub output: `Video/Sequence 01_scrub.mp4`
+- Mobile scrub output: `Video/Sequence 01_mobile_scrub.mp4`
 - Re-encode script: `scripts/reencode-scroll-video.ps1`
 - Portable tools: `Tools/ffmpeg/bin/ffmpeg.exe`, `Tools/ffmpeg/bin/ffprobe.exe`
 
@@ -801,6 +808,12 @@ Make the MP4 seekable enough for scroll-driven scrubbing.
 
 ```powershell
 .\scripts\reencode-scroll-video.ps1
+```
+
+Mobile-only workflow:
+
+```powershell
+.\scripts\reencode-scroll-video.ps1 -OnlyMobile
 ```
 
 Preferred encoding settings:
@@ -818,6 +831,22 @@ Preferred encoding settings:
 -movflags +faststart
 ```
 
+Mobile scrub variant:
+
+```powershell
+-an `
+-vf "scale='min(960,iw)':-2" `
+-c:v libx264 `
+-pix_fmt yuv420p `
+-r 30 `
+-preset medium `
+-crf 24 `
+-g 4 `
+-keyint_min 4 `
+-sc_threshold 0 `
+-movflags +faststart
+```
+
 Verify keyframe spacing:
 
 ```powershell
@@ -829,16 +858,78 @@ Verify keyframe spacing:
 - `-crf`: lower means higher quality and larger file.
 - `-g` and `-keyint_min`: lower means more keyframes and smoother seeking but larger file.
 - `-r`: current 60 fps source should stay at `60` so scroll can land on every unique frame.
+- Mobile output can use 30 fps and 960px width to reduce random-seek decode cost.
+- Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video.
 
 **Watch outs**
 
 - A file with only one keyframe will scrub poorly.
+- A 1080p, high-bitrate, 60 fps scrub file can stutter on phones even with frequent keyframes.
 - Keep audio removed for this presentation unless a separate sound design system is added.
 
 **Verification**
 
 - FFprobe shows frequent keyframes.
 - Browser scrubbing responds across the full video.
+
+## EFX-015: Exported Fullscreen Startup Gate
+
+**Purpose**
+
+Give client-delivered single-file exports a polished entry screen that opens the presentation in fullscreen from a user click.
+
+**Current implementation**
+
+- Export UI: `single-file-exporter.html` startup checkbox and button text field
+- CLI export: `scripts/export-single-html.ps1` `-StartupScreen` and `-StartButtonText`
+- Generated code: injected `.startup-gate` markup, CSS, and click handler in the exported HTML only
+
+**Template**
+
+```html
+<body data-startup-locked>
+  <div class="startup-gate" data-startup-gate role="dialog" aria-modal="true" aria-label="Start presentation">
+    <div class="startup-gate__inner">
+      <span class="startup-gate__line" aria-hidden="true"></span>
+      <button class="startup-gate__button" type="button" data-startup-button>Start Experience</button>
+    </div>
+  </div>
+</body>
+```
+
+```js
+const gate = document.querySelector(".startup-gate[data-startup-gate]");
+const button = document.querySelector("[data-startup-button]");
+
+button.addEventListener("click", function () {
+  Promise.resolve(document.documentElement.requestFullscreen()).catch(function () {}).then(function () {
+    gate.classList.add("is-dismissed");
+    document.body.removeAttribute("data-startup-locked");
+    window.scrollTo(0, 0);
+    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("scroll"));
+  });
+}, { once: true });
+```
+
+**Tuning knobs**
+
+- Button label.
+- Gate background opacity and radial highlight strength.
+- Fade duration.
+
+**Watch outs**
+
+- Fullscreen must be requested from the button click; browsers reject automatic fullscreen.
+- Some browsers or user settings can deny fullscreen. The gate should still dismiss and open the presentation.
+- Keep the gate in exported builds only unless the main source presentation intentionally needs it.
+
+**Verification**
+
+- Exported HTML initially shows the startup gate.
+- Clicking the button asks for fullscreen where supported.
+- The gate fades out and the presentation starts at the first frame.
+- Scroll/video synchronization still works after the gate is removed.
 
 ## Add-A-New-Scene Recipe
 

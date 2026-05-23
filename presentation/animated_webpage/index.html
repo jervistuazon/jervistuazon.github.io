@@ -15,12 +15,10 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <button class="gallery-close" type="button" aria-label="Return to gallery">&times;</button>
     <main class="scroll-stage" aria-label="Scroll controlled video">
       <video
         id="scrollVideo"
         class="scroll-video"
-        src="Video/Sequence%2001_scrub.mp4"
         muted
         playsinline
         preload="auto"
@@ -28,7 +26,10 @@
         disablepictureinpicture
         disableremoteplayback
         draggable="false"
-      ></video>
+      >
+        <source src="Video/Sequence%2001_mobile_scrub.mp4" type="video/mp4" media="(max-width: 760px), (pointer: coarse)">
+        <source src="Video/Sequence%2001_scrub.mp4" type="video/mp4">
+      </video>
 
       <aside class="side-rail" aria-label="Page sections">
         <a class="rail-mark is-active" href="#scene-1" aria-label="Section 1" draggable="false"></a>
@@ -114,15 +115,5 @@
     </main>
 
     <script src="script.js"></script>
-    <script>
-      document.querySelector(".gallery-close").addEventListener("click", function () {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-
-        window.location.href = "../../#work";
-      });
-    </script>
   </body>
 </html>

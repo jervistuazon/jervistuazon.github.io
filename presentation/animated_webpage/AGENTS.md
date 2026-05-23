@@ -10,9 +10,10 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - `styles.css` owns the visual system, full-screen layout, scrollbar styling, responsive behavior, and minimal navigation UI.
 - `script.js` owns scroll-to-video synchronization, inertial smoothing, section marker state, and media-control suppression.
 - `Video/Sequence 01_scrub.mp4` is the active scroll-scrubbed video asset.
+- `Video/Sequence 01_mobile_scrub.mp4` is the active mobile/touch scrubbed video asset. It is intentionally lower resolution and lower frame rate for smoother phone seeking.
 - `Video/Sequence 01.mp4` is the original 60 fps source video for re-encoding.
 - `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are project-local portable FFmpeg tools. Keep them in the project when transferring to another PC.
-- `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into a scroll-scrub-friendly MP4.
+- `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into desktop and mobile scroll-scrub-friendly MP4s.
 
 ## Interaction Rules
 
@@ -33,6 +34,8 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - Preserve mobile readability by reserving space for the left rail and avoiding text overlap with the video.
 - For scroll-scrubbed MP4s, avoid files with only one keyframe. Re-encode with frequent keyframes before tuning JavaScript smoothing.
 - Preferred scrub encoding uses H.264, `yuv420p`, no audio, `-g 6`, `-keyint_min 6`, `-sc_threshold 0`, and `-movflags +faststart`.
+- When asked specifically to create a mobile version of the video, generate only `Video/Sequence 01_mobile_scrub.mp4` with the mobile workflow. Do not replace the desktop scrub unless the user asks for a full re-encode.
+- Mobile scrub encoding should prioritize phone performance: about 960px wide, 30 fps, H.264, `yuv420p`, no audio, frequent keyframes, and `+faststart`.
 
 ## Design Guidelines
 
@@ -57,10 +60,28 @@ After replacing the source video, run:
 .\scripts\reencode-scroll-video.ps1
 ```
 
+When asked specifically to create only the mobile version video, run:
+
+```powershell
+.\scripts\reencode-scroll-video.ps1 -OnlyMobile
+```
+
+If Windows blocks the script because execution policy is disabled, use:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\reencode-scroll-video.ps1 -OnlyMobile
+```
+
 To verify keyframe spacing, run:
 
 ```powershell
 .\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub.mp4"
+```
+
+For the mobile scrub, verify:
+
+```powershell
+.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_mobile_scrub.mp4"
 ```
 
 When visual behavior changes, open `index.html` in a browser and check:

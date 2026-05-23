@@ -41,17 +41,20 @@
   let sectionSettleTimer = null;
   let programmaticScrollUntil = 0;
   let isTouching = false;
+  const mobileScrubQuery = window.matchMedia("(max-width: 760px), (pointer: coarse)");
+  const isMobileScrub = mobileScrubQuery.matches;
 
   const motion = {
-    spring: 260,
-    damping: 27,
+    spring: isMobileScrub ? 340 : 260,
+    damping: isMobileScrub ? 34 : 27,
     maxDeltaSeconds: 0.04,
-    settleDistance: 0.00004,
-    settleVelocity: 0.0004,
-    seekInterval: 1000 / 60,
-    seekPrecision: 1 / 60,
-    seekWatchdogDelay: 220,
-    endFramePadding: 1 / 120,
+    settleDistance: isMobileScrub ? 0.00012 : 0.00004,
+    settleVelocity: isMobileScrub ? 0.0012 : 0.0004,
+    seekInterval: isMobileScrub ? 1000 / 30 : 1000 / 60,
+    seekPrecision: isMobileScrub ? 1 / 30 : 1 / 60,
+    seekWatchdogDelay: isMobileScrub ? 320 : 220,
+    endFramePadding: isMobileScrub ? 1 / 60 : 1 / 120,
+    useFastSeek: isMobileScrub,
   };
 
   const scrollMotion = {
@@ -292,7 +295,16 @@
     if (!force && seekElapsed < motion.seekInterval) return;
 
     queuedSeekTime = null;
-    video.currentTime = nextTime;
+    if (motion.useFastSeek && typeof video.fastSeek === "function") {
+      try {
+        video.fastSeek(nextTime);
+      } catch (error) {
+        video.currentTime = nextTime;
+      }
+    } else {
+      video.currentTime = nextTime;
+    }
+
     lastSeekTime = nextTime;
     lastSeekStamp = timestamp;
     seekInFlight = true;
@@ -316,7 +328,9 @@
     lastFrameTime = timestamp;
 
     const progressDelta = targetProgress - renderedProgress;
-    const impulse = clamp(scrollVelocity / Math.max(window.innerHeight, 1), -0.04, 0.04);
+    const impulse = isMobileScrub
+      ? 0
+      : clamp(scrollVelocity / Math.max(window.innerHeight, 1), -0.04, 0.04);
     const acceleration = progressDelta * motion.spring + impulse * 8;
     const drag = Math.exp(-motion.damping * deltaSeconds);
 
