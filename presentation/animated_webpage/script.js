@@ -41,12 +41,14 @@
   let sectionSettleTimer = null;
   let programmaticScrollUntil = 0;
   let isTouching = false;
+  let lastTouchY = 0;
   const mobileScrubQuery = window.matchMedia("(max-width: 760px), (pointer: coarse)");
   const isMobileScrub = mobileScrubQuery.matches;
 
   const motion = {
     spring: isMobileScrub ? 340 : 260,
     damping: isMobileScrub ? 34 : 27,
+    mobileFollow: 42,
     maxDeltaSeconds: 0.04,
     settleDistance: isMobileScrub ? 0.00012 : 0.00004,
     settleVelocity: isMobileScrub ? 0.0012 : 0.0004,
@@ -54,7 +56,7 @@
     seekPrecision: isMobileScrub ? 1 / 30 : 1 / 60,
     seekWatchdogDelay: isMobileScrub ? 320 : 220,
     endFramePadding: isMobileScrub ? 1 / 60 : 1 / 120,
-    useFastSeek: isMobileScrub,
+    useFastSeek: false,
   };
 
   const scrollMotion = {
@@ -328,14 +330,27 @@
     lastFrameTime = timestamp;
 
     const progressDelta = targetProgress - renderedProgress;
-    const impulse = isMobileScrub
-      ? 0
-      : clamp(scrollVelocity / Math.max(window.innerHeight, 1), -0.04, 0.04);
-    const acceleration = progressDelta * motion.spring + impulse * 8;
-    const drag = Math.exp(-motion.damping * deltaSeconds);
 
-    progressVelocity = (progressVelocity + acceleration * deltaSeconds) * drag;
-    renderedProgress = clamp(renderedProgress + progressVelocity * deltaSeconds, 0, 1);
+    if (isMobileScrub) {
+      const previousProgress = renderedProgress;
+      const followAmount = 1 - Math.exp(-motion.mobileFollow * deltaSeconds);
+
+      renderedProgress = clamp(
+        renderedProgress + progressDelta * followAmount,
+        0,
+        1
+      );
+      progressVelocity = deltaSeconds > 0
+        ? (renderedProgress - previousProgress) / deltaSeconds
+        : 0;
+    } else {
+      const impulse = clamp(scrollVelocity / Math.max(window.innerHeight, 1), -0.04, 0.04);
+      const acceleration = progressDelta * motion.spring + impulse * 8;
+      const drag = Math.exp(-motion.damping * deltaSeconds);
+
+      progressVelocity = (progressVelocity + acceleration * deltaSeconds) * drag;
+      renderedProgress = clamp(renderedProgress + progressVelocity * deltaSeconds, 0, 1);
+    }
 
     const remainingDistance = Math.abs(targetProgress - renderedProgress);
     const remainingVelocity = Math.abs(progressVelocity);
@@ -440,6 +455,10 @@
   }
 
   function scheduleSectionSettle(delay = scrollMotion.settleDelay) {
+    if (isMobileScrub) {
+      return;
+    }
+
     window.clearTimeout(sectionSettleTimer);
     sectionSettleTimer = window.setTimeout(settleToNearestSection, delay);
   }
@@ -598,29 +617,53 @@
   window.addEventListener("wheel", handleWheel, { passive: false });
   window.addEventListener("keydown", handleKeydown);
 
-  window.addEventListener("touchstart", () => {
+  function handleTouchStart(event) {
     isTouching = true;
+    lastTouchY = event.touches.length ? event.touches[0].clientY : 0;
+
     if (smoothScrollId !== null) {
       cancelAnimationFrame(smoothScrollId);
       smoothScrollId = null;
       lastSmoothScrollTime = 0;
     }
     window.clearTimeout(sectionSettleTimer);
-  }, { passive: true });
+  }
 
-  window.addEventListener("touchend", () => {
+  function handleTouchMove(event) {
+    if (!isMobileScrub || event.touches.length !== 1) {
+      return;
+    }
+
+    const currentTouchY = event.touches[0].clientY;
+    const touchDelta = currentTouchY - lastTouchY;
+    const atTop = window.scrollY <= 0;
+    const atBottom = window.scrollY >= getMaxScrollY() - 1;
+
+    lastTouchY = currentTouchY;
+
+    if ((atTop && touchDelta > 0) || (atBottom && touchDelta < 0)) {
+      event.preventDefault();
+    }
+  }
+
+  function handleTouchEnd() {
     isTouching = false;
     smoothScrollY = window.scrollY;
     targetScrollY = smoothScrollY;
     scheduleSectionSettle(scrollMotion.nativeSettleDelay);
-  }, { passive: true });
+  }
 
-  window.addEventListener("touchcancel", () => {
+  function handleTouchCancel() {
     isTouching = false;
     smoothScrollY = window.scrollY;
     targetScrollY = smoothScrollY;
     scheduleSectionSettle(scrollMotion.nativeSettleDelay);
-  }, { passive: true });
+  }
+
+  window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  window.addEventListener("touchmove", handleTouchMove, { passive: false });
+  window.addEventListener("touchend", handleTouchEnd, { passive: true });
+  window.addEventListener("touchcancel", handleTouchCancel, { passive: true });
 
   rail.addEventListener("click", (event) => {
     if (event.target.classList.contains("rail-mark")) {

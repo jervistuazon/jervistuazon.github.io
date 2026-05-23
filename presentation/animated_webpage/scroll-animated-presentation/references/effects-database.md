@@ -106,7 +106,7 @@ Keep direct scroll as the truth while smoothing the visible video seek position 
 - Rendered progress: `script.js` `renderedProgress`
 - Animation loop: `script.js` `drawFrame()`, `requestDraw()`
 - Seek throttling: `script.js` `flushVideoSeek()`
-- Mobile seek profile: `script.js` `isMobileScrub`, `motion.useFastSeek`
+- Mobile seek profile: `script.js` `isMobileScrub`, `motion.mobileFollow`
 
 **Template**
 
@@ -161,11 +161,12 @@ function drawFrame(timestamp) {
 - `damping`: higher reduces overshoot.
 - `seekInterval`: lower seeks more often but may increase CPU cost.
 - `seekPrecision`: lower allows finer time updates.
-- Mobile/touch devices should use a lower seek rate and `fastSeek()` when available.
+- Mobile/touch devices should use the lower-resolution mobile file with exact `currentTime` seeks; avoid `fastSeek()` when slow swipes need frame-to-frame continuity.
 
 **Watch outs**
 
 - Over-smoothing makes video feel detached from scroll.
+- Mobile spring smoothing can look like rubber-banding after native swipe momentum; use no-overshoot follow smoothing for touch devices.
 - Seeking every tiny delta can overload the decoder.
 - Always clamp progress to `0..1`.
 
@@ -173,6 +174,7 @@ function drawFrame(timestamp) {
 
 - Quick scrolls settle smoothly to the correct frame.
 - Slow scrolls still feel responsive.
+- On mobile, slow swipe-down scrolling advances the video without visible keyframe stepping.
 - CPU does not spike noticeably while scrolling.
 
 ## EFX-003: Media-Control Suppression
@@ -308,6 +310,7 @@ Let users land neatly near section starts without making the video jump between 
 
 - Snap points: `script.js` `getNavigationPoints()`, `getSnapPoints()`, `getNearestSnapPoint()`
 - Settling: `script.js` `settleToNearestSection()`, `scheduleSectionSettle()`
+- Mobile guard: `script.js` `scheduleSectionSettle()` exits on `isMobileScrub`
 
 **Template**
 
@@ -341,6 +344,7 @@ function settleToNearestSection() {
 **Watch outs**
 
 - Snapping too aggressively makes the experience feel like separate slides.
+- Avoid section snapping on touch/mobile; native momentum plus snap correction can look like scrub rubber-banding.
 - Snap points must match section offsets and rail marker destinations.
 
 **Verification**
@@ -348,6 +352,7 @@ function settleToNearestSection() {
 - Natural scroll still controls the video continuously.
 - Near a section boundary, the page settles cleanly.
 - Mid-section scrolling does not unexpectedly jump.
+- On mobile, releasing after a swipe does not pull the page back to a section boundary.
 
 ## EFX-006: Minimal Side Rail Progress
 
@@ -933,6 +938,63 @@ button.addEventListener("click", function () {
 - Clicking the button asks for fullscreen where supported.
 - The gate fades out and the presentation starts at the first frame.
 - Scroll/video synchronization still works after the gate is removed.
+
+## EFX-016: Mobile Touch Overscroll Guard
+
+**Purpose**
+
+Prevent phone viewport edge bounce from making the scroll-scrubbed video look like it is rubber-banding or stuttering at the start and end of the page.
+
+**Current implementation**
+
+- CSS overscroll clamp: `styles.css` `html`, `body`
+- Touch tracking: `script.js` `lastTouchY`, `handleTouchStart()`, `handleTouchMove()`, `handleTouchEnd()`, `handleTouchCancel()`
+- Mobile-only guard: `script.js` `isMobileScrub`
+
+**Template**
+
+```css
+html,
+body {
+  overscroll-behavior: none;
+}
+```
+
+```js
+let lastTouchY = 0;
+
+function handleTouchStart(event) {
+  lastTouchY = event.touches.length ? event.touches[0].clientY : 0;
+}
+
+function handleTouchMove(event) {
+  const currentTouchY = event.touches[0].clientY;
+  const touchDelta = currentTouchY - lastTouchY;
+  lastTouchY = currentTouchY;
+
+  if ((window.scrollY <= 0 && touchDelta > 0) || (window.scrollY >= getMaxScrollY() - 1 && touchDelta < 0)) {
+    event.preventDefault();
+  }
+}
+
+window.addEventListener("touchmove", handleTouchMove, { passive: false });
+```
+
+**Tuning knobs**
+
+- Boundary tolerance near `getMaxScrollY()`.
+- Whether the guard is mobile-only through `isMobileScrub`.
+
+**Watch outs**
+
+- Keep normal one-finger vertical scrolling native; only prevent default at page boundaries.
+- The touchmove listener must be `{ passive: false }` when preventing edge bounce.
+
+**Verification**
+
+- On mobile, swiping down at the first scene does not bounce the viewport.
+- Swiping near the last scene does not stretch past the page end.
+- Normal mid-page swipes still scroll freely and keep the video advancing smoothly.
 
 ## Add-A-New-Scene Recipe
 

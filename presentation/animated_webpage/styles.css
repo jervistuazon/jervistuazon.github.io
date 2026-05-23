@@ -24,6 +24,7 @@
 html {
   scroll-behavior: auto;
   scrollbar-width: none;
+  overscroll-behavior: none;
 }
 
 body {
