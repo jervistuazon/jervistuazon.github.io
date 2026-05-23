@@ -159,8 +159,8 @@ function drawFrame(timestamp) {
 
 - `spring`: higher catches up faster (desktop: 260, mobile: 340).
 - `damping`: higher reduces overshoot (desktop: 27, mobile: 34).
-- `seekInterval`: lower seeks more often but may increase CPU cost. Mobile and desktop use `1000 / 24` (41.6ms) so seek requests align with the 24 FPS mobile scrub cadence and avoid artificially capping smooth mobile updates below the asset's native frame rate.
-- `seekPrecision`: lower allows finer, more continuous time updates, but sub-frame mobile seeks can force redundant decoder work. Mobile and desktop use `1 / 24` (41.6ms) so seeks only occur when scroll progress can expose a new encoded frame.
+- `seekInterval`: lower seeks more often but may increase CPU cost. On mobile, we use `1000 / 24` (41.6ms) to align perfectly with the mobile video's native 24 FPS framerate, matching desktop performance while maximizing smooth frame updates.
+- `seekPrecision`: lower allows finer, more continuous time updates. On mobile, we use `1 / 24` (41.6ms) to match the native 24 FPS framerate. This prevents high CPU overhead from redundant seeks to identical frames that lie on sub-frame time steps, while still maintaining full frame-by-frame scrubbing resolution.
 - Mobile/touch devices should use the lower-resolution mobile file with exact `currentTime` seeks; avoid `fastSeek()` when slow swipes need frame-to-frame continuity.
 
 **Watch outs**
@@ -749,10 +749,10 @@ Preserve readability and keep presentation assets inside viewport bounds on narr
 **Current implementation**
 
 - Mobile breakpoint: `styles.css` `@media (max-width: 760px)`
-- Stable mobile viewport stabilization: locked utilizing a custom `--vh` CSS variable and cached dimensions (`cachedViewportHeight`, `cachedViewportWidth`) in `script.js` to prevent mobile address bars and toolbars from resizing or jumping the video on scroll.
+- Stable mobile viewport stabilization: locked utilizing a custom `--vh` CSS variable and cached dimensions (`cachedViewportHeight`, `cachedViewportWidth`) in `script.js` to prevent mobile address bars and toolbars from resizing or jumping the layout on scroll.
 - Orientation-aware resizing: `script.js` `resize` listener checks for width changes on mobile before recalculating viewport bounds, ensuring seamless, non-jittery performance.
-- Stable mobile video sizing: anchored at `top: 0; left: 0` with `transform: none`, `width: 100vw`, and `height: calc(var(--vh, 1vh) * 100)` so mobile browser toolbar changes do not recenter or jump the fixed background.
-- Locked mobile fixed layers: `.side-rail` uses `top: calc(var(--vh, 1vh) * 50)`, and `.scroll-stage::before`, `.scroll-stage::after`, and `.panel::before` use explicit `width` and `height` instead of `inset: 0` inside the mobile breakpoint.
+- Stable mobile video sizing: anchored at `top: 0`, `left: 0` with `transform: none` and sized at `height: calc(var(--vh, 1vh) * 100)` to ensure a perfectly steady background that doesn't shift when the dynamic URL/address bar changes the viewport's visual center.
+- Stable side rail, vignettes, and grain overlays: pinned using `top: 0; left: 0` and sized using the locked `--vh` height variable (and `top: calc(var(--vh, 1vh) * 50)` for `.side-rail`) to prevent dynamic shifts or jumps when the mobile browser toolbar appears/disappears on scroll.
 - Scaled mobile typography: dynamic fluid bounds (`clamp`) for `.scene-desc`, `.eyebrow`, and `.hint-text` to ensure high contrast and premium editorial legibility on small high-density screens.
 - Panel padding and section height changes.
 - Text switches from right-aligned to left-aligned.

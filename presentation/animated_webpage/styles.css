@@ -103,7 +103,7 @@ body::-webkit-scrollbar {
   z-index: -1;
   pointer-events: none;
   content: "";
-  background: linear-gradient(180deg, rgba(4, 5, 6, 0.45) 0%, transparent 20%, transparent 80%, rgba(4, 5, 6, 0.45) 100%);
+  background: linear-gradient(180deg, rgba(4, 5, 6, 0.28) 0%, transparent 20%, transparent 80%, rgba(4, 5, 6, 0.28) 100%);
 }
 
 
@@ -201,7 +201,7 @@ body::-webkit-scrollbar {
   z-index: -1;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .panel.is-active::before {
@@ -210,7 +210,7 @@ body::-webkit-scrollbar {
 
 .panel:not(.is-active)::before {
   opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .panel:last-of-type {
@@ -223,7 +223,7 @@ body::-webkit-scrollbar {
 }
 
 .panel-intro::before {
-  background: linear-gradient(90deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 40%, transparent 75%);
+  background: linear-gradient(90deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 22%, transparent 40%);
 }
 
 .panel-intro .panel-copy {
@@ -238,8 +238,8 @@ body::-webkit-scrollbar {
 
 .panel-outro::before {
   background:
-    linear-gradient(0deg, rgba(4, 6, 8, 0.52) 0%, rgba(4, 6, 8, 0.16) 36%, transparent 70%),
-    linear-gradient(90deg, rgba(4, 6, 8, 0.46) 0%, rgba(4, 6, 8, 0.18) 34%, transparent 66%);
+    linear-gradient(0deg, rgba(4, 6, 8, 0.45) 0%, rgba(4, 6, 8, 0.12) 22%, transparent 45%),
+    linear-gradient(90deg, rgba(4, 6, 8, 0.46) 0%, rgba(4, 6, 8, 0.18) 20%, transparent 35%);
 }
 
 .panel-mid {
@@ -408,7 +408,7 @@ h2 {
 }
 
 .panel-concept::before {
-  background: linear-gradient(270deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 40%, transparent 75%);
+  background: linear-gradient(270deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 22%, transparent 40%);
 }
 
 .panel-concept .panel-copy {
@@ -465,7 +465,7 @@ h2 {
 }
 
 .panel-narrative::before {
-  background: linear-gradient(90deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 40%, transparent 75%);
+  background: linear-gradient(90deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 22%, transparent 40%);
 }
 
 .panel-narrative .panel-copy {
@@ -531,7 +531,7 @@ h2 {
 }
 
 .panel-restaurant::before {
-  background: linear-gradient(270deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 40%, transparent 75%);
+  background: linear-gradient(270deg, rgba(4, 6, 8, 0.65) 0%, rgba(4, 6, 8, 0.3) 22%, transparent 40%);
 }
 
 .panel-restaurant .panel-copy {
@@ -655,17 +655,14 @@ h2 {
 /* Responsive Systems & Adaptive Media Queries */
 @media (max-width: 760px) {
   .scroll-stage::before {
-    inset: auto;
+    opacity: 0.018;
     top: 0;
     left: 0;
     width: 100vw;
     height: calc(var(--vh, 1vh) * 100);
-    opacity: 0.018;
   }
 
-  .scroll-stage::after,
-  .panel::before {
-    inset: auto;
+  .scroll-stage::after {
     top: 0;
     left: 0;
     width: 100vw;
@@ -680,6 +677,7 @@ h2 {
     right: auto;
     transform: none;
     width: 100vw;
+    width: 100lvw;
     height: calc(var(--vh, 1vh) * 100);
     filter: brightness(1.08) contrast(1.04);
     will-change: auto;
@@ -707,12 +705,10 @@ h2 {
   }
 
   .side-rail {
-    top: calc(var(--vh, 1vh) * 50);
     right: 12px;
     gap: 22px;
+    top: calc(var(--vh, 1vh) * 50);
   }
-
-
 
   .panel {
     min-height: calc(var(--vh, 1vh) * 100);
@@ -721,7 +717,11 @@ h2 {
   }
 
   .panel::before {
-    background: linear-gradient(90deg, rgba(4, 6, 8, 0.78) 0%, rgba(4, 6, 8, 0.38) 60%, transparent 100%) !important;
+    background: linear-gradient(90deg, rgba(4, 6, 8, 0.78) 0%, rgba(4, 6, 8, 0.3) 35%, transparent 68%) !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: calc(var(--vh, 1vh) * 100);
   }
 
   .panel:last-of-type {

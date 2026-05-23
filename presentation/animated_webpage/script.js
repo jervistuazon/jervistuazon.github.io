@@ -64,8 +64,8 @@
     maxDeltaSeconds: 0.04,
     settleDistance: isMobileScrub ? 0.00012 : 0.00004,
     settleVelocity: isMobileScrub ? 0.0012 : 0.0004,
-    seekInterval: 1000 / 24,
-    seekPrecision: 1 / 24,
+    seekInterval: isMobileScrub ? 1000 / 24 : 1000 / 24, // Optimized from 16 to 24 FPS for smoother scrub updates matching video native framerate
+    seekPrecision: isMobileScrub ? 1 / 24 : 1 / 24, // Optimized from 96 to 24 to prevent heavy, redundant sub-frame seeking
     seekWatchdogDelay: isMobileScrub ? 320 : 220,
     endFramePadding: 1 / 48,
     useFastSeek: false,
@@ -231,9 +231,9 @@
       section.style.setProperty("--scene-progress", sceneProgress.toFixed(4));
 
       // Viewport-based activation for elegant time-based transitions:
-      // Trigger entrance transitions as soon as 15% of the panel enters the viewport (sceneProgress > -0.85)
-      // and reset when it is 85% scrolled off.
-      const isVisible = sceneProgress > -0.85 && sceneProgress < 0.85;
+      // Trigger entrance transitions much later (only when 55% of the panel is on screen, sceneProgress > -0.45)
+      // and start fading out much earlier (as soon as it is 15% scrolled off, sceneProgress < 0.15).
+      const isVisible = sceneProgress > -0.45 && sceneProgress < 0.15;
       section.classList.toggle("is-active", isVisible);
     });
 
