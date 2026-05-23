@@ -830,7 +830,7 @@ Preferred encoding settings:
 -an `
 -c:v libx264 `
 -pix_fmt yuv420p `
--r 60 `
+-r 24 `
 -preset slow `
 -crf 18 `
 -g 6 `
@@ -846,7 +846,7 @@ Mobile portrait scrub variant:
 -vf "crop='min(iw,ceil(ih*9/16/2)*2)':ih:(iw-ow)/2:0,scale=-2:'min(1080,ih)'" `
 -c:v libx264 `
 -pix_fmt yuv420p `
--r 30 `
+-r 24 `
 -preset medium `
 -tune fastdecode `
 -crf 22 `
@@ -867,14 +867,14 @@ Verify keyframe spacing:
 
 - `-crf`: lower means higher quality and larger file.
 - `-g` and `-keyint_min`: lower means more keyframes and smoother seeking but larger file.
-- `-r`: current 60 fps source should stay at `60` so scroll can land on every unique frame.
+- `-r`: set to `24` fps for both desktop and mobile scrub versions to synchronize smooth seeking with the optimized 24 fps timeline in JavaScript.
 - Mobile output uses a center 9:16 portrait crop, capped at 1080px high, to avoid browser-side landscape cropping on phones while keeping random-seek decode cost lower than the full desktop stream.
 - Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video. This derives from `Video/Sequence 01_scrub.mp4` when that desktop scrub exists.
 
 **Watch outs**
 
 - A file with only one keyframe will scrub poorly.
-- A 1080p, high-bitrate, 60 fps scrub file can stutter on phones even with frequent keyframes.
+- A 1080p, high-bitrate video can stutter on phones even with frequent keyframes if the framerate or bitrate is excessively high.
 - Keep audio removed for this presentation unless a separate sound design system is added.
 
 **Verification**

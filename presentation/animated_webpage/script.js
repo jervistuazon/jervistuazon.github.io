@@ -52,10 +52,10 @@
     maxDeltaSeconds: 0.04,
     settleDistance: isMobileScrub ? 0.00012 : 0.00004,
     settleVelocity: isMobileScrub ? 0.0012 : 0.0004,
-    seekInterval: isMobileScrub ? 1000 / 30 : 1000 / 60,
-    seekPrecision: isMobileScrub ? 1 / 30 : 1 / 60,
+    seekInterval: 1000 / 24,
+    seekPrecision: 1 / 24,
     seekWatchdogDelay: isMobileScrub ? 320 : 220,
-    endFramePadding: isMobileScrub ? 1 / 60 : 1 / 120,
+    endFramePadding: 1 / 48,
     useFastSeek: false,
   };
 
