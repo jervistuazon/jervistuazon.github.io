@@ -422,12 +422,12 @@ h2 {
 
 #scene-2 .scene-asset-wrapper {
   position: absolute;
-  bottom: 8vh; /* Set lower to sit perfectly under the text block */
+  bottom: 4vh; /* Set lower to sit perfectly under the text block */
   right: clamp(28px, 6vw, 86px); /* Shifted to the right side directly under the text */
   left: auto; /* Reset left positioning */
-  width: min(300px, 24vw); /* Sized to sit cleanly under the text block */
+  width: min(240px, 20vw); /* Reduced width and height to prevent collision with copy */
   z-index: 2;
-  transform: translateY(calc(var(--scene-progress) * -80px)); /* Slower parallax translation to stay under text */
+  transform: translateY(calc(var(--scene-progress) * -45px)); /* Reduced vertical parallax travel to avoid encroaching on text */
   will-change: transform;
 }
 
@@ -658,9 +658,35 @@ h2 {
   }
 
   .scroll-video {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    bottom: auto;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    width: 100lvw;
+    height: 100vh;
+    height: 100lvh;
     filter: brightness(1.08) contrast(1.04);
-    transform: none;
     will-change: auto;
+  }
+
+  .scene-desc {
+    font-size: clamp(1.05rem, 4.5vw, 1.25rem);
+    line-height: 1.62;
+    font-weight: 300;
+  }
+
+  .eyebrow {
+    font-size: clamp(0.85rem, 3.8vw, 0.95rem);
+    letter-spacing: 0.22em;
+    margin-bottom: 12px;
+  }
+
+  .hint-text {
+    font-size: clamp(0.78rem, 3.2vw, 0.85rem);
+    letter-spacing: 0.18em;
   }
 
   .scene-asset {

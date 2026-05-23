@@ -749,6 +749,8 @@ Preserve readability and keep presentation assets inside viewport bounds on narr
 **Current implementation**
 
 - Mobile breakpoint: `styles.css` `@media (max-width: 760px)`
+- Stable mobile video sizing: locked utilizing viewport large units (`100lvw`, `100lvh`) and centered with `transform: translate(-50%, -50%)` to prevent dynamic address bar triggers from resizing or stuttering the video.
+- Scaled mobile typography: dynamic fluid bounds (`clamp`) for `.scene-desc`, `.eyebrow`, and `.hint-text` to ensure high contrast and premium editorial legibility on small high-density screens.
 - Panel padding and section height changes.
 - Text switches from right-aligned to left-aligned.
 - Absolute assets become relative assets.
