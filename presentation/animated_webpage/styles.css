@@ -7,6 +7,7 @@
   --muted: rgba(244, 244, 240, 0.85);
   --line: rgba(255, 255, 255, 0.24);
   --accent: #d4b595;
+  --vh: 1vh;
 }
 
 * {
@@ -184,8 +185,8 @@ body::-webkit-scrollbar {
 
 
 .panel {
-  min-height: 100vh;
-  height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
   display: flex;
   align-items: center;
   padding: clamp(28px, 6vw, 86px);
@@ -213,8 +214,8 @@ body::-webkit-scrollbar {
 }
 
 .panel:last-of-type {
-  min-height: 100vh;
-  height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .panel-intro {
@@ -226,7 +227,7 @@ body::-webkit-scrollbar {
 }
 
 .panel-intro .panel-copy {
-  padding-bottom: clamp(96px, 18vh, 180px);
+  padding-bottom: clamp(96px, calc(var(--vh, 1vh) * 18), 180px);
 }
 
 .panel-outro {
@@ -247,14 +248,14 @@ body::-webkit-scrollbar {
 
 .panel-copy {
   width: min(680px, calc(100vw - 96px));
-  padding-bottom: clamp(46px, 10vh, 116px);
+  padding-bottom: clamp(46px, calc(var(--vh, 1vh) * 10), 116px);
 }
 
 .panel-outro .panel-copy {
   width: min(360px, calc(100vw - 116px));
   padding-top: 0;
   padding-bottom: 0;
-  margin-bottom: clamp(104px, 18vh, 172px);
+  margin-bottom: clamp(104px, calc(var(--vh, 1vh) * 18), 172px);
 }
 
 .panel-outro .eyebrow {
@@ -402,8 +403,8 @@ h2 {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  min-height: 100vh;
-  height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .panel-concept::before {
@@ -412,7 +413,7 @@ h2 {
 
 .panel-concept .panel-copy {
   align-self: flex-start;
-  margin-top: clamp(20px, 4vh, 48px); /* Shifted higher up to allow image to fit under */
+  margin-top: clamp(20px, calc(var(--vh, 1vh) * 4), 48px); /* Shifted higher up to allow image to fit under */
   width: min(500px, 40vw); /* Refined width for optimal layout spacing */
   padding-bottom: 0;
   margin-left: auto;
@@ -422,7 +423,7 @@ h2 {
 
 #scene-2 .scene-asset-wrapper {
   position: absolute;
-  bottom: 4vh; /* Set lower to sit perfectly under the text block */
+  bottom: calc(var(--vh, 1vh) * 4); /* Set lower to sit perfectly under the text block */
   right: clamp(28px, 6vw, 86px); /* Shifted to the right side directly under the text */
   left: auto; /* Reset left positioning */
   width: min(240px, 20vw); /* Reduced width and height to prevent collision with copy */
@@ -459,8 +460,8 @@ h2 {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  min-height: 100vh;
-  height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .panel-narrative::before {
@@ -468,7 +469,7 @@ h2 {
 }
 
 .panel-narrative .panel-copy {
-  margin-top: clamp(24px, 5vh, 64px);
+  margin-top: clamp(24px, calc(var(--vh, 1vh) * 5), 64px);
   width: min(480px, 38vw);
   padding-bottom: 0;
 }
@@ -510,7 +511,7 @@ h2 {
 
 #scene-3 .scene-asset-wrapper {
   position: absolute;
-  bottom: 12vh;
+  bottom: calc(var(--vh, 1vh) * 12);
   right: clamp(28px, 6vw, 86px);
   width: min(330px, 28vw);
   z-index: 2;
@@ -525,8 +526,8 @@ h2 {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  min-height: 100vh;
-  height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .panel-restaurant::before {
@@ -535,7 +536,7 @@ h2 {
 
 .panel-restaurant .panel-copy {
   align-self: flex-start;
-  margin-top: clamp(4px, 1vh, 16px);
+  margin-top: clamp(4px, calc(var(--vh, 1vh) * 1), 16px);
   width: min(520px, 44vw);
   padding-bottom: 0;
   margin-left: auto;
@@ -553,11 +554,11 @@ h2 {
 
 .scene-assets-cluster {
   position: absolute;
-  bottom: 5vh;
+  bottom: calc(var(--vh, 1vh) * 5);
   left: clamp(28px, 6vw, 86px); /* Shifted to the left side to prevent overlap with right-aligned text */
   right: auto; /* Reset right positioning */
   width: min(480px, 36vw); /* Compacted width for a clean, premium visual aesthetic */
-  height: min(200px, 22vh);
+  height: min(200px, calc(var(--vh, 1vh) * 22));
   z-index: 2;
 }
 
@@ -666,8 +667,7 @@ h2 {
     transform: translate(-50%, -50%);
     width: 100vw;
     width: 100lvw;
-    height: 100vh;
-    height: 100lvh;
+    height: calc(var(--vh, 1vh) * 100);
     filter: brightness(1.08) contrast(1.04);
     will-change: auto;
   }
@@ -701,7 +701,7 @@ h2 {
 
 
   .panel {
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     height: auto;
     padding: 24px 48px 48px 22px;
   }
@@ -711,7 +711,7 @@ h2 {
   }
 
   .panel:last-of-type {
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     height: auto;
   }
 
@@ -739,9 +739,9 @@ h2 {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     height: auto;
-    padding-top: 14vh;
+    padding-top: calc(var(--vh, 1vh) * 14);
   }
 
   .panel-concept .panel-copy {
@@ -771,9 +771,9 @@ h2 {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     height: auto;
-    padding-top: 14vh;
+    padding-top: calc(var(--vh, 1vh) * 14);
   }
 
   .panel-narrative .panel-copy {
@@ -802,9 +802,9 @@ h2 {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     height: auto;
-    padding-top: 14vh;
+    padding-top: calc(var(--vh, 1vh) * 14);
   }
 
   .panel-restaurant .panel-copy {

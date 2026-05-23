@@ -4,6 +4,18 @@
   const rail = document.querySelector(".side-rail");
   const marks = Array.from(document.querySelectorAll(".rail-mark"));
   const sections = Array.from(document.querySelectorAll(".panel"));
+
+  let cachedViewportWidth = window.innerWidth;
+  let cachedViewportHeight = window.innerHeight;
+
+  function updateViewportDimensions() {
+    cachedViewportWidth = window.innerWidth;
+    cachedViewportHeight = window.innerHeight;
+    document.documentElement.style.setProperty("--vh", `${cachedViewportHeight * 0.01}px`);
+  }
+
+  updateViewportDimensions();
+
   const revealItems = Array.from(document.querySelectorAll(".reveal")).map((element) => ({
     element,
     delay: getRevealDelay(element),
@@ -109,12 +121,12 @@
 
     const rect = element.getBoundingClientRect();
     const midpoint = rect.left + rect.width / 2;
-    const side = midpoint > window.innerWidth / 2 ? 1 : -1;
+    const side = midpoint > cachedViewportWidth / 2 ? 1 : -1;
     return { inX: 52 * side, inY: 0, outX: 72 * side, outY: -16, inScale: 1, outScale: 0.98 };
   }
 
   function updateRevealMotion() {
-    const viewportHeight = window.innerHeight || 1;
+    const viewportHeight = cachedViewportHeight || 1;
     const enterStart = 0.2;
     const enterEnd = 0.74;
     const exitStart = 1.28;
@@ -143,11 +155,11 @@
   }
 
   function getScrollableDistance() {
-    return Math.max(stage.offsetHeight - window.innerHeight, 1);
+    return Math.max(stage.offsetHeight - cachedViewportHeight, 1);
   }
 
   function getMaxScrollY() {
-    return Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+    return Math.max(document.documentElement.scrollHeight - cachedViewportHeight, 0);
   }
 
   function getScrollProgress() {
@@ -210,7 +222,7 @@
 
   function updateSceneProgress() {
     const smoothedY = renderedProgress * getScrollableDistance();
-    const viewportHeight = window.innerHeight || 1;
+    const viewportHeight = cachedViewportHeight || 1;
     const navigationPoints = getNavigationPoints();
 
     sections.forEach((section, index) => {
@@ -344,7 +356,7 @@
         ? (renderedProgress - previousProgress) / deltaSeconds
         : 0;
     } else {
-      const impulse = clamp(scrollVelocity / Math.max(window.innerHeight, 1), -0.04, 0.04);
+      const impulse = clamp(scrollVelocity / Math.max(cachedViewportHeight, 1), -0.04, 0.04);
       const acceleration = progressDelta * motion.spring + impulse * 8;
       const drag = Math.exp(-motion.damping * deltaSeconds);
 
@@ -443,7 +455,7 @@
 
   function settleToNearestSection() {
     const snapPoint = getNearestSnapPoint(targetScrollY);
-    const snapRange = window.innerHeight * scrollMotion.snapRange;
+    const snapRange = cachedViewportHeight * scrollMotion.snapRange;
     const snapDistance = Math.abs(snapPoint - targetScrollY);
 
     if (snapDistance > snapRange || snapDistance < scrollMotion.snapMinDistance) {
@@ -469,7 +481,7 @@
     }
 
     if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-      return event.deltaY * window.innerHeight;
+      return event.deltaY * cachedViewportHeight;
     }
 
     return event.deltaY;
@@ -515,10 +527,10 @@
     }
 
     const keyDeltas = {
-      ArrowDown: window.innerHeight * 0.18,
-      ArrowUp: -window.innerHeight * 0.18,
-      PageDown: window.innerHeight * 0.82,
-      PageUp: -window.innerHeight * 0.82,
+      ArrowDown: cachedViewportHeight * 0.18,
+      ArrowUp: -cachedViewportHeight * 0.18,
+      PageDown: cachedViewportHeight * 0.82,
+      PageUp: -cachedViewportHeight * 0.82,
     };
 
     let nextTarget = null;
@@ -528,7 +540,7 @@
     } else if (event.key === "End") {
       nextTarget = getMaxScrollY();
     } else if (event.key === " ") {
-      nextTarget = targetScrollY + window.innerHeight * (event.shiftKey ? -0.82 : 0.82);
+      nextTarget = targetScrollY + cachedViewportHeight * (event.shiftKey ? -0.82 : 0.82);
     } else if (Object.prototype.hasOwnProperty.call(keyDeltas, event.key)) {
       nextTarget = targetScrollY + keyDeltas[event.key];
     }
@@ -613,7 +625,13 @@
   video.addEventListener("contextmenu", (event) => event.preventDefault());
 
   window.addEventListener("scroll", handleScroll, { passive: true });
-  window.addEventListener("resize", handleScroll, { passive: true });
+  window.addEventListener("resize", () => {
+    const currentWidth = window.innerWidth;
+    if (!isMobileScrub || currentWidth !== cachedViewportWidth) {
+      updateViewportDimensions();
+      handleScroll();
+    }
+  }, { passive: true });
   window.addEventListener("wheel", handleWheel, { passive: false });
   window.addEventListener("keydown", handleKeydown);
 
@@ -725,8 +743,8 @@
 
   function handleMouseMove(event) {
     // Normalize coordinates between -1 and 1
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = (event.clientY / window.innerHeight) * 2 - 1;
+    const x = (event.clientX / cachedViewportWidth) * 2 - 1;
+    const y = (event.clientY / cachedViewportHeight) * 2 - 1;
 
     // Translate up to 20px in the opposite direction for 3D depth feeling
     targetMouseX = x * -20;
