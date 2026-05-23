@@ -159,8 +159,8 @@ function drawFrame(timestamp) {
 
 - `spring`: higher catches up faster (desktop: 260, mobile: 340).
 - `damping`: higher reduces overshoot (desktop: 27, mobile: 34).
-- `seekInterval`: lower seeks more often but may increase CPU cost. On mobile, we use `1000 / 16` (~62.5ms) to give the phone's hardware decoder breathing room and prevent GPU backlog, while desktop uses `1000 / 24` (41.6ms).
-- `seekPrecision`: lower allows finer, more continuous time updates. On mobile, we use `1 / 96` (approx. 10.4ms) to ensure slow micro-swipes feel responsive and continuous without waiting for full frame steps, while desktop uses `1 / 24` (41.6ms).
+- `seekInterval`: lower seeks more often but may increase CPU cost. Mobile and desktop use `1000 / 24` (41.6ms) so seek requests align with the 24 FPS mobile scrub cadence and avoid artificially capping smooth mobile updates below the asset's native frame rate.
+- `seekPrecision`: lower allows finer, more continuous time updates, but sub-frame mobile seeks can force redundant decoder work. Mobile and desktop use `1 / 24` (41.6ms) so seeks only occur when scroll progress can expose a new encoded frame.
 - Mobile/touch devices should use the lower-resolution mobile file with exact `currentTime` seeks; avoid `fastSeek()` when slow swipes need frame-to-frame continuity.
 
 **Watch outs**
@@ -751,7 +751,8 @@ Preserve readability and keep presentation assets inside viewport bounds on narr
 - Mobile breakpoint: `styles.css` `@media (max-width: 760px)`
 - Stable mobile viewport stabilization: locked utilizing a custom `--vh` CSS variable and cached dimensions (`cachedViewportHeight`, `cachedViewportWidth`) in `script.js` to prevent mobile address bars and toolbars from resizing or jumping the video on scroll.
 - Orientation-aware resizing: `script.js` `resize` listener checks for width changes on mobile before recalculating viewport bounds, ensuring seamless, non-jittery performance.
-- Stable mobile video sizing: centered with `transform: translate(-50%, -50%)` and sized at `height: calc(var(--vh, 1vh) * 100)` to ensure a perfectly steady background.
+- Stable mobile video sizing: anchored at `top: 0; left: 0` with `transform: none`, `width: 100vw`, and `height: calc(var(--vh, 1vh) * 100)` so mobile browser toolbar changes do not recenter or jump the fixed background.
+- Locked mobile fixed layers: `.side-rail` uses `top: calc(var(--vh, 1vh) * 50)`, and `.scroll-stage::before`, `.scroll-stage::after`, and `.panel::before` use explicit `width` and `height` instead of `inset: 0` inside the mobile breakpoint.
 - Scaled mobile typography: dynamic fluid bounds (`clamp`) for `.scene-desc`, `.eyebrow`, and `.hint-text` to ensure high contrast and premium editorial legibility on small high-density screens.
 - Panel padding and section height changes.
 - Text switches from right-aligned to left-aligned.
