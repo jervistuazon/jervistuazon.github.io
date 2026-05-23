@@ -142,6 +142,14 @@ a:hover {
     font-size: 1rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.navbar.scrolled .logo {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .nav-links a {
@@ -1231,6 +1239,8 @@ iframe.lightbox-content {
     position: absolute;
     top: 30px;
     right: 50px;
+    width: 44px;
+    height: 44px;
     color: #f1f1f1;
     font-size: 40px;
     font-weight: 100;
@@ -1240,9 +1250,13 @@ iframe.lightbox-content {
     /* Above everything in project view */
     line-height: 1;
     /* Ensure vertical centering */
+    border: 0;
+    background: transparent;
+    padding: 0;
 }
 
-.close-project-btn:hover {
+.close-project-btn:hover,
+.close-project-btn:focus-visible {
     color: #bbb;
 }
 
@@ -1306,16 +1320,22 @@ iframe.lightbox-content {
     position: absolute;
     top: 30px;
     right: 50px;
+    width: 44px;
+    height: 44px;
     color: #f1f1f1;
     font-size: 40px;
     font-weight: 100;
     transition: 0.3s;
     cursor: pointer;
     z-index: 10001;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
 }
 
 .close-btn:hover,
-.close-btn:focus {
+.close-btn:focus-visible {
     color: #bbb;
     text-decoration: none;
     cursor: pointer;

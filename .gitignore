@@ -4,6 +4,11 @@ Thumbs.db
 *.log
 node_modules/
 
+# Local backup/export folders; keep them out of published site commits.
+assets_backup/
+New folder/
+s/
+
 # Generated/exported animated webpage artifacts and local tooling
 presentation/animated_webpage/dist/
 presentation/animated_webpage/single-file-exporter.html

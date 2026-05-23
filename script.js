@@ -9,6 +9,8 @@ let savedScrollPosition = 0; // For scroll position memory
 const ITEMS_PER_PAGE = 24;
 let visibleLimit = ITEMS_PER_PAGE;
 let currentFilter = 'all';
+let allGalleryItems = [];
+let galleryRevealObserver = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Render Gallery Grid from Data
@@ -95,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.stopPropagation();
             toggleDropdown();
         });
+        dropdownButton.addEventListener('keydown', handleDropdownButtonKeydown);
     }
 
     const optionButtons = document.querySelectorAll('.option-item');
@@ -107,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = button.dataset.filter || button.textContent.toLowerCase();
             selectFilter(category, button.textContent);
         });
+        button.addEventListener('keydown', handleDropdownOptionKeydown);
     });
 });
 
@@ -401,7 +405,7 @@ function renderGalleryGrid() {
     grid.innerHTML = '';
 
     // Observer for new items
-    const observer = new IntersectionObserver((entries) => {
+    galleryRevealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) entry.target.classList.add('is-visible');
         });
@@ -512,121 +516,120 @@ function renderGalleryGrid() {
 
     // Concatenate in order: Featured -> Projects -> Standalone
     const sortedProjects = [...featuredProjects, ...projectFolders, ...standalone];
+    allGalleryItems = sortedProjects;
 
-    // Render all items
-    sortedProjects.forEach((itemData, index) => {
-        const item = document.createElement('button');
-        item.type = 'button';
-
-        // Apply layout: 
-        // - Featured projects: always 2x2, alternating left/right
-        // - Normal project folders: random sized (2x2, 2x1, or 1x2) for visual variety
-        // - Standalone images: 1x1 (no span class)
-        // - Videos: 1x1 (no span class)
-        let spanClass = '';
-        if (itemData.type === 'project') {
-            item.setAttribute('data-project', 'true');
-            // Store project name for layout persistence
-            item.setAttribute('data-project-name', itemData.projectName);
-
-            if (itemData.featured) {
-                // Featured items are full width (3 cols) x 2 rows
-                spanClass = 'span-3-2';
-            } else {
-                // Normal project folders: check for manual override first, else random sizing
-                spanClass = getRandomProjectSpan(index, itemData.projectName);
-            }
-        } else if (itemData.type === 'standalone') {
-            // Standalone items
-            item.setAttribute('data-standalone', 'true');
-            // Store filename for size override checks
-            item.setAttribute('data-filename', itemData.filename);
-
-            if (itemData.featured) {
-                // Featured standalone items are full width (3 cols) x 2 rows
-                spanClass = 'span-3-2';
-            } else {
-                // Check for manual override first, else random sizing
-                spanClass = getRandomStandaloneSpan(index, itemData.filename);
-            }
-        }
-        // Other items default to 1x1 (no span class)
-        // Add mobile aspect ratio class for Pinterest-style masonry on mobile (except featured)
-        const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index, itemData.type);
-        item.className = `gallery-item fade-in-scroll ${spanClass} ${mobileArClass}`.trim();
-
-        // Set category for filtering
-        item.setAttribute('data-category', itemData.categorySlug);
-        if (itemData.featured) {
-            item.setAttribute('data-featured', 'true');
-        }
-
-        if (itemData.type === 'project') {
-            // Project folder
-            item.onclick = () => openGallery(itemData.category, itemData.projectName);
-            renderMediaItem(item, itemData.category, itemData.projectName, itemData.thumbSrc);
-
-            // Display name: extract just the project name (before first dash)
-            const displayName = parseProjectName(itemData.projectName).name;
-            renderInfo(item, displayName);
-            item.setAttribute('aria-label', `Open project: ${displayName}`);
-
-            // Auto-run slideshow for multi-image projects
-            const imageCount = itemData.files.length;
-            if (imageCount > 1) {
-                // Add auto-running slideshow for multi-image projects
-                setupHoverSlideshow(item, itemData.category, itemData.projectName, itemData.files);
-            }
-        } else if (itemData.type === 'standalone') {
-            // Standalone image in category folder - mark for desaturated styling
-            item.setAttribute('data-standalone', 'true');
-
-            const presentationHref = getPresentationHref(itemData);
-
-            // Special handling for live presentations - redirect to presentation page
-            if (presentationHref) {
-                item.onclick = () => {
-                    window.location.href = presentationHref;
-                };
-            } else {
-                item.onclick = () => {
-                    currentFolder = itemData.category;
-                    currentGalleryImages = itemData.standaloneFiles;
-                    openLightbox(itemData.fileIndex);
-                };
-            }
-            renderMediaItem(item, itemData.category, '.', itemData.filename);
-            // Strip extension, leading numbers, and "- F" featured marker from display name
-            const standaloneLabel = getGalleryItemLabel(itemData.filename, itemData.label);
-            renderInfo(item, standaloneLabel, itemData.filename, presentationHref);
-            item.setAttribute('aria-label', presentationHref ? `Open presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
-        } else if (itemData.type === 'video') {
-            // Video item
-            const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "").replace(/\s-\s*F$/, "");
-
-            // Special handling for Interactive Presentation Demo - redirect to presentation page
-            if (itemData.filename.includes('Interactive Presentation Demo')) {
-                item.onclick = () => {
-                    window.location.href = 'presentation/interactive_presentation_demo/';
-                };
-            } else {
-                item.onclick = () => {
-                    currentFolder = 'Video';
-                    currentGalleryImages = galleryData['Video'];
-                    openLightbox(itemData.fileIndex);
-                };
-            }
-            renderMediaItem(item, 'Video', '.', itemData.filename);
-            renderInfo(item, videoLabel, itemData.filename);
-            item.setAttribute('aria-label', `Play video: ${videoLabel}`);
-        }
-
-        grid.appendChild(item);
-        observer.observe(item);
-    });
-
-    // Initialize view with limit (hide items beyond limit)
+    // Initialize view with limit. Items beyond the first page are not built until needed.
     filterGallery('all');
+}
+
+function renderGalleryItem(itemData, index) {
+    const item = document.createElement('button');
+    item.type = 'button';
+
+    // Apply layout:
+    // - Featured projects: always 2x2, alternating left/right
+    // - Normal project folders: random sized (2x2, 2x1, or 1x2) for visual variety
+    // - Standalone images: 1x1 (no span class)
+    // - Videos: 1x1 (no span class)
+    let spanClass = '';
+    if (itemData.type === 'project') {
+        item.setAttribute('data-project', 'true');
+        // Store project name for layout persistence
+        item.setAttribute('data-project-name', itemData.projectName);
+
+        if (itemData.featured) {
+            // Featured items are full width (3 cols) x 2 rows
+            spanClass = 'span-3-2';
+        } else {
+            // Normal project folders: check for manual override first, else random sizing
+            spanClass = getRandomProjectSpan(index, itemData.projectName);
+        }
+    } else if (itemData.type === 'standalone') {
+        // Standalone items
+        item.setAttribute('data-standalone', 'true');
+        // Store filename for size override checks
+        item.setAttribute('data-filename', itemData.filename);
+
+        if (itemData.featured) {
+            // Featured standalone items are full width (3 cols) x 2 rows
+            spanClass = 'span-3-2';
+        } else {
+            // Check for manual override first, else random sizing
+            spanClass = getRandomStandaloneSpan(index, itemData.filename);
+        }
+    }
+    // Other items default to 1x1 (no span class)
+    // Add mobile aspect ratio class for Pinterest-style masonry on mobile (except featured)
+    const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index, itemData.type);
+    item.className = `gallery-item fade-in-scroll ${spanClass} ${mobileArClass}`.trim();
+
+    // Set category for filtering
+    item.setAttribute('data-category', itemData.categorySlug);
+    if (itemData.featured) {
+        item.setAttribute('data-featured', 'true');
+    }
+
+    if (itemData.type === 'project') {
+        // Project folder
+        item.onclick = () => openGallery(itemData.category, itemData.projectName);
+        renderMediaItem(item, itemData.category, itemData.projectName, itemData.thumbSrc);
+
+        // Display name: extract just the project name (before first dash)
+        const displayName = parseProjectName(itemData.projectName).name;
+        renderInfo(item, displayName);
+        item.setAttribute('aria-label', `Open project: ${displayName}`);
+
+        // Auto-run slideshow for multi-image projects
+        const imageCount = itemData.files.length;
+        if (imageCount > 1) {
+            // Add auto-running slideshow for multi-image projects
+            setupHoverSlideshow(item, itemData.category, itemData.projectName, itemData.files);
+        }
+    } else if (itemData.type === 'standalone') {
+        // Standalone image in category folder - mark for desaturated styling
+        item.setAttribute('data-standalone', 'true');
+
+        const presentationHref = getPresentationHref(itemData);
+
+        // Special handling for live presentations - redirect to presentation page
+        if (presentationHref) {
+            item.onclick = () => {
+                window.location.href = presentationHref;
+            };
+        } else {
+            item.onclick = () => {
+                currentFolder = itemData.category;
+                currentGalleryImages = itemData.standaloneFiles;
+                openLightbox(itemData.fileIndex);
+            };
+        }
+        renderMediaItem(item, itemData.category, '.', itemData.filename);
+        // Strip extension, leading numbers, and "- F" featured marker from display name
+        const standaloneLabel = getGalleryItemLabel(itemData.filename, itemData.label);
+        renderInfo(item, standaloneLabel, itemData.filename, presentationHref);
+        item.setAttribute('aria-label', presentationHref ? `Open presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
+    } else if (itemData.type === 'video') {
+        // Video item
+        const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "").replace(/\s-\s*F$/, "");
+
+        // Special handling for Interactive Presentation Demo - redirect to presentation page
+        if (itemData.filename.includes('Interactive Presentation Demo')) {
+            item.onclick = () => {
+                window.location.href = 'presentation/interactive_presentation_demo/';
+            };
+        } else {
+            item.onclick = () => {
+                currentFolder = 'Video';
+                currentGalleryImages = galleryData['Video'];
+                openLightbox(itemData.fileIndex);
+            };
+        }
+        renderMediaItem(item, 'Video', '.', itemData.filename);
+        renderInfo(item, videoLabel, itemData.filename);
+        item.setAttribute('aria-label', `Play video: ${videoLabel}`);
+    }
+
+    return item;
 }
 
 // Setup auto-running slideshow for project folders with multiple images
@@ -1016,6 +1019,10 @@ function toggleDropdown() {
     const isOpen = list.classList.toggle('active');
     if (dropdownButton) {
         dropdownButton.setAttribute('aria-expanded', isOpen.toString());
+        if (isOpen) {
+            const selectedOption = list.querySelector('.option-item.selected') || list.querySelector('.option-item');
+            if (selectedOption) selectedOption.focus();
+        }
     }
 }
 
@@ -1037,10 +1044,65 @@ function selectFilter(categorySlug, selectedText) {
     list.classList.remove('active');
     if (selectedDisplay) {
         selectedDisplay.setAttribute('aria-expanded', 'false');
+        selectedDisplay.focus();
     }
 
     // Trigger actual filter (pass null so filterGallery uses fallback button activation)
     filterGallery(categorySlug, null);
+}
+
+function closeDropdown(returnFocus = false) {
+    const list = document.getElementById('mobile-filter-options');
+    const dropdownButton = document.querySelector('.selected-option');
+
+    if (list) {
+        list.classList.remove('active');
+    }
+
+    if (dropdownButton) {
+        dropdownButton.setAttribute('aria-expanded', 'false');
+        if (returnFocus) dropdownButton.focus();
+    }
+}
+
+function handleDropdownButtonKeydown(event) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        const list = document.getElementById('mobile-filter-options');
+        if (!list || !list.classList.contains('active')) {
+            toggleDropdown();
+        }
+    }
+}
+
+function handleDropdownOptionKeydown(event) {
+    const options = Array.from(document.querySelectorAll('.option-item'));
+    const currentIndex = options.indexOf(event.currentTarget);
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeDropdown(true);
+        return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const direction = event.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = (currentIndex + direction + options.length) % options.length;
+        options[nextIndex].focus();
+        return;
+    }
+
+    if (event.key === 'Home') {
+        event.preventDefault();
+        options[0].focus();
+        return;
+    }
+
+    if (event.key === 'End') {
+        event.preventDefault();
+        options[options.length - 1].focus();
+    }
 }
 
 // Close custom dropdown when clicking outside
@@ -1048,7 +1110,7 @@ window.addEventListener('click', function (e) {
     const dropdown = document.querySelector('.custom-dropdown');
     const list = document.getElementById('mobile-filter-options');
     if (dropdown && !dropdown.contains(e.target) && list.classList.contains('active')) {
-        list.classList.remove('active');
+        closeDropdown();
     }
 });
 
@@ -1170,14 +1232,10 @@ function filterGallery(category, evt, isLoadMore = false) {
         btn.setAttribute('aria-pressed', isActive.toString());
     });
 
-    // 2. Filter Items and Apply Count Limit
-    const items = Array.from(document.querySelectorAll('.gallery-item'));
-
-    // First, identify all matching items for this category
-    // First, identify all matching items for this category
-    const matchingItems = items.filter(item => {
-        const itemCategory = item.getAttribute('data-category');
-        const isFeatured = item.getAttribute('data-featured') === 'true';
+    // 2. Filter data and render only the currently visible count.
+    const matchingItems = allGalleryItems.filter(itemData => {
+        const itemCategory = itemData.categorySlug;
+        const isFeatured = itemData.featured === true;
 
         // 'All' shows everything
         if (category === 'all') return true;
@@ -1194,47 +1252,33 @@ function filterGallery(category, evt, isLoadMore = false) {
     // (Load More increases visibleLimit)
     const itemsToShow = matchingItems.slice(0, visibleLimit);
 
-    // Apply visibility
-    // Apply visibility with Staggered Cascading Animation
-    let staggerCount = 0;
+    const grid = document.getElementById('gallery-grid');
+    if (grid) {
+        if (galleryRevealObserver) {
+            grid.querySelectorAll('.gallery-item').forEach(item => galleryRevealObserver.unobserve(item));
+        }
+        grid.innerHTML = '';
+        const fragment = document.createDocumentFragment();
 
-    items.forEach(item => {
-        const shouldShow = itemsToShow.includes(item);
-        // Check visibility BEFORE modifying it to identify new items
-        const isCurrentlyVisible = item.style.display !== 'none' && !item.classList.contains('hidden-item');
+        itemsToShow.forEach((itemData, index) => {
+            const item = renderGalleryItem(itemData, index);
+            item.style.transitionDelay = `${index * 35}ms`;
+            fragment.appendChild(item);
+        });
 
-        if (shouldShow) {
-            // SHOW
-            item.classList.remove('hidden-item');
-            item.style.display = 'block';
+        grid.appendChild(fragment);
 
-            if (!isCurrentlyVisible) {
-                // New item appearing: Apply stagger delay
-                // 50ms interval for quick cascade
-                item.style.transitionDelay = `${staggerCount * 50}ms`;
-                staggerCount++;
-            } else {
-                // Already visible: No delay
-                item.style.transitionDelay = '0s';
+        const renderedItems = Array.from(grid.querySelectorAll('.gallery-item'));
+        renderedItems.forEach(item => {
+            if (galleryRevealObserver) {
+                galleryRevealObserver.observe(item);
             }
-
-            // Trigger animation
             requestAnimationFrame(() => {
                 item.style.opacity = '1';
                 item.style.transform = 'translateY(0) scale(1)';
             });
-        } else {
-            // HIDE
-            item.classList.add('hidden-item');
-            item.style.display = 'none';
-
-            // Reset state for next time it appears
-            item.style.opacity = '0';
-            // Match CSS .fade-in-scroll initial state
-            item.style.transform = 'translateY(50px) scale(0.95)';
-            item.style.transitionDelay = '0s';
-        }
-    });
+        });
+    }
 
     // 3. Handle "See More" Button Visibility
     const loadMoreBtn = document.getElementById('load-more-btn');
@@ -1251,8 +1295,9 @@ function filterGallery(category, evt, isLoadMore = false) {
     }
 
     // 4. Adjust grid columns
-    const grid = document.getElementById('gallery-grid');
-    grid.style.gridTemplateColumns = '';
+    if (grid) {
+        grid.style.gridTemplateColumns = '';
+    }
 
     // Re-assign span classes to maintain layout rhythm for visible items
     reassignLayoutPattern();
