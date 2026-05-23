@@ -14,7 +14,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body class="is-loading">
+    <div id="preloader" class="preloader" aria-hidden="false">
+      <div class="preloader-content">
+        <h2 class="preloader-title">Aurelia <em>Maldives</em></h2>
+        <div class="preloader-progress-track">
+          <div id="preloaderProgress" class="preloader-progress-bar"></div>
+        </div>
+        <div id="preloaderStatus" class="preloader-status">0%</div>
+      </div>
+    </div>
+
     <main class="scroll-stage" aria-label="Scroll controlled video">
       <video
         id="scrollVideo"

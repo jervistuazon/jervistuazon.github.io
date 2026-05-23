@@ -5,6 +5,72 @@
   const marks = Array.from(document.querySelectorAll(".rail-mark"));
   const sections = Array.from(document.querySelectorAll(".panel"));
 
+  const preloader = document.querySelector("#preloader");
+  const preloaderProgress = document.querySelector("#preloaderProgress");
+  const preloaderStatus = document.querySelector("#preloaderStatus");
+
+  let isVideoInitialized = false;
+  let firstSeekCompleted = false;
+  let loaderDismissed = false;
+  let currentLoadingProgress = 0;
+
+  // Preloader progress management (EFX-014)
+  let lastProgressTime = performance.now();
+  function updatePreloaderAnimation(timestamp) {
+    if (loaderDismissed) return;
+
+    let target = isVideoInitialized ? 100 : 90;
+    const diff = target - currentLoadingProgress;
+    
+    if (diff > 0.05) {
+      // Smoothly ease the progress bar width and number indicator
+      const step = isVideoInitialized ? (diff * 0.15 + 0.6) : (diff * 0.035 + 0.08);
+      currentLoadingProgress = Math.min(currentLoadingProgress + step, target);
+    } else {
+      currentLoadingProgress = target;
+    }
+
+    const roundedProgress = Math.floor(currentLoadingProgress);
+    if (preloaderProgress) {
+      preloaderProgress.style.width = `${currentLoadingProgress}%`;
+    }
+    if (preloaderStatus) {
+      preloaderStatus.textContent = `${roundedProgress}%`;
+    }
+
+    if (currentLoadingProgress >= 100) {
+      dismissPreloader();
+    } else {
+      requestAnimationFrame(updatePreloaderAnimation);
+    }
+  }
+
+  function dismissPreloader() {
+    if (loaderDismissed) return;
+    loaderDismissed = true;
+    clearTimeout(preloaderWatchdog);
+
+    if (preloader) {
+      preloader.classList.add("is-loaded");
+      preloader.setAttribute("aria-hidden", "true");
+    }
+
+    setTimeout(() => {
+      document.body.classList.remove("is-loading");
+      // Align scroll timeline objects instantly
+      handleScroll();
+    }, 1000);
+  }
+
+  const preloaderWatchdog = setTimeout(() => {
+    if (!isVideoInitialized) {
+      console.warn("Preloader watchdog triggered: forcing video initialization.");
+      isVideoInitialized = true;
+    }
+  }, 6000);
+
+  requestAnimationFrame(updatePreloaderAnimation);
+
   let cachedViewportWidth = window.innerWidth;
   let cachedViewportHeight = window.innerHeight;
 
@@ -488,6 +554,11 @@
   }
 
   function handleWheel(event) {
+    if (!loaderDismissed) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
       return;
     }
@@ -516,6 +587,11 @@
   }
 
   function handleKeydown(event) {
+    if (!loaderDismissed) {
+      event.preventDefault();
+      return;
+    }
+
     const tagName = event.target.tagName;
     const isEditable = event.target.isContentEditable ||
       tagName === "INPUT" ||
@@ -561,6 +637,8 @@
   }
 
   function handleScroll() {
+    if (!loaderDismissed) return;
+
     scrollVelocity = window.scrollY - lastScrollY;
     lastScrollY = window.scrollY;
     updateTargetFromScroll();
@@ -621,6 +699,11 @@
     seekInFlight = false;
     window.clearTimeout(seekWatchdogId);
     flushVideoSeek(performance.now(), true);
+
+    if (!firstSeekCompleted && duration > 0) {
+      firstSeekCompleted = true;
+      isVideoInitialized = true;
+    }
   });
   video.addEventListener("contextmenu", (event) => event.preventDefault());
 
@@ -636,6 +719,10 @@
   window.addEventListener("keydown", handleKeydown);
 
   function handleTouchStart(event) {
+    if (!loaderDismissed) {
+      if (event.cancelable) event.preventDefault();
+      return;
+    }
     isTouching = true;
     lastTouchY = event.touches.length ? event.touches[0].clientY : 0;
 
@@ -648,6 +735,10 @@
   }
 
   function handleTouchMove(event) {
+    if (!loaderDismissed) {
+      if (event.cancelable) event.preventDefault();
+      return;
+    }
     if (!isMobileScrub || event.touches.length !== 1) {
       return;
     }
@@ -665,6 +756,7 @@
   }
 
   function handleTouchEnd() {
+    if (!loaderDismissed) return;
     isTouching = false;
     smoothScrollY = window.scrollY;
     targetScrollY = smoothScrollY;
@@ -672,6 +764,7 @@
   }
 
   function handleTouchCancel() {
+    if (!loaderDismissed) return;
     isTouching = false;
     smoothScrollY = window.scrollY;
     targetScrollY = smoothScrollY;

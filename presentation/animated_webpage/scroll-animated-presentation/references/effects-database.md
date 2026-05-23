@@ -1001,6 +1001,87 @@ window.addEventListener("touchmove", handleTouchMove, { passive: false });
 - Swiping near the last scene does not stretch past the page end.
 - Normal mid-page swipes still scroll freely and keep the video advancing smoothly.
 
+## EFX-017: Sleek Preloader Overlay
+
+**Purpose**
+
+Prevent a black screen or blank page from displaying while the scroll-scrubbed video is loading, locking scroll and showing a high-end luxury brand preloader that smoothly transitions out once the video's first frame has fully seeked and rendered.
+
+**Current implementation**
+
+- HTML Preloader: `index.html` `#preloader`
+- CSS Styling & Keyframes: `styles.css` `.preloader`, `.preloader.is-loaded`, `body.is-loading`
+- JS State & Event Integration: `script.js` `updatePreloaderAnimation()`, `dismissPreloader()`, `video.addEventListener("seeked")` first seek check, input blockers inside `handleWheel`, `handleKeydown`, `handleScroll`, and touch events.
+
+**Template**
+
+```html
+<body class="is-loading">
+  <div id="preloader" class="preloader">
+    <div class="preloader-content">
+      <h2 class="preloader-title">Aurelia <em>Maldives</em></h2>
+      <div class="preloader-progress-track">
+        <div id="preloaderProgress" class="preloader-progress-bar"></div>
+      </div>
+      <div id="preloaderStatus" class="preloader-status">0%</div>
+    </div>
+  </div>
+```
+
+```css
+body.is-loading {
+  overflow: hidden !important;
+  height: 100vh !important;
+  pointer-events: none;
+}
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #060708;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1000ms ease, visibility 1000ms ease;
+}
+.preloader.is-loaded {
+  opacity: 0;
+  visibility: hidden;
+}
+```
+
+```js
+let isVideoInitialized = false;
+let loaderDismissed = false;
+
+video.addEventListener("seeked", () => {
+  if (!firstSeekCompleted && duration > 0) {
+    firstSeekCompleted = true;
+    isVideoInitialized = true;
+  }
+});
+```
+
+**Tuning knobs**
+
+- Animation speeds and timing variables in CSS.
+- Easing stepping rules inside `updatePreloaderAnimation()` for slow/fast connection glide speeds.
+- Failsafe timeout duration in JavaScript (currently set to 6 seconds).
+
+**Watch outs**
+
+- Preloader `z-index` must be higher than any other element on the page (e.g. `9999`).
+- Prevent default on scroll and touch events during load to avoid jumping the scroll bar.
+- Wait for both metadata AND seeked completion to ensure the first frame is actively loaded.
+
+**Verification**
+
+- Beautiful, clean title and horizontal progress line are displayed on initial visit.
+- Background and content elements are completely invisible during load.
+- Scrolling is locked while loading.
+- As soon as the first frame seek is complete, progress completes to 100% and fades out smoothly.
+- Scroll and interaction are enabled instantly after dismiss.
+
 ## Add-A-New-Scene Recipe
 
 1. Add a new rail mark in `index.html`.
