@@ -157,10 +157,10 @@ function drawFrame(timestamp) {
 
 **Tuning knobs**
 
-- `spring`: higher catches up faster.
-- `damping`: higher reduces overshoot.
-- `seekInterval`: lower seeks more often but may increase CPU cost.
-- `seekPrecision`: lower allows finer time updates.
+- `spring`: higher catches up faster (desktop: 260, mobile: 340).
+- `damping`: higher reduces overshoot (desktop: 27, mobile: 34).
+- `seekInterval`: lower seeks more often but may increase CPU cost. On mobile, we use `1000 / 16` (~62.5ms) to give the phone's hardware decoder breathing room and prevent GPU backlog, while desktop uses `1000 / 24` (41.6ms).
+- `seekPrecision`: lower allows finer, more continuous time updates. On mobile, we use `1 / 96` (approx. 10.4ms) to ensure slow micro-swipes feel responsive and continuous without waiting for full frame steps, while desktop uses `1 / 24` (41.6ms).
 - Mobile/touch devices should use the lower-resolution mobile file with exact `currentTime` seeks; avoid `fastSeek()` when slow swipes need frame-to-frame continuity.
 
 **Watch outs**
