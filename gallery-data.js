@@ -257,6 +257,12 @@
     "Interactive Presentation": {
         "_standalone": [
             "Interactive Presentation Demo - F.mp4",
+            {
+                "src": "presentation/animated_webpage/Video/Sequence 01_scrub.mp4",
+                "label": "Animated Webpage",
+                "href": "presentation/animated_webpage/",
+                "featured": true
+            },
             "Interactive Presentation Apartment Interior.mp4",
             "Interactive Presentation Singapore House.mp4"
         ]

@@ -152,6 +152,30 @@ function isVideo(filename) {
     return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext));
 }
 
+function isExternalMediaPath(filename) {
+    return /^(?:assets|presentation|projects|s)\//.test(filename);
+}
+
+function getPresentationHref(itemData) {
+    if (itemData && itemData.href) {
+        return itemData.href;
+    }
+
+    const filename = itemData && itemData.filename ? itemData.filename : '';
+    if (filename.includes('Interactive Presentation Demo')) {
+        return 'presentation/interactive_presentation_demo/';
+    }
+
+    return null;
+}
+
+function getGalleryItemLabel(filename, fallback = '') {
+    return (fallback || filename)
+        .replace(/\.[^/.]+$/, "")
+        .replace(/^\d+\.\s*/, "")
+        .replace(/\s-\s*F$/, "");
+}
+
 // Video Autoplay on Viewport Visibility
 // Uses Intersection Observer to play videos when 50%+ visible, pause when not
 const videoAutoplayObserver = new IntersectionObserver((entries) => {
@@ -407,17 +431,25 @@ function renderGalleryGrid() {
 
             // Handle _standalone images (files directly in category folder)
             if (projectName === '_standalone') {
-                files.forEach((filename, fileIndex) => {
+                files.forEach((entry, fileIndex) => {
+                    const isObjectEntry = typeof entry === 'object';
+                    const filename = isObjectEntry ? entry.src : entry;
+                    const label = isObjectEntry ? entry.label : null;
+                    const href = isObjectEntry ? entry.href : null;
                     // Check if featured from filename (ends with - F or -F before extension)
-                    const isFeaturedStandalone = /\s-\s*F\.[^.]+$/.test(filename);
+                    const isFeaturedStandalone = isObjectEntry && typeof entry.featured === 'boolean'
+                        ? entry.featured
+                        : /\s-\s*F\.[^.]+$/.test(filename);
 
                     const standaloneItem = {
                         type: 'standalone',
                         category: categoryName,
                         categorySlug: categoryName.toLowerCase().replace(/ /g, '-'),
                         filename: filename,
+                        label: label,
+                        href: href,
                         fileIndex: fileIndex,
-                        standaloneFiles: files,
+                        standaloneFiles: files.map(file => typeof file === 'object' ? file.src : file),
                         featured: isFeaturedStandalone
                     };
 
@@ -549,10 +581,12 @@ function renderGalleryGrid() {
             // Standalone image in category folder - mark for desaturated styling
             item.setAttribute('data-standalone', 'true');
 
-            // Special handling for Interactive Presentation Demo - redirect to presentation page
-            if (itemData.filename.includes('Interactive Presentation Demo')) {
+            const presentationHref = getPresentationHref(itemData);
+
+            // Special handling for live presentations - redirect to presentation page
+            if (presentationHref) {
                 item.onclick = () => {
-                    window.location.href = 'presentation/interactive_presentation_demo/';
+                    window.location.href = presentationHref;
                 };
             } else {
                 item.onclick = () => {
@@ -563,12 +597,9 @@ function renderGalleryGrid() {
             }
             renderMediaItem(item, itemData.category, '.', itemData.filename);
             // Strip extension, leading numbers, and "- F" featured marker from display name
-            const standaloneLabel = itemData.filename
-                .replace(/\.[^/.]+$/, "")           // Remove extension
-                .replace(/^\d+\.\s*/, "")           // Remove leading numbers
-                .replace(/\s-\s*F$/, "");           // Remove "- F" featured marker
-            renderInfo(item, standaloneLabel, itemData.filename);
-            item.setAttribute('aria-label', `Open image: ${standaloneLabel}`);
+            const standaloneLabel = getGalleryItemLabel(itemData.filename, itemData.label);
+            renderInfo(item, standaloneLabel, itemData.filename, presentationHref);
+            item.setAttribute('aria-label', presentationHref ? `Open presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
         } else if (itemData.type === 'video') {
             // Video item
             const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "").replace(/\s-\s*F$/, "");
@@ -699,7 +730,9 @@ function setupHoverSlideshow(container, category, folder, files) {
 // If folder is '.', it treats it as a direct child of category
 function renderMediaItem(container, category, folder, filename) {
     let path;
-    if (folder === '.' || !folder) {
+    if (isExternalMediaPath(filename)) {
+        path = filename;
+    } else if (folder === '.' || !folder) {
         path = `assets/${category}/${filename}`;
     } else {
         path = `assets/${category}/${folder}/${filename}`;
@@ -764,7 +797,7 @@ function renderMediaItem(container, category, folder, filename) {
     }
 }
 
-function renderInfo(container, text, filename = null) {
+function renderInfo(container, text, filename = null, presentationHref = null) {
     const info = document.createElement('div');
     info.className = 'item-info';
     const h4 = document.createElement('h4');
@@ -772,12 +805,16 @@ function renderInfo(container, text, filename = null) {
     info.appendChild(h4);
     container.appendChild(info);
 
-    // Add clickable link for Interactive Presentation Demo - placed OUTSIDE item-info
-    if (filename && filename.includes('Interactive Presentation Demo')) {
+    const href = presentationHref || (filename && filename.includes('Interactive Presentation Demo')
+        ? 'presentation/interactive_presentation_demo/'
+        : null);
+
+    // Add clickable link for live presentations - placed OUTSIDE item-info
+    if (href) {
         const link = document.createElement('a');
-        link.href = 'presentation/interactive_presentation_demo/';
+        link.href = href;
         link.className = 'presentation-link';
-        link.textContent = 'CLICK VIDEO FOR LIVE DEMO';
+        link.textContent = 'OPEN LIVE PRESENTATION';
         link.onclick = (e) => e.stopPropagation(); // Prevent triggering gallery item click
         container.appendChild(link); // Append directly to container, not info
     }
@@ -1035,7 +1072,7 @@ function updateLightboxContent() {
 
     if (!imgName) return;
 
-    const path = `assets/${currentFolder}/${imgName}`;
+    const path = isExternalMediaPath(imgName) ? imgName : `assets/${currentFolder}/${imgName}`;
     const encodedPath = encodePath(path);
 
     container.innerHTML = '';

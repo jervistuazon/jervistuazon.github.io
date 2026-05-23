@@ -1,0 +1,7 @@
+interface:
+  display_name: "Scroll Animated Presentation"
+  short_description: "Build scroll-scrubbed presentation pages"
+  default_prompt: "Use $scroll-animated-presentation to build or refine a scroll-driven animated presentation webpage with video scrubbing and section content."
+
+policy:
+  allow_implicit_invocation: true
