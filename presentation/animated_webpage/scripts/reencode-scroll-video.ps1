@@ -67,8 +67,8 @@ if (!$SkipMobile) {
     -preset medium `
     -tune fastdecode `
     -crf $MobileCrf `
-    -g 4 `
-    -keyint_min 4 `
+    -g 1 `
+    -keyint_min 1 `
     -bf 0 `
     -sc_threshold 0 `
     -movflags +faststart `
