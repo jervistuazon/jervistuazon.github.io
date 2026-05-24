@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+    </script>
+    <title>Aurelia Maldives - Luxury Island Destination</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="is-loading">
+    <div id="preloader" class="preloader" aria-hidden="false">
+      <div class="preloader-content">
+        <h2 class="preloader-title">Aurelia <em>Maldives</em></h2>
+        <div class="preloader-progress-track">
+          <div id="preloaderProgress" class="preloader-progress-bar"></div>
+        </div>
+        <div id="preloaderStatus" class="preloader-status">0%</div>
+      </div>
+    </div>
+
+    <main class="scroll-stage" aria-label="Scroll controlled video">
+      <video
+        id="scrollVideo"
+        class="scroll-video"
+        muted
+        playsinline
+        preload="auto"
+        controlslist="nodownload nofullscreen noremoteplayback"
+        disablepictureinpicture
+        disableremoteplayback
+        draggable="false"
+      >
+        <source src="Video/Sequence%2001_mobile_scrub.mp4" type="video/mp4" media="(max-width: 760px), (pointer: coarse)">
+        <source src="Video/Sequence%2001_scrub.mp4" type="video/mp4">
+      </video>
+
+      <aside class="side-rail" aria-label="Page sections">
+        <a class="rail-mark is-active" href="#scene-1" aria-label="Section 1" draggable="false"></a>
+        <a class="rail-mark" href="#scene-2" aria-label="Section 2" draggable="false"></a>
+        <a class="rail-mark" href="#scene-3" aria-label="Section 3" draggable="false"></a>
+        <a class="rail-mark" href="#scene-4" aria-label="Section 4" draggable="false"></a>
+        <a class="rail-mark" href="#scene-5" aria-label="Section 5" draggable="false"></a>
+      </aside>
+
+      <section id="scene-1" class="panel panel-intro is-active">
+        <div class="panel-copy">
+          <h1 class="scene-title reveal reveal-left delay-1">Aurelia <em>Maldives</em></h1>
+          <p class="scene-desc reveal reveal-left delay-2">A luxury island destination shaped by flowing architecture, open water, and immersive Maldivian experiences.</p>
+          <div class="scroll-hint reveal reveal-up delay-3">
+            <span class="hint-text">Scroll to explore</span>
+            <div class="hint-line-container">
+              <span class="hint-line"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-2" class="panel panel-concept">
+        <div class="panel-copy">
+          <h2 class="scene-title reveal reveal-right delay-1">The <em>Concept</em></h2>
+          <p class="scene-desc reveal reveal-right delay-2">Aurelia is conceived as an island retreat where architecture moves with the shoreline. Curved forms frame the lagoon, soften the edge between land and water, and create an experience shaped by movement, calm, and view.</p>
+        </div>
+        <div class="scene-asset-wrapper">
+          <div class="reveal reveal-right delay-3">
+            <img src="Assets/scene-2/scene-2-blueprint.png" alt="Concept Blueprint contour drawing" class="scene-asset" draggable="false">
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-3" class="panel panel-narrative">
+        <div class="panel-copy">
+          <h2 class="scene-title reveal reveal-left delay-1">Design <em>Narrative</em></h2>
+          <div class="accent-line line-left reveal reveal-fade delay-2"></div>
+          <p class="scene-desc reveal reveal-left delay-3">The resort unfolds as a sequence of connected moments: arrival, water, garden, shade, dining, and retreat.</p>
+          <p class="scene-desc reveal reveal-left delay-4">Each curve guides the guest through the island, creating transitions that feel natural, open, and effortless.</p>
+          <p class="scene-desc reveal reveal-left delay-5">Luxury is expressed through movement, atmosphere, and a close relationship with the landscape.</p>
+        </div>
+        <div class="scene-asset-wrapper">
+          <div class="reveal reveal-right delay-4">
+            <img src="Assets/scene-3/scene-3-narrative.png" alt="Design Narrative wireframe drawing" class="scene-asset" draggable="false">
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-4" class="panel panel-restaurant">
+        <div class="panel-copy">
+          <p class="eyebrow reveal reveal-right delay-1">Dine with the Flow</p>
+          <h2 class="scene-title reveal reveal-right delay-2">The <em>Restaurant</em></h2>
+          <div class="accent-line line-right reveal reveal-fade delay-3"></div>
+          <p class="scene-desc reveal reveal-right delay-4">At the heart of the island, the restaurant opens toward water, palms, and sky. Designed as a refined dining pavilion, it connects indoor comfort with the atmosphere of the lagoon.</p>
+          <p class="scene-desc reveal reveal-right delay-5">From sunrise breakfasts to intimate dinners, every moment is shaped by flavor, light, and view.</p>
+        </div>
+        <div class="scene-assets-cluster">
+          <div class="cluster-asset-wrapper asset-1">
+            <div class="reveal reveal-up delay-4">
+              <img src="Assets/scene-4/scene-4-detail-1.png" alt="Restaurant Blueprint Detail 1" class="scene-asset" draggable="false">
+            </div>
+          </div>
+          <div class="cluster-asset-wrapper asset-2">
+            <div class="reveal reveal-scale delay-5">
+              <img src="Assets/scene-4/scene-4-detail-2.png" alt="Restaurant Blueprint Detail 2" class="scene-asset" draggable="false">
+            </div>
+          </div>
+          <div class="cluster-asset-wrapper asset-3">
+            <div class="reveal reveal-up delay-6">
+              <img src="Assets/scene-4/scene-4-detail-3.png" alt="Restaurant Blueprint Detail 3" class="scene-asset" draggable="false">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-5" class="panel panel-outro">
+        <div class="panel-copy">
+          <p class="eyebrow reveal reveal-left delay-1">Aurelia Maldives</p>
+          <p class="scene-desc reveal reveal-left delay-2">Dining at the edge of water and light.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

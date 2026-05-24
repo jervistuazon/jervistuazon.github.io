@@ -258,9 +258,9 @@
         "_standalone": [
             "Interactive Presentation Demo - F.mp4",
             {
-                "src": "presentation/animated_webpage/Video/Sequence 01_scrub.mp4",
-                "label": "Animated Webpage",
-                "href": "presentation/animated_webpage/",
+                "src": "presentation/cinematic_web_presentation/Video/Sequence 01_scrub.mp4",
+                "label": "Cinematic Web Presentation",
+                "href": "presentation/cinematic_web_presentation/",
                 "featured": true
             },
             "Interactive Presentation Apartment Interior.mp4",
