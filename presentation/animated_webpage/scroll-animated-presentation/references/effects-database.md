@@ -853,8 +853,8 @@ Mobile portrait scrub variant:
 -preset medium `
 -tune fastdecode `
 -crf 22 `
--g 4 `
--keyint_min 4 `
+-g 1 `
+-keyint_min 1 `
 -bf 0 `
 -sc_threshold 0 `
 -movflags +faststart
@@ -870,6 +870,7 @@ Verify keyframe spacing:
 
 - `-crf`: lower means higher quality and larger file.
 - `-g` and `-keyint_min`: lower means more keyframes and smoother seeking but larger file.
+- Mobile scrub uses `-g 1` and `-keyint_min 1` so every frame is an I-frame. This reduces mobile decoder backtracking during scroll seeking at the cost of a larger file.
 - `-r`: set to `24` fps for both desktop and mobile scrub versions to synchronize smooth seeking with the optimized 24 fps timeline in JavaScript.
 - Mobile output uses a center 9:16 portrait crop, capped at 1080px high, to avoid browser-side landscape cropping on phones while keeping random-seek decode cost lower than the full desktop stream.
 - Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video. This derives from `Video/Sequence 01_scrub.mp4` when that desktop scrub exists.

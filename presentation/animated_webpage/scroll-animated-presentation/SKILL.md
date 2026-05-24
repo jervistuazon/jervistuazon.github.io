@@ -22,7 +22,7 @@ Before editing this project, read `references/effects-database.md`. It is the lo
 
 ## Build Workflow
 
-1. Inspect the existing structure before editing: identify the video element, scroll container, sections, navigation rail, and script entry point.
+1. Inspect the existing structure before editing: identify the preloader, video element, scroll container, sections, navigation rail, and script entry point.
 2. Confirm the video source path and keep it local unless the user explicitly asks for a remote asset.
 3. Make the video fixed, full-screen, `object-fit: cover`, muted, inline, and non-interactive.
 4. Define full-screen content sections over the video. Use sections for presentation beats, not unrelated page regions.
@@ -30,6 +30,35 @@ Before editing this project, read `references/effects-database.md`. It is the lo
 6. Add light inertia only between target progress and rendered video progress. Do not make the actual page scroll feel sluggish unless explicitly requested.
 7. Style the navigation as a minimal progress indicator. Prefer thin lines and small active states over heavy capsules or large buttons.
 8. Verify syntax and browser behavior.
+
+## Configurability & White-Label Reworking
+
+To reuse this presentation framework for another brand or project, modify the following core components:
+
+- **Branding & Palette (CSS Variables)**:
+  - Edit the custom variables in `:root` in `styles.css`:
+    - `--ink`: main text color (currently `#f4f4f0`).
+    - `--muted`: secondary text color (currently `rgba(244, 244, 240, 0.85)`).
+    - `--line`: divider lines (currently `rgba(255, 255, 255, 0.24)`).
+    - `--accent`: primary brand/highlight color (currently `#d4b595`).
+    - `--vh`: script-managed viewport height unit used to stabilize full-screen mobile layouts.
+  - Fonts are imported in `index.html` from Google Fonts and applied in `styles.css`. Change the imports and the `font-family` declarations to use your own typefaces.
+  - Keep `--vh` in place when rebranding unless replacing the mobile viewport stabilization strategy documented in `references/effects-database.md`.
+
+- **Preloader Branding**:
+  - Update the preloader title (line 20 in `index.html`) to match your project name.
+  - Adjust the preloader fade timings or track dimensions in `styles.css` under the "Premium Preloader Overlay" section.
+
+- **Background Video Swapping**:
+  - Place your raw source video in the `Video/` directory (e.g. `Video/MyProject.mp4`).
+  - Run the re-encode script `.\scripts\reencode-scroll-video.ps1` with customized arguments or edit the default parameters in the script.
+  - Update the `<source>` tags in `index.html` to point to your newly generated desktop and mobile MP4 files.
+
+- **Scenes & Content Layout**:
+  - Each presentation beat is a `.panel` section in `index.html` mapped to a corresponding `.rail-mark` anchor in the `.side-rail`. The number of `.rail-mark` elements must exactly match the number of `.panel` sections.
+  - Swap the text content inside `.panel-copy`.
+  - Update scene-specific inline assets (sketches, images, cluster diagrams) in the `Assets/` folder and replace their file names in the `<img>` tags.
+  - Tailor the parallax behavior, spacing, and alignment of the scene layouts inside the "Scene Layout & Styling" sections of `styles.css`.
 
 ## Interaction Requirements
 

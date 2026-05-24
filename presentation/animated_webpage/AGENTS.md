@@ -6,15 +6,44 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 
 ## Current Architecture
 
-- `index.html` contains the page structure, scroll sections, fixed video, and left progress rail.
-- `styles.css` owns the visual system, full-screen layout, scrollbar styling, responsive behavior, and minimal navigation UI.
-- `script.js` owns scroll-to-video synchronization, inertial smoothing, section marker state, and media-control suppression.
+- `index.html` contains the page structure, preloader screen, scroll sections, fixed video, and left progress rail.
+- `styles.css` owns the visual system, full-screen layout, scrollbar styling, sleek preloader overlay styling, responsive behavior, and minimal navigation UI.
+- `script.js` owns scroll-to-video synchronization, inertial smoothing, preloader progress handling, section marker state, and media-control suppression.
 - `Video/Sequence 01_scrub.mp4` is the active scroll-scrubbed video asset.
 - `Video/Sequence 01_mobile_scrub.mp4` is the active mobile/touch scrubbed video asset. It is intentionally lower resolution and lower frame rate for smoother phone seeking.
 - `Video/Sequence 01.mp4` is the original 60 fps source video for re-encoding.
 - `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are project-local portable FFmpeg tools. Keep them in the project when transferring to another PC.
 - `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into desktop and mobile scroll-scrub-friendly MP4s.
 - When `-OnlyMobile` is used and `Video/Sequence 01_scrub.mp4` exists, the script should use that desktop scrub as the input source for the mobile version.
+
+## Configurability & White-Label Reworking
+
+To reuse this presentation framework for another brand or project, modify the following core components:
+
+1. **Branding & Palette (CSS Variables)**:
+   - Edit the custom variables in `:root` in `styles.css`:
+     - `--ink`: main text color (currently `#f4f4f0`).
+     - `--muted`: secondary text color (currently `rgba(244, 244, 240, 0.85)`).
+     - `--line`: divider lines (currently `rgba(255, 255, 255, 0.24)`).
+     - `--accent`: primary brand/highlight color (currently `#d4b595`).
+     - `--vh`: script-managed viewport height unit used to stabilize full-screen mobile layouts.
+   - Fonts are imported in `index.html` from Google Fonts and applied in `styles.css`. Change the imports and the `font-family` declarations to use your own typefaces.
+   - Keep `--vh` in place when rebranding unless replacing the mobile viewport stabilization strategy documented in `scroll-animated-presentation/references/effects-database.md`.
+
+2. **Preloader Branding**:
+   - Update the preloader title (line 20 in `index.html`) to match your project name.
+   - Adjust the preloader fade timings or track dimensions in `styles.css` under the "Premium Preloader Overlay" section.
+
+3. **Background Video Swapping**:
+   - Place your raw source video in the `Video/` directory (e.g. `Video/MyProject.mp4`).
+   - Run the re-encode script `.\scripts\reencode-scroll-video.ps1` with customized arguments or edit the default parameters in the script.
+   - Update the `<source>` tags in `index.html` to point to your newly generated desktop and mobile MP4 files.
+
+4. **Scenes & Content Layout**:
+   - Each presentation beat is a `.panel` section in `index.html` mapped to a corresponding `.rail-mark` anchor in the `.side-rail`. The number of `.rail-mark` elements must exactly match the number of `.panel` sections.
+   - Swap the text content inside `.panel-copy`.
+   - Update scene-specific inline assets (sketches, images, cluster diagrams) in the `Assets/` folder and replace their file names in the `<img>` tags.
+   - Tailor the parallax behavior, spacing, and alignment of the scene layouts inside the "Scene Layout & Styling" sections of `styles.css`.
 
 ## Interaction Rules
 
