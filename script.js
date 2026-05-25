@@ -1249,20 +1249,27 @@ function filterGallery(category, evt, isLoadMore = false) {
     });
 
     const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
-    const isInteractiveCategory = (item) => {
-        const slug = item.categorySlug || '';
-        return slug === 'interactive-presentation' || slug.includes('interactive');
+    const pinnedPresentationPriority = [
+        'Interactive Presentation Demo - F.mp4',
+        'presentation/cinematic_web_presentation/Video/Sequence 01_scrub.mp4'
+    ];
+
+    const getPinnedPresentationRank = (item) => {
+        const key = item.filename || item.thumbSrc || '';
+        return pinnedPresentationPriority.indexOf(key);
     };
 
     const orderedItems = shouldPrioritizeInteractive
         ? [...matchingItems].sort((a, b) => {
-            const aInteractive = isInteractiveCategory(a);
-            const bInteractive = isInteractiveCategory(b);
-            if (aInteractive !== bInteractive) {
-                return aInteractive ? -1 : 1;
-            }
+            const aPinnedRank = getPinnedPresentationRank(a);
+            const bPinnedRank = getPinnedPresentationRank(b);
+            const aPinned = aPinnedRank !== -1;
+            const bPinned = bPinnedRank !== -1;
 
-            // Keep deterministic order within each group.
+            if (aPinned !== bPinned) return aPinned ? -1 : 1;
+            if (aPinned && bPinned) return aPinnedRank - bPinnedRank;
+
+            // Keep deterministic order within the non-pinned group.
             return 0;
         })
         : matchingItems;
