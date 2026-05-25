@@ -1248,9 +1248,18 @@ function filterGallery(category, evt, isLoadMore = false) {
         return itemCategory === category;
     });
 
+    const orderedItems = category === 'all'
+        ? [...matchingItems].sort((a, b) => {
+            const aInteractive = a.categorySlug === 'interactive-presentation';
+            const bInteractive = b.categorySlug === 'interactive-presentation';
+            if (aInteractive === bInteractive) return 0;
+            return aInteractive ? -1 : 1;
+        })
+        : matchingItems;
+
     // Determine which to show based on visibleLimit
     // (Load More increases visibleLimit)
-    const itemsToShow = matchingItems.slice(0, visibleLimit);
+    const itemsToShow = orderedItems.slice(0, visibleLimit);
 
     const grid = document.getElementById('gallery-grid');
     if (grid) {
@@ -1285,7 +1294,7 @@ function filterGallery(category, evt, isLoadMore = false) {
     const loadMoreContainer = document.getElementById('load-more-container');
 
     if (loadMoreBtn && loadMoreContainer) {
-        if (matchingItems.length > visibleLimit) {
+        if (orderedItems.length > visibleLimit) {
             loadMoreBtn.classList.remove('hidden');
             loadMoreContainer.style.display = 'flex';
         } else {
