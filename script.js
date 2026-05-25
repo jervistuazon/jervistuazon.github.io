@@ -1248,7 +1248,8 @@ function filterGallery(category, evt, isLoadMore = false) {
         return itemCategory === category;
     });
 
-    const orderedItems = category === 'all'
+    const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
+    const orderedItems = shouldPrioritizeInteractive
         ? [...matchingItems].sort((a, b) => {
             const aInteractive = a.categorySlug === 'interactive-presentation';
             const bInteractive = b.categorySlug === 'interactive-presentation';
