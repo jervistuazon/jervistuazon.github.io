@@ -1249,12 +1249,21 @@ function filterGallery(category, evt, isLoadMore = false) {
     });
 
     const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
+    const isInteractiveCategory = (item) => {
+        const slug = item.categorySlug || '';
+        return slug === 'interactive-presentation' || slug.includes('interactive');
+    };
+
     const orderedItems = shouldPrioritizeInteractive
         ? [...matchingItems].sort((a, b) => {
-            const aInteractive = a.categorySlug === 'interactive-presentation';
-            const bInteractive = b.categorySlug === 'interactive-presentation';
-            if (aInteractive === bInteractive) return 0;
-            return aInteractive ? -1 : 1;
+            const aInteractive = isInteractiveCategory(a);
+            const bInteractive = isInteractiveCategory(b);
+            if (aInteractive !== bInteractive) {
+                return aInteractive ? -1 : 1;
+            }
+
+            // Keep deterministic order within each group.
+            return 0;
         })
         : matchingItems;
 
