@@ -269,8 +269,8 @@ a:hover {
     font-size: clamp(1rem, 3vw, 1.3rem);
     /* Responsive subtitle */
     color: rgba(255, 255, 255, 0.8);
-    max-width: 100%;
-    /* Ensure it doesn't exceed container */
+    max-width: 44ch;
+    text-wrap: balance;
     font-weight: 300;
     letter-spacing: 0.02em;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -678,7 +678,7 @@ body::after {
     left: 0;
     width: 100%;
     padding: 2rem;
-    background: linear-gradient(to top, rgba(18, 18, 18, 0.9), transparent);
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.82) 0%, rgba(18, 18, 18, 0.45) 35%, rgba(18, 18, 18, 0) 100%);
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -736,7 +736,9 @@ body::after {
 /* When presentation-link exists, move item-info above it */
 .gallery-item:has(.presentation-link) .item-info {
     bottom: 2.5rem;
-    /* Height of presentation-link button */
+    padding-bottom: 1rem;
+    background: none;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
 }
 
 /* Image count badge for project folders - HIDDEN */
