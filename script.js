@@ -820,6 +820,7 @@ function renderInfo(container, text, filename = null, presentationHref = null) {
         link.textContent = 'OPEN LIVE PRESENTATION';
         link.onclick = (e) => e.stopPropagation(); // Prevent triggering gallery item click
         container.appendChild(link); // Append directly to container, not info
+        container.classList.add('has-presentation-link');
     }
 }
 

@@ -715,11 +715,11 @@ body::after {
     left: 0;
     right: 0;
     display: block;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 2rem;
     font-size: 0.85rem;
     color: var(--text-primary);
-    background: rgba(18, 18, 18, 0.9);
-    text-align: center;
+    background: rgba(18, 18, 18, 0);
+    text-align: left;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     cursor: pointer;
@@ -729,12 +729,13 @@ body::after {
 }
 
 .presentation-link:hover {
-    background: rgba(40, 40, 40, 0.95);
-    opacity: 0.8;
+    background: rgba(18, 18, 18, 0.18);
+    opacity: 1;
 }
 
 /* When presentation-link exists, move item-info above it */
-.gallery-item:has(.presentation-link) .item-info {
+.gallery-item:has(.presentation-link) .item-info,
+.gallery-item.has-presentation-link .item-info {
     bottom: 2.5rem;
     padding-bottom: 1rem;
     background: none;
@@ -904,7 +905,7 @@ body::after {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
+    text-align: left;
     /* Ensure no other content is visible */
     margin-bottom: 0;
     padding: 0;
@@ -951,7 +952,7 @@ body::after {
     position: absolute;
     bottom: 2rem;
     width: 100%;
-    text-align: center;
+    text-align: left;
     color: var(--text-secondary);
     font-size: 0.8rem;
 }
@@ -982,7 +983,7 @@ body::after {
     /* Ensure vertical alignment if needed */
     margin-top: 4rem;
     width: 100%;
-    text-align: center;
+    text-align: left;
     /* Backup for flex issues */
 }
 
@@ -1145,7 +1146,7 @@ iframe.lightbox-content {
     margin: auto;
     display: block;
     width: 80%;
-    text-align: center;
+    text-align: left;
     color: #ccc;
     padding: 10px 0;
     position: absolute;
@@ -1181,7 +1182,7 @@ iframe.lightbox-content {
 }
 
 .project-view-header {
-    text-align: center;
+    text-align: left;
     /* Center the title */
     margin-bottom: 2rem;
     padding-top: 1rem;
