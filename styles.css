@@ -737,7 +737,8 @@ body::after {
 .gallery-item:has(.presentation-link) .item-info {
     bottom: 2.5rem;
     padding-bottom: 1rem;
-    background: linear-gradient(to top, rgba(18, 18, 18, 0.66) 0%, rgba(18, 18, 18, 0.25) 40%, rgba(18, 18, 18, 0) 100%);
+    background: none;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
 }
 
 /* Image count badge for project folders - HIDDEN */
