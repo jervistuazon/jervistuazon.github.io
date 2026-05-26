@@ -718,7 +718,7 @@ body::after {
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
     color: var(--text-primary);
-    background: rgba(18, 18, 18, 0.9);
+    background: rgba(18, 18, 18, 0);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -729,12 +729,13 @@ body::after {
 }
 
 .presentation-link:hover {
-    background: rgba(40, 40, 40, 0.95);
-    opacity: 0.8;
+    background: rgba(18, 18, 18, 0.18);
+    opacity: 1;
 }
 
 /* When presentation-link exists, move item-info above it */
-.gallery-item:has(.presentation-link) .item-info {
+.gallery-item:has(.presentation-link) .item-info,
+.gallery-item.has-presentation-link .item-info {
     bottom: 2.5rem;
     padding-bottom: 1rem;
     background: none;
