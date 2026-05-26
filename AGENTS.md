@@ -12,6 +12,10 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
 - Keep task-focused documentation updates in place; avoid broad rewrites.
 - Use relative file paths when referencing files in notes.
 
+## Source/Build File Sync
+- When updating a source asset that has a checked-in minified counterpart (for example `styles.css` ↔ `styles.min.css` or `script.js` ↔ `script.min.js`), update the corresponding minified file in the same change whenever needed.
+- Before finishing, verify source and minified versions are consistent for the edited behavior so production does not serve stale styling or logic.
+
 ## Validation
 For instruction-file-only changes, run at least:
 - `git status --short`
