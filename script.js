@@ -1252,7 +1252,7 @@ function filterGallery(category, evt, isLoadMore = false) {
     const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
     const pinnedPresentationPriority = [
         'Interactive Presentation Demo - F.mp4',
-        'presentation/cinematic_web_presentation/Video/Sequence 01_scrub.mp4'
+        'presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4'
     ];
 
     const getPinnedPresentationRank = (item) => {

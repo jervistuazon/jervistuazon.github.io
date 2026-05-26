@@ -258,7 +258,7 @@
         "_standalone": [
             "Interactive Presentation Demo - F.mp4",
             {
-                "src": "presentation/cinematic_web_presentation/Video/Sequence 01_scrub.mp4",
+                "src": "presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4",
                 "label": "Cinematic Web Presentation",
                 "href": "presentation/cinematic_web_presentation/",
                 "featured": true
