@@ -160,6 +160,8 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1779852258642';
+
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
         return itemData.href;
@@ -167,7 +169,7 @@ function getPresentationHref(itemData) {
 
     const filename = itemData && itemData.filename ? itemData.filename : '';
     if (filename.includes('Interactive Presentation Demo')) {
-        return 'presentation/interactive_presentation_demo/';
+        return INTERACTIVE_PRESENTATION_DEMO_URL;
     }
 
     return null;
@@ -615,7 +617,7 @@ function renderGalleryItem(itemData, index) {
         // Special handling for Interactive Presentation Demo - redirect to presentation page
         if (itemData.filename.includes('Interactive Presentation Demo')) {
             item.onclick = () => {
-                window.location.href = 'presentation/interactive_presentation_demo/';
+                window.location.href = INTERACTIVE_PRESENTATION_DEMO_URL;
             };
         } else {
             item.onclick = () => {
@@ -809,7 +811,7 @@ function renderInfo(container, text, filename = null, presentationHref = null) {
     container.appendChild(info);
 
     const href = presentationHref || (filename && filename.includes('Interactive Presentation Demo')
-        ? 'presentation/interactive_presentation_demo/'
+        ? INTERACTIVE_PRESENTATION_DEMO_URL
         : null);
 
     // Add clickable link for live presentations - placed OUTSIDE item-info
@@ -1251,7 +1253,7 @@ function filterGallery(category, evt, isLoadMore = false) {
 
     const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
     const pinnedPresentationPriority = [
-        'Interactive Presentation Demo - F.mp4',
+        'presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.png',
         'presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4'
     ];
 

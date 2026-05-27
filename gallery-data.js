@@ -256,7 +256,12 @@
     },
     "Interactive Presentation": {
         "_standalone": [
-            "Interactive Presentation Demo - F.mp4",
+            {
+                "src": "presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.png",
+                "label": "Interactive Presentation Demo",
+                "href": "presentation/interactive_presentation_demo/?v=1779852258642",
+                "featured": true
+            },
             {
                 "src": "presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4",
                 "label": "Cinematic Web Presentation",
