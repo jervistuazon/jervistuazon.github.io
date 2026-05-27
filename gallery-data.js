@@ -259,7 +259,7 @@
             {
                 "src": "presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.png",
                 "label": "Interactive Presentation Demo",
-                "href": "presentation/interactive_presentation_demo/?v=1779859507086",
+                "href": "presentation/interactive_presentation_demo/?v=1779869293341",
                 "featured": true
             },
             {
