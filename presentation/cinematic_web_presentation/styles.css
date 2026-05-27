@@ -716,10 +716,9 @@ h2 {
 
   .panel::before {
     background: linear-gradient(90deg, rgba(4, 6, 8, 0.78) 0%, rgba(4, 6, 8, 0.3) 35%, transparent 68%) !important;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100vw;
-    height: calc(var(--vh, 1vh) * 100);
+    height: 100%;
   }
 
   .panel:last-of-type {
