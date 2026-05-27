@@ -593,7 +593,7 @@ function renderGalleryItem(itemData, index) {
 
         const presentationHref = getPresentationHref(itemData);
 
-        // Special handling for live presentations - redirect to presentation page
+        // Special handling for interactive presentations - redirect to presentation page
         if (presentationHref) {
             item.onclick = () => {
                 window.location.href = presentationHref;
@@ -609,7 +609,7 @@ function renderGalleryItem(itemData, index) {
         // Strip extension, leading numbers, and "- F" featured marker from display name
         const standaloneLabel = getGalleryItemLabel(itemData.filename, itemData.label);
         renderInfo(item, standaloneLabel, itemData.filename, presentationHref);
-        item.setAttribute('aria-label', presentationHref ? `Open presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
+        item.setAttribute('aria-label', presentationHref ? `Explore interactive presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
     } else if (itemData.type === 'video') {
         // Video item
         const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "").replace(/\s-\s*F$/, "");
@@ -814,12 +814,12 @@ function renderInfo(container, text, filename = null, presentationHref = null) {
         ? INTERACTIVE_PRESENTATION_DEMO_URL
         : null);
 
-    // Add clickable link for live presentations - placed OUTSIDE item-info
+    // Add clickable link for interactive presentations - placed OUTSIDE item-info
     if (href) {
         const link = document.createElement('a');
         link.href = href;
         link.className = 'presentation-link';
-        link.textContent = 'OPEN LIVE PRESENTATION';
+        link.textContent = 'EXPLORE INTERACTIVE PRESENTATION';
         link.onclick = (e) => e.stopPropagation(); // Prevent triggering gallery item click
         container.appendChild(link); // Append directly to container, not info
         container.classList.add('has-presentation-link');
