@@ -930,6 +930,21 @@ body.is-loading .side-rail {
   color: var(--accent);
 }
 
+.preloader-spinner {
+  width: 34px;
+  height: 34px;
+  margin: 0 0 24px 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-color: var(--accent);
+  border-right-color: rgba(212, 181, 149, 0.5);
+  border-radius: 50%;
+  opacity: 0;
+  box-shadow: 0 0 20px rgba(212, 181, 149, 0.16);
+  animation:
+    preloaderSpinnerFade 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards 350ms,
+    preloaderSpin 1100ms linear infinite;
+}
+
 .preloader-progress-track {
   width: 200px;
   height: 1px;
@@ -977,5 +992,17 @@ body.is-loading .side-rail {
   to {
     opacity: 1;
     transform: scaleX(1);
+  }
+}
+
+@keyframes preloaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes preloaderSpinnerFade {
+  to {
+    opacity: 1;
   }
 }

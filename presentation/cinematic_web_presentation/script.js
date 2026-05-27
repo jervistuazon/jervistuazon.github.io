@@ -64,8 +64,7 @@
 
   const preloaderWatchdog = setTimeout(() => {
     if (!isVideoInitialized) {
-      console.warn("Preloader watchdog triggered: forcing video initialization.");
-      isVideoInitialized = true;
+      console.warn("Video is still loading; keeping the preloader visible.");
     }
   }, 6000);
 
@@ -709,6 +708,7 @@
   }
 
   function initializeVideoScrub() {
+    if (isVideoInitialized) return;
     duration = video.duration || 0;
     syncInitialScrollState();
     lockVideoAtProgress(renderedProgress);
@@ -716,6 +716,12 @@
   }
 
   video.addEventListener("loadedmetadata", initializeVideoScrub);
+  video.addEventListener("loadeddata", () => {
+    if (!firstSeekCompleted && duration > 0 && video.readyState >= 2) {
+      firstSeekCompleted = true;
+      isVideoInitialized = true;
+    }
+  });
   video.addEventListener("play", keepVideoScrubOnly);
   video.addEventListener("seeked", () => {
     seekInFlight = false;
@@ -728,6 +734,15 @@
     }
   });
   video.addEventListener("contextmenu", (event) => event.preventDefault());
+
+  if (video.readyState >= 1) {
+    initializeVideoScrub();
+  }
+
+  if (video.readyState >= 2 && video.duration) {
+    firstSeekCompleted = true;
+    isVideoInitialized = true;
+  }
 
   window.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("resize", () => {
