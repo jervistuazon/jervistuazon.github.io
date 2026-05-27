@@ -29,7 +29,31 @@ const Terser = require('terser');
 const CleanCSS = require('clean-css');
 
 async function build() {
-    // 2. Minify JavaScript
+    const version = Date.now();
+
+    // 2. Update cache-busted public URLs before minifying
+    console.log('[INFO] Updating cache-busted public URLs...');
+    try {
+        let scriptJs = fs.readFileSync('script.js', 'utf8');
+        scriptJs = scriptJs.replace(
+            /(const INTERACTIVE_PRESENTATION_DEMO_URL = ['"]presentation\/interactive_presentation_demo\/)(?:\?v=\d+)?(['"];)/,
+            `$1?v=${version}$2`
+        );
+        fs.writeFileSync('script.js', scriptJs);
+
+        let galleryData = fs.readFileSync('gallery-data.js', 'utf8');
+        galleryData = galleryData.replace(
+            /("href":\s*"presentation\/interactive_presentation_demo\/)(?:\?v=\d+)?(")/g,
+            `$1?v=${version}$2`
+        );
+        fs.writeFileSync('gallery-data.js', galleryData);
+
+        console.log(`[OK] Public URLs updated with version: ${version}`);
+    } catch (err) {
+        console.error('[FAIL] Public URL version update failed:', err);
+    }
+
+    // 3. Minify JavaScript
     console.log('[INFO] Minifying JavaScript...');
     try {
         const jsCode = fs.readFileSync('script.js', 'utf8');
@@ -43,7 +67,7 @@ async function build() {
         console.error('[FAIL] JS Minification failed:', err);
     }
 
-    // 3. Minify CSS
+    // 4. Minify CSS
     console.log('[INFO] Minifying CSS...');
     try {
         const cssCode = fs.readFileSync('styles.css', 'utf8');
@@ -57,10 +81,9 @@ async function build() {
         console.error('[FAIL] CSS Minification failed:', err);
     }
 
-    // 4. Update index.html versioning for Cache Busting
+    // 5. Update index.html versioning for Cache Busting
     console.log('[INFO] Updating index.html versioning...');
     try {
-        const version = Date.now();
         let indexHtml = fs.readFileSync('index.html', 'utf8');
 
         // Update CSS references
