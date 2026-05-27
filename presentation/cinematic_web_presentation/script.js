@@ -228,11 +228,11 @@
   }
 
   function getScrollableDistance() {
-    return Math.max(stage.offsetHeight - cachedViewportHeight, 1);
+    return Math.max(stage.offsetHeight - window.innerHeight, 1);
   }
 
   function getMaxScrollY() {
-    return Math.max(document.documentElement.scrollHeight - cachedViewportHeight, 0);
+    return Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
   }
 
   function getScrollProgress() {

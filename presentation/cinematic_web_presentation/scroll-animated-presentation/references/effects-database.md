@@ -749,10 +749,11 @@ Preserve readability and keep presentation assets inside viewport bounds on narr
 **Current implementation**
 
 - Mobile breakpoint: `styles.css` `@media (max-width: 760px)`
-- Stable mobile viewport stabilization: locked utilizing a custom `--vh` CSS variable and cached dimensions (`cachedViewportHeight`, `cachedViewportWidth`) in `script.js` to prevent mobile address bars and toolbars from resizing or jumping the layout on scroll.
-- Orientation-aware resizing: `script.js` `resize` listener checks for width changes on mobile before recalculating viewport bounds, ensuring seamless, non-jittery performance.
-- Stable mobile video sizing: anchored at `top: 0`, `left: 0` with `transform: none` and sized at `height: calc(var(--vh, 1vh) * 100)` to ensure a perfectly steady background that doesn't shift when the dynamic URL/address bar changes the viewport's visual center.
-- Stable side rail, vignettes, and grain overlays: pinned using `top: 0; left: 0` and sized using the locked `--vh` height variable (and `top: calc(var(--vh, 1vh) * 50)` for `.side-rail`) to prevent dynamic shifts or jumps when the mobile browser toolbar appears/disappears on scroll.
+- Stable mobile viewport stabilization: locked utilizing a custom `--vh` CSS variable and cached dimensions (`cachedViewportHeight`, `cachedViewportWidth`) in `script.js` to prevent mobile address bars and toolbars from resizing or jumping the text layout on scroll.
+- Orientation-aware resizing: `script.js` `resize` listener checks for width changes on mobile before recalculating `--vh` bounds, ensuring seamless, non-jittery text performance.
+- True viewport scroll bounds: `script.js` calculates scrollable distance and max scroll height using dynamic `window.innerHeight`. This guarantees that the scroll progress maps perfectly to 1.0 (100% video progress) even when the address bar collapses or expands on scroll.
+- Dynamic full-screen video coverage: anchored at `top: 0; left: 0; bottom: 0; right: 0; width: 100vw; height: 100%` to ensure a perfectly seamless background video that expands gracefully with `object-fit: cover` to fill any dynamic gaps at the bottom of the screen.
+- Dynamic grain and vignette overlays: sized at `height: 100%; inset: 0` to automatically and seamlessly cover the expanded viewport as the mobile address bar hides and shows, keeping vignettes locked at the true bottom margin.
 - Scaled mobile typography: dynamic fluid bounds (`clamp`) for `.scene-desc`, `.eyebrow`, and `.hint-text` to ensure high contrast and premium editorial legibility on small high-density screens.
 - Panel padding and section height changes.
 - Text switches from right-aligned to left-aligned.

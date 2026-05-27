@@ -1,4 +1,4 @@
-# Cinematic Web Presentation
+# Animated Presentation Webpage
 
 ## Project Scope
 
