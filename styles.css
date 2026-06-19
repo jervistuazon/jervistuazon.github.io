@@ -23,6 +23,7 @@
     
     /* Layout Constants */
     --max-content-width: 1400px;
+    --project-view-max-width: 1100px; /* Baseline width for project details view */
     --mobile-padding: 1.5rem;      /* 24px */
     --desktop-padding: 6vw;
 }
@@ -1186,7 +1187,7 @@ body::after {
 }
 
 .project-view-header {
-    max-width: var(--max-content-width);
+    max-width: var(--project-view-max-width);
     margin: 0 auto;
     padding: 6rem var(--desktop-padding) 2rem var(--desktop-padding);
     text-align: left;
@@ -1240,14 +1241,18 @@ body::after {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: var(--max-content-width);
+    max-width: var(--project-view-max-width);
     margin: 0 auto;
     gap: 4.5rem;
     padding: 2rem var(--desktop-padding) 8rem var(--desktop-padding);
 }
 
 .project-view .gallery-item {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    max-width: var(--project-view-max-width);
+    margin: 0 auto;
     height: auto !important;
     aspect-ratio: auto !important;
 }
@@ -1257,16 +1262,8 @@ body::after {
     position: relative !important;
     width: 100%;
     height: auto !important;
-    max-height: 90vh;
-    object-fit: contain;
     border-radius: 2px;
-}
-
-@media (min-width: 769px) {
-    .project-view[data-featured="true"] .gallery-img,
-    .project-view[data-featured="true"] .gallery-video {
-        max-height: 75vh; /* Increased vertical size slightly */
-    }
+    display: block;
 }
 
 .project-view .gallery-item.loading {
