@@ -47,13 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Scroll Animation for Navbar
     const navbar = document.querySelector('.navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
+    const heroSection = document.getElementById('hero');
+
+    const updateNavbarVisibility = () => {
+        if (!navbar || !heroSection) return;
+
+        const scrollY = window.scrollY || window.pageYOffset;
+        const heroHeight = heroSection.offsetHeight || window.innerHeight;
+
+        // Navbar appears when the user scrolls past the hero section.
+        // We use a small threshold (50px before the end of the hero section) to make the transition smooth.
+        if (scrollY >= heroHeight - 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
-    });
+    };
+
+    window.addEventListener('scroll', updateNavbarVisibility, { passive: true });
+    window.addEventListener('resize', updateNavbarVisibility);
+    updateNavbarVisibility();
 
     initHeroFade();
 
@@ -137,6 +150,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.addEventListener('scroll', scrollSpy, { passive: true });
     scrollSpy();
+
+    // Intercept hash link clicks for smooth scrolling via Lenis (fixes unresponsive double-clicks)
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+        const link = target.closest('a[href^="#"]');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (href.startsWith('#project/')) return;
+
+        const id = href.slice(1);
+        if (!id) return;
+
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        e.preventDefault();
+        if (typeof lenis !== 'undefined' && lenis) {
+            lenis.scrollTo(el);
+        }
+    });
 });
 
 function initHeroFade() {
@@ -185,7 +219,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781872317832';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781874700083';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -577,9 +611,9 @@ function renderGalleryItem(itemData, index) {
         // Display name: extract just the project name (before first dash)
         const projectParts = parseProjectName(itemData.projectName);
         const displayName = projectParts.name;
-        const metadata = [projectParts.location, projectParts.date].filter(Boolean).join(' • ');
+        const metadata = [projectParts.location, projectParts.date].filter(Boolean);
 
-        renderInfo(item, itemData.category, displayName, metadata, 'Explore Project');
+        renderInfo(item, mediaWrapper, itemData.category, displayName, metadata, 'Explore Project');
         item.setAttribute('aria-label', `Open project: ${displayName}`);
 
         // Auto-run slideshow for multi-image projects
@@ -613,7 +647,7 @@ function renderGalleryItem(itemData, index) {
         const metadata = isInteractive ? 'Interactive Presentation' : 'Architectural Rendering';
         const ctaText = isInteractive ? 'Explore Presentation' : 'View Rendering';
 
-        renderInfo(item, itemData.category, standaloneLabel, metadata, ctaText);
+        renderInfo(item, mediaWrapper, itemData.category, standaloneLabel, metadata, ctaText);
         item.setAttribute('aria-label', presentationHref ? `Explore interactive presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
     } else if (itemData.type === 'video') {
         // Video item
@@ -632,7 +666,7 @@ function renderGalleryItem(itemData, index) {
             };
         }
         renderMediaItem(mediaWrapper, 'Video', '.', itemData.filename);
-        renderInfo(item, 'Video', videoLabel, 'Cinematic Animation', 'Play Video');
+        renderInfo(item, mediaWrapper, 'Video', videoLabel, 'Cinematic Animation', 'Play Video');
         item.setAttribute('aria-label', `Play video: ${videoLabel}`);
     }
 
@@ -807,7 +841,7 @@ function renderMediaItem(container, category, folder, filename) {
     }
 }
 
-function renderInfo(container, category, title, metadata, ctaText) {
+function renderInfo(container, mediaWrapper, category, title, metadata, ctaText) {
     const info = document.createElement('div');
     info.className = 'item-info';
 
@@ -821,18 +855,33 @@ function renderInfo(container, category, title, metadata, ctaText) {
     info.appendChild(h4);
 
     if (metadata) {
-        const meta = document.createElement('span');
-        meta.className = 'item-metadata';
-        meta.textContent = metadata;
-        info.appendChild(meta);
+        if (Array.isArray(metadata)) {
+            metadata.forEach(metaText => {
+                if (metaText && metaText.toLowerCase() !== category.toLowerCase()) {
+                    const meta = document.createElement('span');
+                    meta.className = 'item-metadata';
+                    meta.textContent = metaText;
+                    info.appendChild(meta);
+                }
+            });
+        } else {
+            if (metadata.toLowerCase() !== category.toLowerCase()) {
+                const meta = document.createElement('span');
+                meta.className = 'item-metadata';
+                meta.textContent = metadata;
+                info.appendChild(meta);
+            }
+        }
     }
 
-    const cta = document.createElement('span');
-    cta.className = 'card-cta';
-    cta.innerHTML = `${ctaText} <span class="arrow">→</span>`;
-    info.appendChild(cta);
-
     container.appendChild(info);
+
+    if (mediaWrapper && ctaText) {
+        const cta = document.createElement('span');
+        cta.className = 'card-cta';
+        cta.innerHTML = `${ctaText} <span class="arrow">→</span>`;
+        mediaWrapper.appendChild(cta);
+    }
 }
 
 // Open Project View (Sub-Gallery)
@@ -866,6 +915,14 @@ function openGallery(category, projectName) {
     const projectGrid = document.getElementById('project-grid');
     const projectTitle = document.getElementById('project-title');
     const projectView = document.getElementById('project-view');
+
+    // Add data-featured attribute if project is featured
+    const isFeatured = projectName && /\s-\s*F\s*$/.test(projectName);
+    if (isFeatured) {
+        projectView.setAttribute('data-featured', 'true');
+    } else {
+        projectView.removeAttribute('data-featured');
+    }
 
     // Parse project name into parts
     const projectParts = parseProjectName(projectName);
@@ -988,15 +1045,24 @@ function openGallery(category, projectName) {
                 content: projectView,
                 duration: 1.2,
                 easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                direction: 'vertical',
-                gestureDirection: 'vertical',
-                smooth: true,
-                mouseMultiplier: 1,
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1,
                 smoothTouch: false,
                 touchMultiplier: 2,
                 infinite: false,
-                // Prevent over-scroll
             });
+        }
+
+        // Set up ResizeObserver to update Lenis when project-grid changes size (e.g. as images/videos load)
+        if (!projectLenisResizeObserver) {
+            projectLenisResizeObserver = new ResizeObserver(() => {
+                if (projectLenis) {
+                    projectLenis.resize();
+                }
+            });
+            projectLenisResizeObserver.observe(projectGrid);
         }
     }, 10);
     document.body.style.overflow = 'hidden';
@@ -1006,6 +1072,12 @@ function openGallery(category, projectName) {
 function closeProjectView() {
     const projectView = document.getElementById('project-view');
     projectView.classList.remove('active');
+
+    // Disconnect and clean up ResizeObserver
+    if (projectLenisResizeObserver) {
+        projectLenisResizeObserver.disconnect();
+        projectLenisResizeObserver = null;
+    }
 
     // Destroy Project Lenis Instance
     if (projectLenis) {
@@ -1220,15 +1292,16 @@ function closeLightbox() {
 const lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    direction: 'vertical',
-    gestureDirection: 'vertical',
-    smooth: true,
-    mouseMultiplier: 1,
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    smoothWheel: true,
+    wheelMultiplier: 1,
     smoothTouch: false,
     touchMultiplier: 2,
 });
 
 let projectLenis = null;
+let projectLenisResizeObserver = null;
 
 function raf(time) {
     lenis.raf(time);
@@ -1302,13 +1375,20 @@ function filterGallery(category, evt, isLoadMore = false) {
 
     const grid = document.getElementById('gallery-grid');
     if (grid) {
-        if (galleryRevealObserver) {
-            grid.querySelectorAll('.gallery-item').forEach(item => galleryRevealObserver.unobserve(item));
+        // If it's a new filter (not load more), clear existing items and reset observer
+        if (!isLoadMore) {
+            if (galleryRevealObserver) {
+                grid.querySelectorAll('.gallery-item').forEach(item => galleryRevealObserver.unobserve(item));
+            }
+            grid.innerHTML = '';
         }
-        grid.innerHTML = '';
+
+        const currentRenderedCount = isLoadMore ? grid.querySelectorAll('.gallery-item').length : 0;
+        const newItemsToShow = orderedItems.slice(currentRenderedCount, visibleLimit);
         const fragment = document.createDocumentFragment();
 
-        itemsToShow.forEach((itemData, index) => {
+        newItemsToShow.forEach((itemData, index) => {
+            // index starts at 0 for new items, creating a clean stagger delay starting immediately
             const item = renderGalleryItem(itemData, index);
             item.style.transitionDelay = `${index * 35}ms`;
             fragment.appendChild(item);
@@ -1316,8 +1396,11 @@ function filterGallery(category, evt, isLoadMore = false) {
 
         grid.appendChild(fragment);
 
-        const renderedItems = Array.from(grid.querySelectorAll('.gallery-item'));
-        renderedItems.forEach(item => {
+        // Target only the newly appended items for animation and observation
+        const allItems = grid.querySelectorAll('.gallery-item');
+        const newRenderedItems = Array.from(allItems).slice(currentRenderedCount);
+
+        newRenderedItems.forEach(item => {
             if (galleryRevealObserver) {
                 galleryRevealObserver.observe(item);
             }
@@ -1326,7 +1409,13 @@ function filterGallery(category, evt, isLoadMore = false) {
                 item.style.transform = 'translateY(0) scale(1)';
             });
         });
+
+        // Trigger Lenis resize to adjust scroll dimensions for the newly added content
+        if (typeof lenis !== 'undefined' && lenis) {
+            lenis.resize();
+        }
     }
+
 
     // 3. Handle "See More" Button Visibility
     const loadMoreBtn = document.getElementById('load-more-btn');

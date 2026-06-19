@@ -26,10 +26,26 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
   - Minifies `script.js` -> `script.min.js` and `styles.css` -> `styles.min.css`.
 - After making cache-busting changes, always run `git diff` to verify the modified files reflect the new versioned URLs, and test the production paths locally to ensure the updated files load correctly.
 
+## Gallery & Layout Design Standards
+- **Cinematic & Minimalist Aesthetic**: Maintain the editorial layout. The gallery is structured with a single-column layout on mobile, while on desktop featured items (`data-featured="true"`) occupy 2 columns (`grid-column: span 2`).
+- **Viewport Constraints**: Featured images must have an aspect ratio of `2.0` on desktop and a `max-height: 60vh` limit so that the image, label, and metadata fit completely in a single viewport page without scrolling (configured in [styles.css](file:///d:/Github%20Repo/jervistuazon.github.io/styles.css)).
+- **One-Row Metadata**: Project metadata (category, title, location, date) should be aligned on a single row below the image card, separated by a bullet character `•` (e.g. `.item-info > *:not(:last-child)::after { content: "•"; ... }`).
+- **Interactive CTAs**: Interactive action text (e.g. "Explore Project", "Explore Presentation") must be styled as a `.card-cta` absolutely positioned overlay inside `.card-media-wrapper`. They should only become visible upon hover (desktop) or active focus (mobile).
+
+## Smooth Staggered Loading & Scroll Integration
+- **Dynamic Loading**: Subsequent projects should load dynamically without full page reloads, using JavaScript to append new items to the gallery grid (managed in [script.js](file:///d:/Github%20Repo/jervistuazon.github.io/script.js) via `filterGallery`).
+- **Staggered Animation**: Newly added gallery items must fade in with a staggered transition delay (`index * 35ms`) using `requestAnimationFrame` for a smooth transition.
+- **Scroll Syncing**: Always invoke `lenis.resize()` after dynamically loading gallery items so that the Lenis smooth scroll instance recalculates the container's height and bounds.
+
+## Asset Optimization & Gallery Data Cautions
+- **Image Conversion (WebP)**: All new image assets must be optimized for performance. Run [optimize_images.bat](file:///d:/Github%20Repo/jervistuazon.github.io/optimize_images.bat) (which runs [convert_to_webp.js](file:///d:/Github%20Repo/jervistuazon.github.io/convert_to_webp.js) using Sharp) to automatically convert PNG/JPG/JPEG files inside `assets/` and update references in source files.
+- **Gallery Data Warning**: Avoid running the automated script [update_gallery.ps1](file:///d:/Github%20Repo/jervistuazon.github.io/update_gallery.ps1) to update [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) as it is a directory scanner that does not support complex configurations and will erase custom properties (such as custom `href`, `label`, or `featured` objects used for interactive presentations and videos). Always edit [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) manually or verify custom fields are preserved.
+- **SEO Landing Pages**: After making updates to [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) or adding new projects, run `node generate-project-pages.js` (which is automated in [deploy.bat](file:///d:/Github%20Repo/jervistuazon.github.io/deploy.bat)) to generate/update the static landing pages under `projects/`.
+
 ## Validation
 For instruction-file-only changes, run at least:
-- `git status --short`
-- `rg --files -g 'AGENTS.md' -g 'SKILL.md'`
+- `git status --short` (if git is available in the environment)
+- `rg --files -g 'AGENTS.md' -g 'SKILL.md'` (or equivalent powershell commands if rg is unavailable)
 
 ## Skill Layout Recommendation
 - Place reusable skills under `skills/<skill-name>/SKILL.md`.
