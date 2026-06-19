@@ -4,6 +4,55 @@ let currentGalleryImages = [];
 let currentImageIndex = 0;
 let currentFolder = '';
 let savedScrollPosition = 0; // For scroll position memory
+let savedBodyOverflow = '';
+let projectReturnFocus = null;
+let lightboxReturnFocus = null;
+
+const DIALOG_FOCUSABLE_SELECTOR = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+].join(',');
+
+function getDialogFocusableElements(dialog) {
+    return Array.from(dialog.querySelectorAll(DIALOG_FOCUSABLE_SELECTOR))
+        .filter(element => element.getClientRects().length > 0 && !element.closest('[inert]'));
+}
+
+function trapDialogFocus(event, dialog) {
+    if (event.key !== 'Tab') return;
+    const focusable = getDialogFocusableElements(dialog);
+    if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
+function setPageBackgroundInert(isInert) {
+    document.querySelectorAll('.navbar, #hero, #work, #about, #contact').forEach(element => {
+        element.inert = isInert;
+    });
+}
+
+function restoreDialogFocus(element) {
+    if (element && element.isConnected && typeof element.focus === 'function') {
+        element.focus({ preventScroll: true });
+    }
+}
 
 // Load More / Pagination Globals
 const ITEMS_PER_PAGE = 24;
@@ -75,11 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const lightbox = document.getElementById('lightbox');
         const projectView = document.getElementById('project-view');
 
+        if (lightbox.style.display === 'block') {
+            trapDialogFocus(e, lightbox);
+        } else if (projectView.style.display === 'block') {
+            trapDialogFocus(e, projectView);
+        }
+
         if (e.key === 'Escape') {
             // Priority: Close Lightbox first, then Project View
             if (lightbox.style.display === 'block') {
+                e.preventDefault();
                 closeLightbox();
             } else if (projectView.style.display === 'block') {
+                e.preventDefault();
                 closeProjectView();
             }
         }
@@ -219,7 +276,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781874700083';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781877131047';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -675,6 +732,9 @@ function renderGalleryItem(itemData, index) {
 
 // Setup auto-running slideshow for project folders with multiple images
 function setupHoverSlideshow(container, category, folder, files) {
+    const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!supportsHover) return;
+
     let currentSlideIndex = 0;
     let slideshowInterval = null;
     let useSecondImage = false;
@@ -683,6 +743,22 @@ function setupHoverSlideshow(container, category, folder, files) {
     const slideshowImages = files.slice(0, 3).map(f => typeof f === 'object' ? f.src : f);
 
     if (slideshowImages.length <= 1) return; // No slideshow needed
+
+    const ensureAlternateImage = () => {
+        let alternateImage = container.querySelector('.gallery-img-alt');
+        if (alternateImage) return alternateImage;
+
+        alternateImage = document.createElement('img');
+        alternateImage.alt = '';
+        alternateImage.setAttribute('aria-hidden', 'true');
+        alternateImage.className = 'gallery-img-alt';
+        alternateImage.decoding = 'async';
+        alternateImage.style.opacity = '0';
+
+        const primaryImage = container.querySelector('.gallery-img');
+        if (primaryImage) container.insertBefore(alternateImage, primaryImage);
+        return alternateImage;
+    };
 
     // Define slideshow logic
     const startSlideshow = () => {
@@ -694,7 +770,7 @@ function setupHoverSlideshow(container, category, folder, files) {
 
         // Immediately show the second image on hover/touch for instant feedback
         const img1 = container.querySelector('.gallery-img');
-        const img2 = container.querySelector('.gallery-img-alt');
+        const img2 = ensureAlternateImage();
 
         if (img1 && img2 && slideshowImages.length > 1) {
             // Show second image immediately
@@ -761,11 +837,6 @@ function setupHoverSlideshow(container, category, folder, files) {
     container.addEventListener('mouseenter', startSlideshow);
     container.addEventListener('mouseleave', stopSlideshow);
 
-    // Mobile: Touch events (Touch = Hover)
-    // passive: true allows scrolling to continue smoothly while logic runs
-    container.addEventListener('touchstart', startSlideshow, { passive: true });
-    container.addEventListener('touchend', stopSlideshow);
-    container.addEventListener('touchcancel', stopSlideshow);
 }
 
 
@@ -810,7 +881,8 @@ function renderMediaItem(container, category, folder, filename) {
         // Observe this video for viewport-based autoplay
         observeVideoForAutoplay(video);
     } else {
-        // Create two images for crossfade effect (slideshow support)
+        // Create the primary image only. A decorative crossfade image is added
+        // lazily on first hover for devices that actually support hover.
         const img1 = document.createElement('img');
         img1.src = encodedPath;
         img1.alt = filename;
@@ -818,15 +890,6 @@ function renderMediaItem(container, category, folder, filename) {
         img1.loading = 'lazy'; // Optimization: Lazy load
         img1.decoding = 'async';
         img1.style.opacity = '1';
-
-        // Second image for hover slideshow (initially hidden)
-        const img2 = document.createElement('img');
-        img2.src = encodedPath; // Placeholder, will be swapped on hover
-        img2.alt = filename;
-        img2.className = 'gallery-img-alt';
-        img2.loading = 'lazy'; // Optimization: Lazy load
-        img2.decoding = 'async';
-        img2.style.opacity = '0';
 
         img1.addEventListener('load', () => {
             container.classList.remove('loading');
@@ -836,7 +899,6 @@ function renderMediaItem(container, category, folder, filename) {
             container.classList.remove('loading');
         });
 
-        container.appendChild(img2); // Add second image first (behind)
         container.appendChild(img1); // Add first image on top
     }
 }
@@ -1026,8 +1088,10 @@ function openGallery(category, projectName) {
         observer.observe(item);
     });
 
-    // Save scroll position before showing overlay
+    // Save scroll and focus state before showing overlay
     savedScrollPosition = window.scrollY || document.documentElement.scrollTop;
+    projectReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    savedBodyOverflow = document.body.style.overflow;
 
     // Update URL hash for shareable links (only for project views, not legacy)
     if (category && projectName) {
@@ -1036,8 +1100,12 @@ function openGallery(category, projectName) {
 
     // Show Overlay
     projectView.style.display = 'block';
+    projectView.setAttribute('aria-hidden', 'false');
+    setPageBackgroundInert(true);
     setTimeout(() => {
         projectView.classList.add('active');
+        const closeButton = projectView.querySelector('.close-project-btn');
+        if (closeButton) closeButton.focus({ preventScroll: true });
         // Initialize Lenis for Project View Overlay
         if (!projectLenis) {
             projectLenis = new Lenis({
@@ -1072,6 +1140,7 @@ function openGallery(category, projectName) {
 function closeProjectView() {
     const projectView = document.getElementById('project-view');
     projectView.classList.remove('active');
+    projectView.setAttribute('aria-hidden', 'true');
 
     // Disconnect and clean up ResizeObserver
     if (projectLenisResizeObserver) {
@@ -1090,10 +1159,17 @@ function closeProjectView() {
 
     setTimeout(() => {
         projectView.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Re-enable scroll
+        if (savedBodyOverflow) {
+            document.body.style.overflow = savedBodyOverflow;
+        } else {
+            document.body.style.removeProperty('overflow');
+        }
+        setPageBackgroundInert(false);
         if (typeof lenis !== 'undefined') lenis.start();
         // Restore scroll position
         window.scrollTo(0, savedScrollPosition);
+        restoreDialogFocus(projectReturnFocus);
+        projectReturnFocus = null;
     }, 300);
 }
 
@@ -1207,8 +1283,20 @@ function openLightbox(index) {
     updateLightboxContent();
 
     const lightbox = document.getElementById('lightbox');
+    const projectView = document.getElementById('project-view');
+    lightboxReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     lightbox.style.display = 'block';
-    setTimeout(() => lightbox.classList.add('active'), 10);
+    lightbox.setAttribute('aria-hidden', 'false');
+    if (projectView.style.display === 'block') {
+        projectView.inert = true;
+    } else {
+        setPageBackgroundInert(true);
+    }
+    setTimeout(() => {
+        lightbox.classList.add('active');
+        const closeButton = lightbox.querySelector('.close-btn');
+        if (closeButton) closeButton.focus({ preventScroll: true });
+    }, 10);
 
     if (typeof projectLenis !== 'undefined' && projectLenis) {
         projectLenis.stop();
@@ -1271,12 +1359,21 @@ function changeImage(direction) {
 function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
     const container = document.getElementById('lightbox-content-container');
+    const projectView = document.getElementById('project-view');
 
     lightbox.classList.remove('active');
+    lightbox.setAttribute('aria-hidden', 'true');
 
     setTimeout(() => {
         lightbox.style.display = 'none';
         container.innerHTML = '';
+        if (projectView.style.display === 'block') {
+            projectView.inert = false;
+        } else {
+            setPageBackgroundInert(false);
+        }
+        restoreDialogFocus(lightboxReturnFocus);
+        lightboxReturnFocus = null;
     }, 300);
 
     if (typeof projectLenis !== 'undefined' && projectLenis) {

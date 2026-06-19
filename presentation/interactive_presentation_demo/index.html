@@ -12,7 +12,7 @@
 <style>/* Pannellum 2.5.6, https://github.com/mpetroff/pannellum */
 .pnlm-container{margin:0;padding:0;overflow:hidden;position:relative;cursor:default;width:100%;height:100%;font-family:Helvetica,"Nimbus Sans L","Liberation Sans",Arial,sans-serif;background:#f4f4f4 url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2267%22%20height%3D%22100%22%20viewBox%3D%220%200%2067%20100%22%3E%0A%3Cpath%20stroke%3D%22%23ccc%22%20fill%3D%22none%22%20d%3D%22M33.5%2C50%2C0%2C63%2C33.5%2C75%2C67%2C63%2C33.5%2C50m-33.5-50%2C67%2C25m-0.5%2C0%2C0%2C75m-66.5-75%2C67-25m-33.5%2C75%2C0%2C25m0-100%2C0%2C50%22%2F%3E%0A%3C%2Fsvg%3E%0A') repeat;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-o-user-select:none;-ms-user-select:none;user-select:none;outline:0;line-height:1.4;contain:content}.pnlm-container *{box-sizing:content-box}.pnlm-ui{position:absolute;width:100%;height:100%;z-index:1}.pnlm-grab{cursor:grab;cursor:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%2226%22%20width%3D%2226%22%3E%0A%3Cpath%20stroke%3D%22%23000%22%20stroke-width%3D%221px%22%20fill%3D%22%23fff%22%20d%3D%22m15.3%2020.5s6.38-6.73%204.64-8.24-3.47%201.01-3.47%201.01%203.61-5.72%201.41-6.49c-2.2-0.769-3.33%204.36-3.33%204.36s0.873-5.76-1.06-5.76-1.58%205.39-1.58%205.39-0.574-4.59-2.18-4.12c-1.61%200.468-0.572%205.51-0.572%205.51s-1.58-4.89-2.93-3.79c-1.35%201.11%200.258%205.25%200.572%206.62%200.836%202.43%202.03%202.94%202.17%205.55%22%2F%3E%0A%3C%2Fsvg%3E%0A') 12 8,default}.pnlm-grabbing{cursor:grabbing;cursor:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%2226%22%20width%3D%2226%22%3E%0A%3Cpath%20stroke%3D%22%23000%22%20stroke-width%3D%221px%22%20fill%3D%22%23fff%22%20d%3D%22m15.3%2020.5s5.07-5.29%203.77-6.74c-1.31-1.45-2.53%200.14-2.53%200.14s2.74-3.29%200.535-4.06c-2.2-0.769-2.52%201.3-2.52%201.3s0.81-2.13-1.12-2.13-1.52%201.77-1.52%201.77-0.261-1.59-1.87-1.12c-1.61%200.468-0.874%202.17-0.874%202.17s-0.651-1.55-2-0.445c-1.35%201.11-0.68%202.25-0.365%203.62%200.836%202.43%202.03%202.94%202.17%205.55%22%2F%3E%0A%3C%2Fsvg%3E%0A') 12 8,default}.pnlm-sprite{background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2226%22%20height%3D%22208%22%3E%0A%3Ccircle%20fill-opacity%3D%22.78%22%20cy%3D%22117%22%20cx%3D%2213%22%20r%3D%2211%22%20fill%3D%22%23fff%22%2F%3E%0A%3Ccircle%20fill-opacity%3D%22.78%22%20cy%3D%22143%22%20cx%3D%2213%22%20r%3D%2211%22%20fill%3D%22%23fff%22%2F%3E%0A%3Ccircle%20cy%3D%22169%22%20cx%3D%2213%22%20r%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%222%22%2F%3E%0A%3Ccircle%20cy%3D%22195%22%20cx%3D%2213%22%20r%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%222%22%2F%3E%0A%3Ccircle%20cx%3D%2213%22%20cy%3D%22195%22%20r%3D%222.5%22%2F%3E%0A%3Cpath%20d%3D%22m5%2083v6h2v-4h4v-2zm10%200v2h4v4h2v-6zm-5%205v6h6v-6zm-5%205v6h6v-2h-4v-4zm14%200v4h-4v2h6v-6z%22%2F%3E%0A%3Cpath%20d%3D%22m13%20110a7%207%200%200%200%20-7%207%207%207%200%200%200%207%207%207%207%200%200%200%207%20-7%207%207%200%200%200%20-7%20-7zm-1%203h2v2h-2zm0%203h2v5h-2z%22%2F%3E%0A%3Cpath%20d%3D%22m5%2057v6h2v-4h4v-2zm10%200v2h4v4h2v-6zm-10%2010v6h6v-2h-4v-4zm14%200v4h-4v2h6v-6z%22%2F%3E%0A%3Cpath%20d%3D%22m17%2038v2h-8v-2z%22%2F%3E%0A%3Cpath%20d%3D%22m12%209v3h-3v2h3v3h2v-3h3v-2h-3v-3z%22%2F%3E%0A%3Cpath%20d%3D%22m13%20136-6.125%206.125h4.375v7.875h3.5v-7.875h4.375z%22%2F%3E%0A%3Cpath%20d%3D%22m10.428%20173.33v-5.77l5-2.89v5.77zm1-1.73%203-1.73-3.001-1.74z%22%2F%3E%0A%3C%2Fsvg%3E%0A')}.pnlm-container:-moz-full-screen{height:100%!important;width:100%!important;position:static!important}.pnlm-container:-webkit-full-screen{height:100%!important;width:100%!important;position:static!important}.pnlm-container:-ms-fullscreen{height:100%!important;width:100%!important;position:static!important}.pnlm-container:fullscreen{height:100%!important;width:100%!important;position:static!important}.pnlm-render-container{cursor:inherit;position:absolute;height:100%;width:100%}.pnlm-controls{margin-top:4px;background-color:#fff;border:1px solid #999;border-color:rgba(0,0,0,0.4);border-radius:3px;cursor:pointer;z-index:2;-webkit-transform:translateZ(9999px);transform:translateZ(9999px)}.pnlm-control:hover{background-color:#f8f8f8}.pnlm-controls-container{position:absolute;top:0;left:4px;z-index:1}.pnlm-zoom-controls{width:26px;height:52px}.pnlm-zoom-in{width:100%;height:50%;position:absolute;top:0;border-radius:3px 3px 0 0}.pnlm-zoom-out{width:100%;height:50%;position:absolute;bottom:0;background-position:0 -26px;border-top:1px solid #ddd;border-top-color:rgba(0,0,0,0.10);border-radius:0 0 3px 3px}.pnlm-fullscreen-toggle-button,.pnlm-orientation-button,.pnlm-hot-spot-debug-indicator{width:26px;height:26px}.pnlm-hot-spot-debug-indicator{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;background-color:rgba(255,255,255,0.5);border-radius:13px;display:none}.pnlm-orientation-button-inactive{background-position:0 -156px}.pnlm-orientation-button-active{background-position:0 -182px}.pnlm-fullscreen-toggle-button-inactive{background-position:0 -52px}.pnlm-fullscreen-toggle-button-active{background-position:0 -78px}.pnlm-panorama-info{position:absolute;bottom:4px;background-color:rgba(0,0,0,0.7);border-radius:0 3px 3px 0;padding-right:10px;color:#fff;text-align:left;display:none;z-index:2;-webkit-transform:translateZ(9999px);transform:translateZ(9999px)}.pnlm-title-box{position:relative;font-size:20px;display:table;padding-left:5px;margin-bottom:3px}.pnlm-author-box{position:relative;font-size:12px;display:table;padding-left:5px}.pnlm-load-box{position:absolute;top:50%;left:50%;width:200px;height:150px;margin:-75px 0 0 -100px;background-color:rgba(0,0,0,0.7);border-radius:3px;text-align:center;font-size:20px;display:none;color:#fff}.pnlm-load-box p{margin:20px 0}.pnlm-lbox{position:absolute;top:50%;left:50%;width:20px;height:20px;margin:-10px 0 0 -10px;display:none}.pnlm-loading{animation-duration:1.5s;-webkit-animation-duration:1.5s;animation-name:pnlm-mv;-webkit-animation-name:pnlm-mv;animation-iteration-count:infinite;-webkit-animation-iteration-count:infinite;animation-timing-function:linear;-webkit-animation-timing-function:linear;height:10px;width:10px;background-color:#fff;position:relative}@keyframes pnlm-mv{from{left:0;top:0}25%{left:10px;top:0}50%{left:10px;top:10px}75%{left:0;top:10px}to{left:0;top:0}}@-webkit-keyframes pnlm-mv{from{left:0;top:0}25%{left:10px;top:0}50%{left:10px;top:10px}75%{left:0;top:10px}to{left:0;top:0}}.pnlm-load-button{position:absolute;top:50%;left:50%;width:200px;height:100px;margin:-50px 0 0 -100px;background-color:rgba(0,0,0,.7);border-radius:3px;text-align:center;font-size:20px;display:table;color:#fff;cursor:pointer}.pnlm-load-button:hover{background-color:rgba(0,0,0,.8)}.pnlm-load-button p{display:table-cell;vertical-align:middle}.pnlm-info-box{font-size:15px;position:absolute;top:50%;left:50%;width:200px;height:150px;margin:-75px 0 0 -100px;background-color:#000;border-radius:3px;display:table;text-align:center;color:#fff;table-layout:fixed}.pnlm-info-box a,.pnlm-author-box a{color:#fff;word-wrap:break-word;overflow-wrap:break-word}.pnlm-info-box p{display:table-cell;vertical-align:middle;padding:0 5px 0 5px}.pnlm-error-msg{display:none}.pnlm-about-msg{font-size:11px;line-height:11px;color:#fff;padding:5px 8px 5px 8px;background:rgba(0,0,0,0.7);border-radius:3px;position:absolute;top:50px;left:50px;display:none;opacity:0;-moz-transition:opacity .3s ease-in-out;-webkit-transition:opacity .3s ease-in-out;-o-transition:opacity .3s ease-in-out;-ms-transition:opacity .3s ease-in-out;transition:opacity .3s ease-in-out;z-index:1}.pnlm-about-msg a:link,.pnlm-about-msg a:visited{color:#fff}.pnlm-about-msg a:hover,.pnlm-about-msg a:active{color:#eee}.pnlm-hotspot-base{position:absolute;visibility:hidden;cursor:default;vertical-align:middle;top:0;z-index:1}.pnlm-hotspot{height:26px;width:26px;border-radius:13px}.pnlm-hotspot:hover{background-color:rgba(255,255,255,0.2)}.pnlm-hotspot.pnlm-info{background-position:0 -104px}.pnlm-hotspot.pnlm-scene{background-position:0 -130px}div.pnlm-tooltip span{visibility:hidden;position:absolute;border-radius:3px;background-color:rgba(0,0,0,0.7);color:#fff;text-align:center;max-width:200px;padding:5px 10px;margin-left:-220px;cursor:default}div.pnlm-tooltip:hover span{visibility:visible}div.pnlm-tooltip:hover span:after{content:'';position:absolute;width:0;height:0;border-width:10px;border-style:solid;border-color:rgba(0,0,0,0.7) transparent transparent transparent;bottom:-20px;left:-10px;margin:0 50%}.pnlm-compass{position:absolute;width:50px;height:50px;right:4px;bottom:4px;border-radius:25px;background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%2250%22%20width%3D%2250%22%3E%0A%3Cpath%20d%3D%22m24.5078%206-3.2578%2018h7.5l-3.25781-18h-0.984376zm-3.2578%2020%203.2578%2018h0.9844l3.2578-18h-7.5zm1.19531%200.9941h5.10938l-2.5547%2014.1075-2.5547-14.1075z%22%2F%3E%0A%3C%2Fsvg%3E%0A');cursor:default;display:none}.pnlm-world{position:absolute;left:50%;top:50%}.pnlm-face{position:absolute;-webkit-transform-origin:0 0;transform-origin:0 0}.pnlm-dragfix,.pnlm-preview-img{position:absolute;height:100%;width:100%}.pnlm-preview-img{background-size:cover;background-position:center}.pnlm-lbar{width:150px;margin:0 auto;border:#fff 1px solid;height:6px}.pnlm-lbar-fill{background:#fff;height:100%;width:0}.pnlm-lmsg{font-size:12px}.pnlm-fade-img{position:absolute;top:0;left:0}.pnlm-pointer{cursor:pointer}</style>
 <style>
-    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
         --bg-color: #09090b; --text-color: #e5e5e5; --accent-color: #ffffff; --accent-rgb: 255, 255, 255;
         --marker-size: 38px; 
@@ -33,8 +33,9 @@
     #plan-container { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 0 50px rgba(0,0,0,0.5); backface-visibility: hidden; }
     #plan-img { display: block; max-width: none; pointer-events: none; }
     
-    .marker-wrapper { position: absolute; width: var(--marker-size); height: var(--marker-size); transform: translate(-50%, -50%); z-index: 100; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
+    .marker-wrapper { position: absolute; width: var(--marker-size); height: var(--marker-size); transform: translate(-50%, -50%); z-index: 100; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; }
     .marker-wrapper.is-frozen { pointer-events: none; cursor: default; }
+    .marker-visual-frame { position: absolute; left: 50%; top: 50%; width: var(--marker-visual-size, 100%); height: var(--marker-visual-size, 100%); transform: translate(-50%, -50%); pointer-events: none; }
     .marker-visual { width: 100%; height: 100%; background: var(--marker-bg); border: 10px solid #ebebeb; display: flex; align-items: center; justify-content: center; font-family: var(--marker-font-family); font-weight: var(--marker-font-weight); font-style: var(--marker-font-style); font-size: var(--marker-font-size); color: var(--marker-text-color); box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.15s ease-in-out; }
     .marker-wrapper:hover { z-index: 110; }
     
@@ -42,8 +43,12 @@
     .shape-circle:hover, .shape-square:hover { transform: scale(1.15); }
     .shape-pin:hover { transform: rotate(-45deg) scale(1.15); }
     .shape-eye:hover { transform: rotate(-45deg) scale(1.3); }
+    .marker-wrapper:hover .shape-circle, .marker-wrapper:hover .shape-square,
+    .marker-wrapper:focus-visible .shape-circle, .marker-wrapper:focus-visible .shape-square { transform: scale(1.15); }
+    .marker-wrapper:hover .shape-pin, .marker-wrapper:focus-visible .shape-pin { transform: rotate(-45deg) scale(1.15); }
+    .marker-wrapper:hover .shape-eye, .marker-wrapper:focus-visible .shape-eye { transform: rotate(-45deg) scale(1.3); }
     
-    .custom-icon-wrapper { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; pointer-events: auto; transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1); transform-origin: center center; }
+    .custom-icon-wrapper { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; pointer-events: auto; transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1); transform-origin: center center; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; }
     .custom-icon-wrapper.is-frozen { pointer-events: none; cursor: default; }
     /* Exclude .marker-preview so hover scaling doesn't override its positioning/transform. */
     .custom-icon-wrapper > div:not(.marker-preview), .custom-icon-wrapper img { transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1); transform-origin: center center; will-change: transform; }
@@ -69,11 +74,15 @@
     .shape-eye img { transform: rotate(45deg) scale(1.5); }
     .marker-index-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; line-height: 1; text-align: center; pointer-events: none; transform-origin: center center; }
     
-    .text-label-wrapper { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; padding: 0; transition: z-index 0.2s; white-space: pre-wrap; pointer-events: auto; }
+    .text-label-wrapper { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; padding: 0; transition: z-index 0.2s; white-space: pre-wrap; pointer-events: auto; border: 0; background: transparent; color: inherit; font: inherit; }
     .text-label-wrapper.is-frozen { pointer-events: none; cursor: default; }
     .text-label-content { padding: 2px 4px; border: 1px solid transparent; border-radius: 0.25rem; box-sizing: border-box; display: inline-block; line-height: 1.5; transition: transform 0.2s ease; white-space: pre-wrap; word-break: break-word; text-align: left; }
     .text-label-wrapper:hover { z-index: 110; }
-    .text-label-wrapper:hover .text-label-content { transform: scale(1.1); } 
+    .text-label-wrapper:hover .text-label-content { transform: scale(1.1); }
+    .marker-wrapper:focus-visible, .text-label-wrapper:focus-visible, .custom-icon-wrapper:focus-visible,
+    #image-modal button:focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; }
+    .marker-wrapper:focus-visible, .text-label-wrapper:focus-visible, .custom-icon-wrapper:focus-visible { z-index: 115; }
+    .marker-wrapper:focus .marker-preview, .custom-icon-wrapper:focus .marker-preview, .text-label-wrapper:focus .marker-preview { opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0) scale(1) rotate(var(--preview-rotation, 0deg)); }
     
     /* Marker Pulse */
     @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); } 70% { box-shadow: 0 0 0 var(--pulse-size) rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
@@ -487,10 +496,10 @@ c){if(!b.hotSpots)return!1;for(var d=0;d<b.hotSpots.length;d++)if(b.hotSpots[d].
 function(){Za=!0;clearTimeout(Qa);C&&C.destroy();Sa&&(g.removeEventListener("mousemove",ua,!1),g.removeEventListener("mouseup",ma,!1),s.removeEventListener("mozfullscreenchange",d,!1),s.removeEventListener("webkitfullscreenchange",d,!1),s.removeEventListener("msfullscreenchange",d,!1),s.removeEventListener("fullscreenchange",d,!1),E.removeEventListener("resize",z,!1),E.removeEventListener("orientationchange",z,!1),s.removeEventListener("keydown",V,!1),s.removeEventListener("keyup",R,!1),s.removeEventListener("blur",
 $,!1),g.removeEventListener("mouseleave",ma,!1));s.innerHTML="";s.classList.remove("pnlm-container")}}return{viewer:function(g,k){return new Ba(g,k)}}}(window,document);
 </script>
-<div id="image-modal"><button class="close-btn" onclick="closeModal()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button><button class="nav-btn prev-btn" onclick="changeSlide(-1)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button><div id="modal-content">
+<div id="image-modal" role="dialog" aria-modal="true" aria-label="Project media viewer" aria-hidden="true"><button class="close-btn" type="button" onclick="closeModal()" aria-label="Close media viewer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button><button class="nav-btn prev-btn" type="button" onclick="changeSlide(-1)" aria-label="Previous media"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button><div id="modal-content">
     <div id="media-container" class="zoom-wrapper"></div>
     <div id="modal-caption"></div>
-</div><button class="nav-btn next-btn" onclick="changeSlide(1)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button><div class="counter" id="img-counter">1 / 1</div></div>
+</div><button class="nav-btn next-btn" type="button" onclick="changeSlide(1)" aria-label="Next media"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button><div class="counter" id="img-counter" aria-live="polite">1 / 1</div></div>
 <script>
     window.onerror = function(msg, url, line, col, error) {
         const loader = document.getElementById('app-loader');
@@ -612,19 +621,68 @@ window.exportedAssets['a_13595731_2OfbLSZqePS14zrZ'] = "assets/a_13595731_2OfbLS
             });
         }
         updateFullscreenToggle();
-        document.addEventListener('fullscreenchange', updateFullscreenToggle);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenToggle);
-        document.addEventListener('msfullscreenchange', updateFullscreenToggle);
+        const handleFullscreenChange = () => {
+            updateFullscreenToggle();
+            requestAnimationFrame(() => {
+                if (typeof window.refreshPlanViewport === 'function') {
+                    window.refreshPlanViewport();
+                } else if (typeof window.fitToScreen === 'function') {
+                    window.fitToScreen();
+                }
+            });
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('msfullscreenchange', handleFullscreenChange);
     }
     let currentImages = []; let currentLink = null; let currentEmbed = null; let currentCaption = ''; let modalMediaReady = false; let counterHideTimeout = null;
     let linkOnMediaUrl = null; let linkOnMediaBehavior = 'popup';
     let currentIndex = 0; let zoomLevel = 1; let isDragging = false; let startX = 0, startY = 0; let translateX = 0, translateY = 0; const enableZoom = true;
     let pannellumViewer = null; // 360 Viewer Instance
     let closeTimeout = null; // Track close animation timer
+    let modalReturnFocus = null;
     
     // View Transform State (Global for access by event handlers)
     let scale = 1, pX = 0, pY = 0;
     let targetScale = 1, targetX = 0, targetY = 0;
+
+    const MODAL_FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])';
+
+    function getModalFocusableElements() {
+        const modal = document.getElementById('image-modal');
+        if (!modal) return [];
+        return Array.from(modal.querySelectorAll(MODAL_FOCUSABLE_SELECTOR))
+            .filter(element => element.getClientRects().length > 0 && !element.closest('[inert]'));
+    }
+
+    function openAccessibleModal() {
+        const modal = document.getElementById('image-modal');
+        if (!modal) return;
+        if (!modal.classList.contains('active')) {
+            modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }
+        modal.dataset.closing = 'false';
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('active');
+        const focusCloseButton = () => {
+            const closeButton = modal.querySelector('.close-btn');
+            if (closeButton) closeButton.focus({ preventScroll: true });
+        };
+        focusCloseButton();
+        const app = document.getElementById('app');
+        if (app) app.inert = true;
+        setTimeout(focusCloseButton, 0);
+        setTimeout(focusCloseButton, 50);
+    }
+
+    function restoreModalFocus() {
+        const app = document.getElementById('app');
+        if (app) app.inert = false;
+        if (modalReturnFocus && modalReturnFocus.isConnected) {
+            modalReturnFocus.focus({ preventScroll: true });
+        }
+        modalReturnFocus = null;
+    }
 
     function setModalCaption(text) {
         currentCaption = text || '';
@@ -691,8 +749,7 @@ window.exportedAssets['a_13595731_2OfbLSZqePS14zrZ'] = "assets/a_13595731_2OfbLS
         }
         
         renderModalContent('image'); updateModalImage(false); 
-        const modal = document.getElementById('image-modal');
-        modal.classList.add('active'); 
+        openAccessibleModal();
         
         // NOW apply the origin because the modal is active and has a position/rect
         applyZoomOrigin(event);
@@ -707,8 +764,7 @@ window.exportedAssets['a_13595731_2OfbLSZqePS14zrZ'] = "assets/a_13595731_2OfbLS
         setModalMediaReady(false);
         
         renderModalContent('iframe'); 
-        const modal = document.getElementById('image-modal');
-        modal.classList.add('active'); 
+        openAccessibleModal();
 
         applyZoomOrigin(event);
         updateNavButtons();
@@ -722,8 +778,7 @@ window.exportedAssets['a_13595731_2OfbLSZqePS14zrZ'] = "assets/a_13595731_2OfbLS
         setModalMediaReady(false);
         
         renderModalContent('embed');
-        const modal = document.getElementById('image-modal');
-        modal.classList.add('active'); 
+        openAccessibleModal();
 
         applyZoomOrigin(event);
         updateNavButtons();
@@ -1015,6 +1070,10 @@ function updateTransform() {
     window.closeModal = function() { 
         const modal = document.getElementById('image-modal');
         const modalContent = document.getElementById('modal-content');
+        if (!modal || !modal.classList.contains('active') || modal.dataset.closing === 'true') return;
+        modal.dataset.closing = 'true';
+        modal.setAttribute('aria-hidden', 'true');
+        restoreModalFocus();
         setModalCaption('');
         setModalMediaReady(false);
         
@@ -1042,6 +1101,7 @@ function updateTransform() {
         if (closeTimeout) clearTimeout(closeTimeout);
         closeTimeout = setTimeout(() => { 
             modal.classList.remove('active');
+            modal.dataset.closing = 'false';
             modal.style.transition = '';
             modal.style.opacity = '';
             modal.style.pointerEvents = ''; // Reset for next open
@@ -1060,7 +1120,34 @@ function updateTransform() {
             closeTimeout = null;
         }, 1200); // Match 1.2s fade-out animation duration
     };
-    document.addEventListener('keydown', function(e) { const imageModalEl = document.getElementById('image-modal'); if(!imageModalEl || !imageModalEl.classList.contains('active')) return; if(e.key === 'Escape') window.closeModal(); if(e.key === 'ArrowLeft') changeSlide(-1); if(e.key === 'ArrowRight') changeSlide(1); });
+    document.addEventListener('keydown', function(e) {
+        const imageModalEl = document.getElementById('image-modal');
+        if (!imageModalEl || imageModalEl.getAttribute('aria-hidden') !== 'false') return;
+
+        if (e.key === 'Tab') {
+            const focusable = getModalFocusableElements();
+            if (!focusable.length) {
+                e.preventDefault();
+                imageModalEl.focus();
+            } else {
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (!imageModalEl.contains(document.activeElement)) {
+                    e.preventDefault();
+                    first.focus();
+                } else if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+        if (e.key === 'Escape') { e.preventDefault(); window.closeModal(); }
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
     const imageModalEl = document.getElementById('image-modal'); if (imageModalEl) { imageModalEl.addEventListener('click', function(e) { if(e.target === this || e.target.classList.contains('zoom-wrapper')) { window.closeModal(); } }); }
     
     const navBar = document.getElementById('nav-bar'); const navToggleEl = document.getElementById('nav-toggle'); if (navToggleEl && navBar) { navToggleEl.addEventListener('click', () => navBar.classList.toggle('collapsed')); } const markersLayer = document.getElementById('markers-layer'); const fixedLayer = document.getElementById('fixed-overlays-layer');
@@ -1115,6 +1202,8 @@ function updateTransform() {
                  const base = parseFloat(m.getAttribute('data-base-size'));
                  if (!Number.isNaN(base)) {
                      const s = base * naturalScaleRatio;
+                     m.dataset.renderSize = String(s);
+                     m.style.setProperty('--marker-visual-size', s + 'px');
                      m.style.width = s + 'px';
                      m.style.height = s + 'px';
                  }
@@ -1162,6 +1251,10 @@ function updateTransform() {
              });
 
              const view = document.getElementById('main-view'); const cont = document.getElementById('plan-container'); 
+             // Slightly exceed 44px so fractional transforms never round below
+             // the minimum touch target in browser layout calculations.
+             const MIN_INTERACTIVE_TARGET_SIZE = 45;
+             const PLAN_ZOOM_MULTIPLIER = 4;
              const updateFixedPreviewSizes = () => {
                  document.querySelectorAll('.marker-preview[data-fixed-viewport="true"]').forEach(preview => {
                      const baseSize = parseFloat(preview.dataset.previewSize || defaultHoverPreviewSize);
@@ -1170,9 +1263,28 @@ function updateTransform() {
                      preview.style.setProperty('--preview-size', Math.max(16, baseSize / currentScale) + 'px');
                  });
              };
+             const updateMarkerHitAreas = () => {
+                 document.querySelectorAll('.marker-wrapper:not(.is-frozen)').forEach(marker => {
+                     const visualSize = parseFloat(marker.dataset.renderSize || marker.dataset.baseSize || '0');
+                     if (!visualSize) return;
+                     const itemScale = parseFloat(marker.dataset.viewScale || '1') || 1;
+                     const isFixed = marker.parentElement === fixedLayer;
+                     const inheritedScale = isFixed ? 1 : Math.max(scale, 0.001);
+                     const minimumLocalSize = MIN_INTERACTIVE_TARGET_SIZE / (inheritedScale * itemScale);
+                     const hitSize = Math.max(visualSize, minimumLocalSize);
+                     marker.style.width = hitSize + 'px';
+                     marker.style.height = hitSize + 'px';
+                 });
+             };
              const updateView = () => {
                  cont.style.transform = `translate(${pX}px, ${pY}px) scale(${scale})`;
                  updateFixedPreviewSizes();
+                 updateMarkerHitAreas();
+                 const fittedScale = getLockedMinScale();
+                 view.dataset.planScale = String(scale);
+                 view.dataset.planTargetScale = String(targetScale);
+                 view.dataset.planFitScale = String(fittedScale);
+                 view.dataset.planMaxScale = String(fittedScale * PLAN_ZOOM_MULTIPLIER);
              };
              const clampToViewport = () => {
                  if (!(appData.lockPlanToViewport === true)) return;
@@ -1199,6 +1311,29 @@ function updateTransform() {
                  if (!img.naturalWidth || !img.naturalHeight || !vw || !vh) return 0.1;
                  return Math.min(vw / img.naturalWidth, vh / img.naturalHeight);
              };
+             const getPlanMaxScale = () => getLockedMinScale() * PLAN_ZOOM_MULTIPLIER;
+             const clampPlanScale = value => Math.min(Math.max(getLockedMinScale(), value), getPlanMaxScale());
+
+             const refreshPlanViewport = () => {
+                 if (!img.naturalWidth) return;
+                 const vw = view.offsetWidth;
+                 const vh = view.offsetHeight;
+                 const safeTargetScale = targetScale || getLockedMinScale();
+                 const centerImageX = (vw / 2 - targetX) / safeTargetScale;
+                 const centerImageY = (vh / 2 - targetY) / safeTargetScale;
+
+                 targetScale = clampPlanScale(targetScale);
+                 scale = clampPlanScale(scale);
+                 targetX = vw / 2 - centerImageX * targetScale;
+                 targetY = vh / 2 - centerImageY * targetScale;
+                 pX = targetX;
+                 pY = targetY;
+                 clampToViewport();
+                 pX = targetX;
+                 pY = targetY;
+                 updateView();
+             };
+             window.refreshPlanViewport = refreshPlanViewport;
 
              const fitToScreen = () => { 
                  const vw = view.offsetWidth, vh = view.offsetHeight; 
@@ -1227,7 +1362,7 @@ function updateTransform() {
                  fitToScreen();
              });
              window.addEventListener('resize', () => {
-                 fitToScreen();
+                 refreshPlanViewport();
              });
              
             const btn = document.querySelector('.splash-btn');
@@ -1287,9 +1422,7 @@ function updateTransform() {
                  const zoomSensitivity = 0.0015;
                  const zoomFactor = Math.exp(-e.deltaY * zoomSensitivity);
                  
-                 targetScale *= zoomFactor; 
-                 const minScale = getLockedMinScale();
-                 targetScale = Math.min(Math.max(minScale, targetScale), 10);
+                 targetScale = clampPlanScale(targetScale * zoomFactor);
                  
                  // Adjust position so point under mouse stays stationary
                  targetX = mouseX - xs * targetScale; 
@@ -1390,8 +1523,7 @@ function updateTransform() {
                      if (startDist > 0) {
                          const scaleChange = currentDist / startDist;
                          let newScale = startScale * scaleChange;
-                         const minScale = getLockedMinScale();
-                         newScale = Math.min(Math.max(minScale, newScale), 10);
+                         newScale = clampPlanScale(newScale);
                          
                          // Update Transform
                          // We want the original image point (pinchStartImageX/Y) to move to the new Screen Position (mouseX/Y)
@@ -1506,6 +1638,17 @@ function updateTransform() {
         preview.style.visibility = '';
     }
 
+    const getAccessibleControlName = (item, fallback) => {
+        const candidate = item.accessibleLabel || item.title || item.name || item.text || item.modalText;
+        const normalized = typeof candidate === 'string' ? candidate.replace(/\s+/g, ' ').trim() : '';
+        return normalized ? `Open ${normalized.slice(0, 120)}` : fallback;
+    };
+
+    const configureInteractiveControl = (element, item, fallback) => {
+        element.type = 'button';
+        element.setAttribute('aria-label', getAccessibleControlName(item, fallback));
+    };
+
     const attachCommonEvents = (el, item) => {
         const embeddedHtml = item.linkedFileContent || item.embeddedHtml;
         const modalCaption = (typeof item.modalText === 'string' && item.showModalText !== false)
@@ -1563,55 +1706,17 @@ function updateTransform() {
                     openLinkAction();
                 }
             }
-        }); 
-        
-        el.addEventListener('touchend', function(e) { 
-            e.preventDefault(); e.stopPropagation();
-            // Pass 'e' to handlers so they can extract touch coordinates
-            const linkUrl = item.link ? normalizeUrl(item.link) : null;
-            const openLinkAction = () => {
-                if (!linkUrl) return;
-                if (behavior === 'new_tab') {
-                    window.open(linkUrl, '_blank');
-                } else if (behavior === 'same_tab') {
-                    window.location.href = linkUrl;
-                } else {
-                    openLink(linkUrl, e); 
-                }
-            };
-
-            const openMedia = (linkOnMedia) => {
-                if (embeddedHtml) { openEmbed(embeddedHtml, e); return; }
-                if (item.images && item.images.length > 0) { openGallery(item.images, 0, e, captionValue, linkOnMedia ? linkUrl : null, behavior, linkOnMedia); return; }
-                if (item.image) { openGallery([item.image], 0, e, captionValue, linkOnMedia ? linkUrl : null, behavior, linkOnMedia); }
-            };
-
-            if (!linkUrl || activation === 'off') {
-                if (hasMedia) openMedia(false);
-                return;
-            }
-
-            if (activation === 'on_click') {
-                openLinkAction();
-                return;
-            }
-
-            if (activation === 'media_click') {
-                if (hasMedia) {
-                    openMedia(true);
-                } else {
-                    openLinkAction();
-                }
-            }
         });
     };
 
     appData.markers.forEach((m, i) => { 
         const markerInteractive = m.interactionsEnabled ?? true;
-        const el = document.createElement('div'); 
+        const el = document.createElement(markerInteractive ? 'button' : 'div');
         el.className = markerInteractive ? 'marker-wrapper' : 'marker-wrapper is-frozen';
+        if (markerInteractive) configureInteractiveControl(el, m, `Open marker ${i + 1}`);
         el.style.left = m.x + '%'; el.style.top = m.y + '%'; 
         const markerScale = m.fixedToView ? (m.fixedViewScale || 1) : 1;
+        el.dataset.viewScale = String(markerScale);
         el.style.transform = 'translate(-50%, -50%) scale(' + markerScale + ') rotate(' + (m.rotation || 0) + 'deg)';
         el.style.setProperty('--marker-rotation', (m.rotation || 0) + 'deg');
         const markerShape = m.shape ?? appData.shape;
@@ -1687,7 +1792,7 @@ function updateTransform() {
         markerVisualStyle.push(`--pulse-size:${pulseSize}px`);
         // Fix for pulse effect: Outer div has pulse (overflow visible), Inner div has mask (overflow hidden)
         // Also applied individual border style here
-        el.innerHTML = `${preview}<div class="marker-visual ${shapeClass}${pulseClass}" style="${markerVisualStyle.join('; ')}"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:inherit;position:relative;">${content}</div></div>`;
+        el.innerHTML = `${preview}<div class="marker-visual-frame"><div class="marker-visual ${shapeClass}${pulseClass}" style="${markerVisualStyle.join('; ')}"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:inherit;position:relative;">${content}</div></div></div>`;
         if (markerInteractive) {
             attachCommonEvents(el, m);
         }
@@ -1768,12 +1873,14 @@ function updateTransform() {
 
     appData.textLabels.forEach(l => { 
         const labelInteractive = l.interactionsEnabled !== false;
-        const el = document.createElement('div'); 
-        el.className = labelInteractive ? 'text-label-wrapper' : 'text-label-wrapper is-frozen'; 
+        const labelActionable = labelInteractive && Boolean(l.image || (l.images && l.images.length > 0) || l.link || (l.isEmbed && l.embeddedHtml));
+        const el = document.createElement(labelActionable ? 'button' : 'div');
+        el.className = labelActionable ? 'text-label-wrapper' : 'text-label-wrapper is-frozen';
+        if (labelActionable) configureInteractiveControl(el, l, 'Open presentation label');
         el.style.left = l.x + '%'; el.style.top = l.y + '%'; 
         const labelScale = l.fixedToView ? (l.fixedViewScale || 1) : 1;
         el.style.transform = 'translate(-50%, -50%) scale(' + labelScale + ') rotate(' + (l.rotation || 0) + 'deg)';
-        if(labelInteractive && (l.image || (l.images && l.images.length > 0) || l.link || (l.isEmbed && l.embeddedHtml))) attachCommonEvents(el, l); 
+        if(labelActionable) attachCommonEvents(el, l);
         const fontWeight = l.bold ? 'bold' : 'normal'; const fontStyle = l.italic ? 'italic' : 'normal'; const shadow = l.shadow ? '0 2px 4px rgba(0,0,0,0.8)' : 'none'; const getRgb = (hex) => { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0'; }; const bg = `rgba(${getRgb(l.bgColor || '#000000')}, ${l.bgOpacity || 0})`; 
         let preview = ''; 
         const labelPreviewSize = ((typeof l.hoverPreviewSize === 'number' && !Number.isNaN(l.hoverPreviewSize)) ? l.hoverPreviewSize : defaultHoverPreviewSize);
@@ -1811,7 +1918,9 @@ function updateTransform() {
     if (appData.customIcons) {
         appData.customIcons.forEach(c => {
             const iconInteractive = c.interactionsEnabled !== false;
-            const el = document.createElement('div'); el.className = iconInteractive ? 'custom-icon-wrapper' : 'custom-icon-wrapper is-frozen';
+            const iconActionable = iconInteractive && Boolean(c.image || (c.images && c.images.length > 0) || c.link || (c.isEmbed && c.embeddedHtml));
+            const el = document.createElement(iconActionable ? 'button' : 'div'); el.className = iconActionable ? 'custom-icon-wrapper' : 'custom-icon-wrapper is-frozen';
+            if (iconActionable) configureInteractiveControl(el, c, 'Open presentation item');
             el.style.left = c.x + '%'; el.style.top = c.y + '%';
             const iconScale = c.fixedToView ? (c.fixedViewScale || 1) : 1;
             el.style.transform = `translate(-50%, -50%) scale(${iconScale}) rotate(${c.rotation||0}deg)`;
@@ -1839,7 +1948,7 @@ function updateTransform() {
                 }
             }
             el.innerHTML = `${preview}<img src="${c.src}" data-base-width="${c.width}" style="display:block; width:${c.width}px; height:auto; opacity:${c.opacity||1}; pointer-events:none;">`;
-            if (iconInteractive) {
+            if (iconActionable) {
                 attachCommonEvents(el, c);
             }
             ((c.fixedToView ? fixedLayer : markersLayer)).appendChild(el);

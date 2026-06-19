@@ -28,7 +28,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.min.css?v=1781874700083">
+    <link rel="stylesheet" href="styles.min.css?v=1781877131047">
     <link rel="manifest" href="site.webmanifest">
     <link rel="canonical" href="https://jervistuazon.github.io/">
 
@@ -216,7 +216,7 @@
         </section>
 
         <!-- Lightbox Modal -->
-        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox"
+        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox" aria-hidden="true"
             onclick="if(event.target === this) closeLightbox()">
             <button class="close-btn" type="button" onclick="closeLightbox()"
                 aria-label="Close lightbox">&times;</button>
@@ -234,7 +234,8 @@
         </div>
 
         <!-- Project View Overlay (Sub-gallery) -->
-        <div id="project-view" class="project-view" data-lenis-prevent>
+        <div id="project-view" class="project-view" data-lenis-prevent role="dialog" aria-modal="true"
+            aria-labelledby="project-title" aria-hidden="true" tabindex="-1">
             <button class="close-project-btn" type="button" onclick="closeProjectView()"
                 aria-label="Close project view">&times;</button>
             <div class="project-view-header">
@@ -267,8 +268,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-    <script src="gallery-data.js?v=1781874700083"></script>
-    <script src="script.min.js?v=1781874700083"></script>
+    <script src="gallery-data.js?v=1781877131047"></script>
+    <script src="script.min.js?v=1781877131047"></script>
 </body>
 
 </html>
