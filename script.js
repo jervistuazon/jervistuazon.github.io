@@ -112,6 +112,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         button.addEventListener('keydown', handleDropdownOptionKeydown);
     });
+
+    // Scroll Spy for active nav link
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    const scrollSpy = () => {
+        const scrollY = window.scrollY || window.pageYOffset;
+        
+        sections.forEach(current => {
+            const sectionHeight = current.offsetHeight;
+            const sectionTop = current.offsetTop - 150;
+            const sectionId = current.getAttribute('id');
+            
+            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${sectionId}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    };
+    window.addEventListener('scroll', scrollSpy, { passive: true });
+    scrollSpy();
 });
 
 function initHeroFade() {
@@ -160,7 +185,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781859159928';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781872317832';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -528,42 +553,8 @@ function renderGalleryItem(itemData, index) {
     const item = document.createElement('button');
     item.type = 'button';
 
-    // Apply layout:
-    // - Featured projects: always 2x2, alternating left/right
-    // - Normal project folders: random sized (2x2, 2x1, or 1x2) for visual variety
-    // - Standalone images: 1x1 (no span class)
-    // - Videos: 1x1 (no span class)
-    let spanClass = '';
-    if (itemData.type === 'project') {
-        item.setAttribute('data-project', 'true');
-        // Store project name for layout persistence
-        item.setAttribute('data-project-name', itemData.projectName);
-
-        if (itemData.featured) {
-            // Featured items are full width (3 cols) x 2 rows
-            spanClass = 'span-3-2';
-        } else {
-            // Normal project folders: check for manual override first, else random sizing
-            spanClass = getRandomProjectSpan(index, itemData.projectName);
-        }
-    } else if (itemData.type === 'standalone') {
-        // Standalone items
-        item.setAttribute('data-standalone', 'true');
-        // Store filename for size override checks
-        item.setAttribute('data-filename', itemData.filename);
-
-        if (itemData.featured) {
-            // Featured standalone items are full width (3 cols) x 2 rows
-            spanClass = 'span-3-2';
-        } else {
-            // Check for manual override first, else random sizing
-            spanClass = getRandomStandaloneSpan(index, itemData.filename);
-        }
-    }
-    // Other items default to 1x1 (no span class)
-    // Add mobile aspect ratio class for Pinterest-style masonry on mobile (except featured)
-    const mobileArClass = itemData.featured ? '' : getMobileAspectRatioClass(index, itemData.type);
-    item.className = `gallery-item fade-in-scroll ${spanClass} ${mobileArClass}`.trim();
+    // Apply layout: all items scaled to the same single-column width
+    item.className = 'gallery-item fade-in-scroll';
 
     // Set category for filtering
     item.setAttribute('data-category', itemData.categorySlug);
@@ -571,27 +562,37 @@ function renderGalleryItem(itemData, index) {
         item.setAttribute('data-featured', 'true');
     }
 
+    // Create card media wrapper
+    const mediaWrapper = document.createElement('div');
+    mediaWrapper.className = 'card-media-wrapper';
+    item.appendChild(mediaWrapper);
+
     if (itemData.type === 'project') {
-        // Project folder
+        item.setAttribute('data-project', 'true');
+        item.setAttribute('data-project-name', itemData.projectName);
+        
         item.onclick = () => openGallery(itemData.category, itemData.projectName);
-        renderMediaItem(item, itemData.category, itemData.projectName, itemData.thumbSrc);
+        renderMediaItem(mediaWrapper, itemData.category, itemData.projectName, itemData.thumbSrc);
 
         // Display name: extract just the project name (before first dash)
-        const displayName = parseProjectName(itemData.projectName).name;
-        renderInfo(item, displayName);
+        const projectParts = parseProjectName(itemData.projectName);
+        const displayName = projectParts.name;
+        const metadata = [projectParts.location, projectParts.date].filter(Boolean).join(' • ');
+
+        renderInfo(item, itemData.category, displayName, metadata, 'Explore Project');
         item.setAttribute('aria-label', `Open project: ${displayName}`);
 
         // Auto-run slideshow for multi-image projects
         const imageCount = itemData.files.length;
         if (imageCount > 1) {
-            // Add auto-running slideshow for multi-image projects
             setupHoverSlideshow(item, itemData.category, itemData.projectName, itemData.files);
         }
     } else if (itemData.type === 'standalone') {
-        // Standalone image in category folder - mark for desaturated styling
         item.setAttribute('data-standalone', 'true');
+        item.setAttribute('data-filename', itemData.filename);
 
         const presentationHref = getPresentationHref(itemData);
+        const isInteractive = presentationHref || itemData.filename.includes('Interactive Presentation Demo');
 
         // Special handling for interactive presentations - redirect to presentation page
         if (presentationHref) {
@@ -605,10 +606,14 @@ function renderGalleryItem(itemData, index) {
                 openLightbox(itemData.fileIndex);
             };
         }
-        renderMediaItem(item, itemData.category, '.', itemData.filename);
+        renderMediaItem(mediaWrapper, itemData.category, '.', itemData.filename);
+        
         // Strip extension, leading numbers, and "- F" featured marker from display name
         const standaloneLabel = getGalleryItemLabel(itemData.filename, itemData.label);
-        renderInfo(item, standaloneLabel, itemData.filename, presentationHref);
+        const metadata = isInteractive ? 'Interactive Presentation' : 'Architectural Rendering';
+        const ctaText = isInteractive ? 'Explore Presentation' : 'View Rendering';
+
+        renderInfo(item, itemData.category, standaloneLabel, metadata, ctaText);
         item.setAttribute('aria-label', presentationHref ? `Explore interactive presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
     } else if (itemData.type === 'video') {
         // Video item
@@ -626,8 +631,8 @@ function renderGalleryItem(itemData, index) {
                 openLightbox(itemData.fileIndex);
             };
         }
-        renderMediaItem(item, 'Video', '.', itemData.filename);
-        renderInfo(item, videoLabel, itemData.filename);
+        renderMediaItem(mediaWrapper, 'Video', '.', itemData.filename);
+        renderInfo(item, 'Video', videoLabel, 'Cinematic Animation', 'Play Video');
         item.setAttribute('aria-label', `Play video: ${videoLabel}`);
     }
 
@@ -802,28 +807,32 @@ function renderMediaItem(container, category, folder, filename) {
     }
 }
 
-function renderInfo(container, text, filename = null, presentationHref = null) {
+function renderInfo(container, category, title, metadata, ctaText) {
     const info = document.createElement('div');
     info.className = 'item-info';
+
+    const cat = document.createElement('span');
+    cat.className = 'item-category';
+    cat.textContent = category;
+    info.appendChild(cat);
+
     const h4 = document.createElement('h4');
-    h4.textContent = text;
+    h4.textContent = title;
     info.appendChild(h4);
-    container.appendChild(info);
 
-    const href = presentationHref || (filename && filename.includes('Interactive Presentation Demo')
-        ? INTERACTIVE_PRESENTATION_DEMO_URL
-        : null);
-
-    // Add clickable link for interactive presentations - placed OUTSIDE item-info
-    if (href) {
-        const link = document.createElement('a');
-        link.href = href;
-        link.className = 'presentation-link';
-        link.textContent = 'EXPLORE INTERACTIVE PRESENTATION';
-        link.onclick = (e) => e.stopPropagation(); // Prevent triggering gallery item click
-        container.appendChild(link); // Append directly to container, not info
-        container.classList.add('has-presentation-link');
+    if (metadata) {
+        const meta = document.createElement('span');
+        meta.className = 'item-metadata';
+        meta.textContent = metadata;
+        info.appendChild(meta);
     }
+
+    const cta = document.createElement('span');
+    cta.className = 'card-cta';
+    cta.innerHTML = `${ctaText} <span class="arrow">→</span>`;
+    info.appendChild(cta);
+
+    container.appendChild(info);
 }
 
 // Open Project View (Sub-Gallery)
@@ -991,6 +1000,7 @@ function openGallery(category, projectName) {
         }
     }, 10);
     document.body.style.overflow = 'hidden';
+    if (typeof lenis !== 'undefined') lenis.stop();
 }
 
 function closeProjectView() {
@@ -1009,6 +1019,7 @@ function closeProjectView() {
     setTimeout(() => {
         projectView.style.display = 'none';
         document.body.style.overflow = 'auto'; // Re-enable scroll
+        if (typeof lenis !== 'undefined') lenis.start();
         // Restore scroll position
         window.scrollTo(0, savedScrollPosition);
     }, 300);
@@ -1127,7 +1138,11 @@ function openLightbox(index) {
     lightbox.style.display = 'block';
     setTimeout(() => lightbox.classList.add('active'), 10);
 
-    // Note: Body overflow is ALREADY hidden by project view.
+    if (typeof projectLenis !== 'undefined' && projectLenis) {
+        projectLenis.stop();
+    } else if (typeof lenis !== 'undefined' && lenis) {
+        lenis.stop();
+    }
 }
 
 function updateLightboxContent() {
@@ -1189,10 +1204,14 @@ function closeLightbox() {
 
     setTimeout(() => {
         lightbox.style.display = 'none';
-        // DO NOT reset body overflow here, because we return to Project View!
-        // document.body.style.overflow = 'auto'; 
         container.innerHTML = '';
     }, 300);
+
+    if (typeof projectLenis !== 'undefined' && projectLenis) {
+        projectLenis.start();
+    } else if (typeof lenis !== 'undefined' && lenis) {
+        lenis.start();
+    }
 }
 
 // Note: encodePath() and isVideo() are defined at the top of this file (lines 82-90)
@@ -1340,67 +1359,8 @@ function loadMoreItems() {
 function reassignLayoutPattern() {
     const visibleItems = Array.from(document.querySelectorAll('.gallery-item')).filter(item => item.style.display !== 'none');
 
-    visibleItems.forEach((item, index) => {
-        // Remove old span classes BUT keep the logic if we want to respect original "random" assignment
-        // Actually, the original assignment was seeded by index. 
-        // If we filter, index changes.
-        // We really want to RESPECT the original assignment if possible, OR re-randomize nicely.
-        // The previous code claimed to random size.
-        // Let's try to stick to the original plan: 
-        // "Update to read data-project-name so that manual size overrides are respected"
-
-        item.classList.remove('span-3-2', 'span-2-2', 'span-2-1', 'span-1-2');
-
-        // Check item type based on data attributes
-        const isFeatured = item.getAttribute('data-featured') === 'true';
-        const isProject = item.getAttribute('data-project') === 'true';
-        const projectName = item.getAttribute('data-project-name');
-
-        // Featured projects: always 3x2 (full width x 2 rows)
-        if (isFeatured) {
-            item.classList.add('span-3-2');
-        }
-        // Non-featured project folders: respect original random sizing or override
-        else if (isProject) {
-            // We use the current visual index for the seed to ensure packing is tight?
-            // No, if we use visual index, the shape changes when you filter.
-            // If we use projectName, the shape adheres to the project.
-            // BUT, if we use projectName, we might get a sequence of incompatible shapes (e.g. 5 'span-2-2' in a row) creating gaps.
-            // The safest packing strategy for Masonry without JS library is to use dense, 
-            // OR simply re-calculate based on current index (dense packing).
-            // Let's use the current index (visual packing) BUT check for overrides (Banyan).
-
-            // Check override first (using name)
-            if (projectName && projectSizeOverrides[projectName]) {
-                item.classList.add(projectSizeOverrides[projectName]);
-            } else {
-                // Default random sizing based on visual index to keep grid tight
-                const spanClass = getRandomProjectSpan(index);
-                if (spanClass) item.classList.add(spanClass);
-            }
-        }
-        else if (item.getAttribute('data-standalone') === 'true') {
-            // Check featured status first
-            if (isFeatured) {
-                item.classList.add('span-3-2');
-            } else {
-                // Check for manual override using filename
-                const filename = item.getAttribute('data-filename');
-                if (filename && standaloneSizeOverrides[filename]) {
-                    item.classList.add(standaloneSizeOverrides[filename]);
-                } else {
-                    // Re-randomize based on index to fill gaps
-                    const rand = seededRandom(index * 773 + 42);
-                    if (rand < 0.20) item.classList.add('span-1-2');
-                    else if (rand < 0.40) item.classList.add('span-2-1');
-                    // else 1x1 (no class)
-                }
-            }
-        }
-        // Videos are always 2x2
-        else if (item.getAttribute('data-type') === 'video') {
-            item.classList.add('span-2-2');
-        }
+    visibleItems.forEach((item) => {
+        item.classList.remove('span-3-2', 'span-2-2', 'span-2-1', 'span-1-2', 'span-2-2-right');
     });
 }
 
@@ -1420,24 +1380,37 @@ document.addEventListener('DOMContentLoaded', function () {
         const phone = `${p1} ${p2} ${p3}`;
         const phoneLink = `${p1}${p2}${p3}`;
 
+        contactContainer.innerHTML = '';
+
         // Create Email Link
-        const emailP = document.createElement('p');
-        emailP.className = 'contact-link';
         const emailA = document.createElement('a');
         emailA.href = `mailto:${email}`;
-        emailA.textContent = email;
-        emailP.appendChild(emailA);
+        emailA.className = 'contact-link';
+        emailA.innerHTML = `
+            <span class="contact-icon-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M22 6l-10 7L2 6" />
+                </svg>
+            </span>
+            ${email}
+        `;
 
         // Create Phone Link
-        const phoneP = document.createElement('p');
-        phoneP.className = 'contact-link';
         const phoneA = document.createElement('a');
         phoneA.href = `tel:${phoneLink}`;
-        phoneA.textContent = phone;
-        phoneP.appendChild(phoneA);
+        phoneA.className = 'contact-link';
+        phoneA.innerHTML = `
+            <span class="contact-icon-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+            </span>
+            ${phone}
+        `;
 
         // Append to container
-        contactContainer.appendChild(emailP);
-        contactContainer.appendChild(phoneP);
+        contactContainer.appendChild(emailA);
+        contactContainer.appendChild(phoneA);
     }
 });
