@@ -9,12 +9,12 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - `index.html` contains the page structure, preloader screen, scroll sections, fixed video, and left progress rail.
 - `styles.css` owns the visual system, full-screen layout, scrollbar styling, sleek preloader overlay styling, responsive behavior, and minimal navigation UI.
 - `script.js` owns scroll-to-video synchronization, inertial smoothing, preloader progress handling, section marker state, and media-control suppression.
-- `Video/Sequence 01_scrub.mp4` is the active scroll-scrubbed video asset.
-- `Video/Sequence 01_mobile_scrub.mp4` is the active mobile/touch scrubbed video asset. It is intentionally lower resolution and lower frame rate for smoother phone seeking.
+- `Video/Sequence 01_scrub_v2.mp4` is the active native 24 fps desktop scroll-scrubbed video asset.
+- `Video/Sequence 01_mobile_scrub_v2.mp4` is the active mobile/touch scrubbed video asset. It is intentionally lower resolution and lower frame rate for smoother phone seeking.
 - `Video/Sequence 01.mp4` is the original 60 fps source video for re-encoding.
 - `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are project-local portable FFmpeg tools. Keep them in the project when transferring to another PC.
 - `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into desktop and mobile scroll-scrub-friendly MP4s.
-- When `-OnlyMobile` is used and `Video/Sequence 01_scrub.mp4` exists, the script should use that desktop scrub as the input source for the mobile version.
+- When `-OnlyMobile` is used and `Video/Sequence 01_scrub_v2.mp4` exists, the script should use that desktop scrub as the input source for the mobile version.
 
 ## Configurability & White-Label Reworking
 
@@ -64,7 +64,7 @@ To reuse this presentation framework for another brand or project, modify the fo
 - Preserve mobile readability by reserving space for the left rail and avoiding text overlap with the video.
 - For scroll-scrubbed MP4s, avoid files with only one keyframe. Re-encode with frequent keyframes before tuning JavaScript smoothing.
 - Preferred scrub encoding uses H.264, `yuv420p`, no audio, `-g 6`, `-keyint_min 6`, `-sc_threshold 0`, and `-movflags +faststart`.
-- When asked specifically to create a mobile version of the video, generate only `Video/Sequence 01_mobile_scrub.mp4` from `Video/Sequence 01_scrub.mp4` with the mobile workflow. Do not replace the desktop scrub unless the user asks for a full re-encode.
+- When asked specifically to create a mobile version of the video, generate only `Video/Sequence 01_mobile_scrub_v2.mp4` from `Video/Sequence 01_scrub_v2.mp4` with the mobile workflow. Do not replace the desktop scrub unless the user asks for a full re-encode.
 - Mobile scrub encoding should prioritize phone performance and portrait sharpness: center-cropped 9:16 from the desktop scrub, capped around 1080px high, 30 fps, H.264, `yuv420p`, no audio, frequent keyframes, `-tune fastdecode`, no B-frames, and `+faststart`.
 
 ## Design Guidelines
@@ -75,6 +75,14 @@ To reuse this presentation framework for another brand or project, modify the fo
 - Keep every text block, image, control, and decorative element inside its section bounds with responsive max-widths, safe padding, and overflow-aware positioning.
 - Check desktop and mobile widths for clipping, overlap, and elements escaping outside the visible viewport or their intended panel.
 - Avoid heavy boxes, thick outlines, or crowded layouts; margins and borders should support a calm luxury presentation.
+
+## Cache Busting
+
+- After every runtime change to `index.html`, `styles.css`, `script.js`, files in `Video/`, or files in `Assets/`, run `node build.js` from the repository root before finishing or committing.
+- The build must generate a fresh timestamp and update the `?v=<timestamp>` suffixes for this presentation's CSS, JavaScript, and MP4 references in `index.html`. Never reuse or manually copy an older timestamp.
+- After the build, inspect `git diff -- presentation/cinematic_web_presentation/index.html` and confirm every edited production asset is referenced with the newly generated version.
+- Test the cache-busted URL through `serve-local.bat`; verify the browser requests the new versioned asset paths rather than previously cached URLs.
+- Do not run the build for instruction-only changes limited to `AGENTS.md` or `SKILL.md`, because those changes must not alter runtime portfolio files.
 
 ## Verification
 
@@ -105,16 +113,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\reencode-scroll-vi
 To verify keyframe spacing, run:
 
 ```powershell
-.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub.mp4"
+.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub_v2.mp4"
 ```
 
 For the mobile scrub, verify:
 
 ```powershell
-.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_mobile_scrub.mp4"
+.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_mobile_scrub_v2.mp4"
 ```
 
 When visual behavior changes, open `index.html` in a browser and check:
+
+```powershell
+.\serve-local.bat
+```
+
+Use this range-enabled local server for video scrub testing. Python's basic `http.server` does not provide the byte-range behavior this presentation needs and can print connection-reset tracebacks when the browser cancels an MP4 request.
 
 - the video starts on the first frame without controls;
 - the video moves forward and backward with scroll;

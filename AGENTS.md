@@ -17,9 +17,14 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
 - Before finishing, verify source and minified versions are consistent for the edited behavior so production does not serve stale styling or logic.
 
 ## Cache Busting
-- When replacing public-facing content while preserving an existing URL, update any relevant cache-busting version query strings or no-cache metadata so returning visitors see the latest content.
-- For portfolio gallery links that reuse an existing presentation path, bump the gallery data href version and any related script/data references that control that link.
-- After cache-busting changes, verify the rendered link points to the new versioned URL and the reused public path loads the updated content.
+- The repository includes a build script (`node build.js`, which also runs automatically as part of `deploy.bat`) to automate cache-busting and asset minification.
+- When making any changes to stylesheets (`styles.css`), scripts (`script.js`), gallery data (`gallery-data.js`), or assets inside `presentation/`, you **MUST** run `node build.js` before committing.
+- `build.js` automatically:
+  - Updates the version suffix (`?v=timestamp`) on references inside `index.html` (CSS, JS, and gallery-data.js).
+  - Updates version suffixes for `interactive_presentation_demo` and `cinematic_web_presentation` links inside `gallery-data.js` and `script.js`.
+  - Updates version suffixes inside `presentation/cinematic_web_presentation/index.html` (for `styles.css`, `script.js`, and `.mp4` video files).
+  - Minifies `script.js` -> `script.min.js` and `styles.css` -> `styles.min.css`.
+- After making cache-busting changes, always run `git diff` to verify the modified files reflect the new versioned URLs, and test the production paths locally to ensure the updated files load correctly.
 
 ## Validation
 For instruction-file-only changes, run at least:

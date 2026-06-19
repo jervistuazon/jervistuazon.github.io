@@ -160,7 +160,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1779869293341';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781859159928';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {

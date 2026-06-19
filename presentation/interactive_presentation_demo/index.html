@@ -1284,8 +1284,8 @@ function updateTransform() {
                  const xs = (mouseX - targetX) / targetScale; 
                  const ys = (mouseY - targetY) / targetScale; 
                  
-                 const delta = -e.deltaY; 
-                 const zoomFactor = (delta > 0) ? 1.25 : 0.8;
+                 const zoomSensitivity = 0.0015;
+                 const zoomFactor = Math.exp(-e.deltaY * zoomSensitivity);
                  
                  targetScale *= zoomFactor; 
                  const minScale = getLockedMinScale();

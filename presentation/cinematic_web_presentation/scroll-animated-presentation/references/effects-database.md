@@ -20,10 +20,11 @@ Map page scroll progress directly to the video timeline so scrolling down advanc
 **Current implementation**
 
 - HTML video: `index.html` `#scrollVideo`
-- Mobile video source: `index.html` `Video/Sequence 01_mobile_scrub.mp4`
+- Mobile video source: `index.html` `Video/Sequence 01_mobile_scrub_v2.mp4`
 - Stage and sections: `index.html` `.scroll-stage`, `.panel`
 - Progress source: `script.js` `getScrollableDistance()`, `getScrollProgress()`
 - Video time mapping: `script.js` `setVideoTime()`, `flushVideoSeek()`
+- Source preparation: `script.js` `prepareVideoSource()` uses normal range requests when supported and a local Blob fallback otherwise.
 - Initialization: `script.js` `initializeVideoScrub()`
 
 **Template**
@@ -40,8 +41,8 @@ Map page scroll progress directly to the video timeline so scrolling down advanc
     disablepictureinpicture
     disableremoteplayback
   >
-    <source src="Video/example_mobile_scrub.mp4" type="video/mp4" media="(max-width: 760px), (pointer: coarse)">
-    <source src="Video/example_scrub.mp4" type="video/mp4">
+    <source data-src="Video/example_mobile_scrub.mp4" type="video/mp4" media="(max-width: 760px), (pointer: coarse)">
+    <source data-src="Video/example_scrub.mp4" type="video/mp4">
   </video>
   <section class="panel"></section>
   <section class="panel"></section>
@@ -85,6 +86,7 @@ window.addEventListener("scroll", updateVideoFromScroll, { passive: true });
 - Do not use video playback as the timeline source.
 - Do not map progress per section unless building a deliberately chaptered timeline.
 - Sparse video keyframes can look frozen or jumpy even when JavaScript is correct.
+- Servers without `Accept-Ranges: bytes` require the Blob fallback to finish loading before random-access scrubbing can begin.
 
 **Verification**
 
@@ -93,87 +95,48 @@ window.addEventListener("scroll", updateVideoFromScroll, { passive: true });
 - Upward scroll rewinds video.
 - All panels contribute to the same continuous timeline.
 
-## EFX-002: Spring-Smoothed Video Seeking
+## EFX-002: Direct Scroll-Locked Video Seeking
 
 **Purpose**
 
-Keep direct scroll as the truth while smoothing the visible video seek position to reduce harsh frame jumps.
+Keep the displayed video frame locked to the current page scroll position without a trailing spring or overshoot.
 
 **Current implementation**
 
-- Tuning object: `script.js` `motion`
 - Target progress: `script.js` `targetProgress`
 - Rendered progress: `script.js` `renderedProgress`
 - Animation loop: `script.js` `drawFrame()`, `requestDraw()`
-- Seek throttling: `script.js` `flushVideoSeek()`
-- Mobile seek profile: `script.js` `isMobileScrub`, `motion.mobileFollow`
+- Seek throttling: `script.js` `scrubFrameRate`, `flushVideoSeek()`
 
 **Template**
 
 ```js
 let targetProgress = 0;
 let renderedProgress = 0;
-let progressVelocity = 0;
-let lastFrameTime = 0;
-
-const motion = {
-  spring: 260,
-  damping: 27,
-  maxDeltaSeconds: 0.04,
-  settleDistance: 0.00004,
-  settleVelocity: 0.0004,
-};
 
 function drawFrame(timestamp) {
-  if (!lastFrameTime) lastFrameTime = timestamp;
-  const deltaSeconds = Math.min((timestamp - lastFrameTime) / 1000, motion.maxDeltaSeconds);
-  lastFrameTime = timestamp;
-
-  const progressDelta = targetProgress - renderedProgress;
-  const acceleration = progressDelta * motion.spring;
-  const drag = Math.exp(-motion.damping * deltaSeconds);
-
-  progressVelocity = (progressVelocity + acceleration * deltaSeconds) * drag;
-  renderedProgress = clamp(renderedProgress + progressVelocity * deltaSeconds, 0, 1);
-
-  if (
-    Math.abs(targetProgress - renderedProgress) < motion.settleDistance &&
-    Math.abs(progressVelocity) < motion.settleVelocity
-  ) {
-    renderedProgress = targetProgress;
-    progressVelocity = 0;
-  }
-
-  setVideoTime(renderedProgress, timestamp, progressVelocity === 0);
+  renderedProgress = targetProgress;
+  setVideoTime(renderedProgress, timestamp, true);
   updateSceneProgress();
-
-  if (renderedProgress !== targetProgress || progressVelocity !== 0) {
-    requestAnimationFrame(drawFrame);
-  } else {
-    lastFrameTime = 0;
-  }
+  rafId = null;
 }
 ```
 
 **Tuning knobs**
 
-- `spring`: higher catches up faster (desktop: 260, mobile: 340).
-- `damping`: higher reduces overshoot (desktop: 27, mobile: 34).
-- `seekInterval`: lower seeks more often but may increase CPU cost. On mobile, we use `1000 / 24` (41.6ms) to align perfectly with the mobile video's native 24 FPS framerate, matching desktop performance while maximizing smooth frame updates.
-- `seekPrecision`: lower allows finer, more continuous time updates. On mobile, we use `1 / 24` (41.6ms) to match the native 24 FPS framerate. This prevents high CPU overhead from redundant seeks to identical frames that lie on sub-frame time steps, while still maintaining full frame-by-frame scrubbing resolution.
+- `seekInterval`: lower seeks more often but may increase CPU cost. Desktop and mobile use `1000 / 24` to match their native 24 fps streams.
+- `seekPrecision`: match this to the selected asset's frame duration (`1 / 24`) so the browser does not issue redundant sub-frame seeks.
 - Mobile/touch devices should use the lower-resolution mobile file with exact `currentTime` seeks; avoid `fastSeek()` when slow swipes need frame-to-frame continuity.
 
 **Watch outs**
 
-- Over-smoothing makes video feel detached from scroll.
-- Mobile spring smoothing can look like rubber-banding after native swipe momentum; use no-overshoot follow smoothing for touch devices.
+- Do not add progress interpolation between `targetProgress` and `renderedProgress`; it makes the video trail the scroll position.
 - Seeking every tiny delta can overload the decoder.
 - Always clamp progress to `0..1`.
 
 **Verification**
 
-- Quick scrolls settle smoothly to the correct frame.
-- Slow scrolls still feel responsive.
+- The video time immediately matches the current page progress during quick and slow scrolling.
 - On mobile, slow swipe-down scrolling advances the video without visible keyframe stepping.
 - CPU does not spike noticeably while scrolling.
 
@@ -231,16 +194,16 @@ video.addEventListener("contextmenu", (event) => event.preventDefault());
 
 - No play, download, picture-in-picture, remote playback, or fullscreen control appears.
 
-## EFX-004: Custom Inertial Wheel And Keyboard Scroll
+## EFX-004: Native Wheel And Smooth Programmatic Scroll
 
 **Purpose**
 
-Give scroll navigation a controlled motion feel without changing the scroll-to-video source of truth.
+Use native wheel and trackpad scrolling for one-to-one input response while retaining smooth keyboard, rail, and section navigation.
 
 **Current implementation**
 
 - Tuning object: `script.js` `scrollMotion`
-- Wheel smoothing: `script.js` `handleWheel()`, `runSmoothScroll()`
+- Native wheel handoff: `script.js` `handleWheel()`
 - Keyboard smoothing: `script.js` `handleKeydown()`
 - Programmatic scroll tracking: `script.js` `setProgrammaticScroll()`, `handleScroll()`
 
@@ -256,7 +219,6 @@ let lastSmoothScrollTime = 0;
 const scrollMotion = {
   spring: 110,         // Reduced from 185 for smoother, gentler acceleration onset
   damping: 18.5,       // Near critical damping for a silky, organic settle
-  wheelMultiplier: 0.72, // Reduced from 0.82 to avoid sudden wheel scroll jumps
   maxDeltaSeconds: 0.04,
 };
 
@@ -284,20 +246,19 @@ function runSmoothScroll(timestamp) {
 
 **Tuning knobs**
 
-- `wheelMultiplier`: lower means less distance per wheel event.
 - `spring`: higher means faster movement toward target.
 - `damping`: higher means less glide.
 - Keyboard deltas in `handleKeydown()`.
 
 **Watch outs**
 
-- `wheel` listener must be `{ passive: false }` when calling `preventDefault()`.
+- Keep the wheel listener passive and do not call `preventDefault()`; native scroll position is the synchronization source.
 - Do not block horizontal wheel gestures or pinch zoom.
 - Programmatic scrolls should not recursively fight native scroll state.
 
 **Verification**
 
-- Wheel, trackpad, arrow keys, Page Up/Down, Home, End, and Space feel controlled.
+- Wheel and trackpad movement stays directly coupled to page and video progress; keyboard and rail navigation remain smooth.
 - Browser does not jump unpredictably after the smooth scroll settles.
 
 ## EFX-005: Section Snap After Scroll Settles
@@ -810,11 +771,12 @@ Make the MP4 seekable enough for scroll-driven scrubbing.
 **Current implementation**
 
 - Source: `Video/Sequence 01.mp4`
-- Scrub output: `Video/Sequence 01_scrub.mp4`
-- Mobile scrub output: `Video/Sequence 01_mobile_scrub.mp4`
+- Scrub output: `Video/Sequence 01_scrub_v2.mp4` (native 24 fps desktop)
+- Mobile scrub output: `Video/Sequence 01_mobile_scrub_v2.mp4`
 - Re-encode script: `scripts/reencode-scroll-video.ps1`
+- Range-enabled local test server: `scripts/serve-local.mjs`, launched by `serve-local.bat`
 - Portable tools: `Tools/ffmpeg/bin/ffmpeg.exe`, `Tools/ffmpeg/bin/ffprobe.exe`
-- Mobile-only source: when `Video/Sequence 01_scrub.mp4` exists, `-OnlyMobile` derives from that desktop scrub.
+- Mobile-only source: when `Video/Sequence 01_scrub_v2.mp4` exists, `-OnlyMobile` derives from that desktop scrub.
 
 **Template**
 
@@ -836,9 +798,11 @@ Preferred encoding settings:
 -pix_fmt yuv420p `
 -r 24 `
 -preset slow `
+-tune fastdecode `
 -crf 18 `
 -g 6 `
 -keyint_min 6 `
+-bf 0 `
 -sc_threshold 0 `
 -movflags +faststart
 ```
@@ -864,7 +828,7 @@ Mobile portrait scrub variant:
 Verify keyframe spacing:
 
 ```powershell
-.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub.mp4"
+.\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub_v2.mp4"
 ```
 
 **Tuning knobs**
@@ -872,19 +836,20 @@ Verify keyframe spacing:
 - `-crf`: lower means higher quality and larger file.
 - `-g` and `-keyint_min`: lower means more keyframes and smoother seeking but larger file.
 - Mobile scrub uses `-g 1` and `-keyint_min 1` so every frame is an I-frame. This reduces mobile decoder backtracking during scroll seeking at the cost of a larger file.
-- `-r`: set to `24` fps for both desktop and mobile scrub versions to synchronize smooth seeking with the optimized 24 fps timeline in JavaScript.
+- `-r`: desktop and mobile stay at the native `24` fps to preserve frame quality and avoid synthetic interpolation.
 - Mobile output uses a center 9:16 portrait crop, capped at 1080px high, to avoid browser-side landscape cropping on phones while keeping random-seek decode cost lower than the full desktop stream.
-- Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video. This derives from `Video/Sequence 01_scrub.mp4` when that desktop scrub exists.
+- Use `-OnlyMobile` when the user specifically asks to create or refresh only the mobile video. This derives from `Video/Sequence 01_scrub_v2.mp4` when that desktop scrub exists.
 
 **Watch outs**
 
 - A file with only one keyframe will scrub poorly.
 - A 1080p, high-bitrate video can stutter on phones even with frequent keyframes if the framerate or bitrate is excessively high.
 - Keep audio removed for this presentation unless a separate sound design system is added.
+- Do not validate scrubbing with Python's basic `http.server`; it does not support the MP4 byte-range request pattern and reports harmless connection-reset tracebacks when the browser cancels a transfer.
 
 **Verification**
 
-- FFprobe shows frequent keyframes.
+- FFprobe shows 24 fps on desktop and mobile with frequent keyframes.
 - Browser scrubbing responds across the full video.
 
 ## EFX-015: Exported Fullscreen Startup Gate

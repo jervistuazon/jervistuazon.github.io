@@ -46,11 +46,37 @@ async function build() {
             /("href":\s*"presentation\/interactive_presentation_demo\/)(?:\?v=\d+)?(")/g,
             `$1?v=${version}$2`
         );
+        // Also update cinematic web presentation href cache buster
+        galleryData = galleryData.replace(
+            /("href":\s*"presentation\/cinematic_web_presentation\/)(?:\?v=\d+)?(")/g,
+            `$1?v=${version}$2`
+        );
         fs.writeFileSync('gallery-data.js', galleryData);
 
         console.log(`[OK] Public URLs updated with version: ${version}`);
     } catch (err) {
         console.error('[FAIL] Public URL version update failed:', err);
+    }
+
+    // 2a. Update cinematic web presentation sub-assets
+    console.log('[INFO] Updating cinematic web presentation sub-assets...');
+    try {
+        const cinematicIndexPath = path.join('presentation', 'cinematic_web_presentation', 'index.html');
+        let cinematicIndexHtml = fs.readFileSync(cinematicIndexPath, 'utf8');
+
+        // Update css references
+        cinematicIndexHtml = cinematicIndexHtml.replace(/(href="styles\.css)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        // Update js references
+        cinematicIndexHtml = cinematicIndexHtml.replace(/(src="script\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        // Update video references, including deferred data-src URLs used by the scrub loader.
+        cinematicIndexHtml = cinematicIndexHtml.replace(/((?:data-)?src="Video\/[^"]+\.mp4)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+
+        fs.writeFileSync(cinematicIndexPath, cinematicIndexHtml);
+        console.log(`[OK] cinematic_web_presentation/index.html updated with version: ${version}`);
+    } catch (err) {
+        console.error('[FAIL] Cinematic presentation asset version update failed:', err);
     }
 
     // 3. Minify JavaScript

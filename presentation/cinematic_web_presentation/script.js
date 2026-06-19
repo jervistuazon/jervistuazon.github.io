@@ -13,9 +13,9 @@
   let firstSeekCompleted = false;
   let loaderDismissed = false;
   let currentLoadingProgress = 0;
+  let videoBlobUrl = null;
 
-  // Preloader progress management (EFX-014)
-  let lastProgressTime = performance.now();
+  // Preloader progress management (EFX-017)
   function updatePreloaderAnimation(timestamp) {
     if (loaderDismissed) return;
 
@@ -100,10 +100,6 @@
   let rafId = null;
   let targetProgress = 0;
   let renderedProgress = 0;
-  let progressVelocity = 0;
-  let lastFrameTime = 0;
-  let lastScrollY = window.scrollY;
-  let scrollVelocity = 0;
   let lastSeekTime = -1;
   let lastSeekStamp = 0;
   let queuedSeekTime = null;
@@ -114,32 +110,26 @@
   let targetScrollY = window.scrollY;
   let scrollAnimationVelocity = 0;
   let lastSmoothScrollTime = 0;
-  let lastWheelTime = 0;
   let sectionSettleTimer = null;
   let programmaticScrollUntil = 0;
   let isTouching = false;
   let lastTouchY = 0;
   const mobileScrubQuery = window.matchMedia("(max-width: 760px), (pointer: coarse)");
   const isMobileScrub = mobileScrubQuery.matches;
+  const scrubFrameRate = 24;
+  const scrubFrameDuration = 1 / scrubFrameRate;
 
   const motion = {
-    spring: isMobileScrub ? 340 : 260,
-    damping: isMobileScrub ? 34 : 27,
-    mobileFollow: 42,
-    maxDeltaSeconds: 0.04,
-    settleDistance: isMobileScrub ? 0.00012 : 0.00004,
-    settleVelocity: isMobileScrub ? 0.0012 : 0.0004,
-    seekInterval: isMobileScrub ? 1000 / 24 : 1000 / 24, // Optimized from 16 to 24 FPS for smoother scrub updates matching video native framerate
-    seekPrecision: isMobileScrub ? 1 / 24 : 1 / 24, // Optimized from 96 to 24 to prevent heavy, redundant sub-frame seeking
+    seekInterval: 1000 / scrubFrameRate,
+    seekPrecision: scrubFrameDuration,
     seekWatchdogDelay: isMobileScrub ? 320 : 220,
-    endFramePadding: 1 / 48,
+    endFramePadding: scrubFrameDuration / 2,
     useFastSeek: false,
   };
 
   const scrollMotion = {
     spring: 110,         // Reduced from 185 for smoother, gentler acceleration onset
     damping: 18.5,       // Near critical damping for a silky, organic settle
-    wheelMultiplier: 0.72, // Reduced from 0.82 to avoid sudden wheel scroll jumps
     maxDeltaSeconds: 0.04,
     settleDelay: 280,
     nativeSettleDelay: 360,
@@ -331,7 +321,6 @@
       mark.classList.toggle("is-active", index === activeIndex);
     });
 
-    updateSceneProgress();
   }
 
   function updateTargetFromScroll() {
@@ -342,13 +331,9 @@
   function syncInitialScrollState() {
     targetProgress = getScrollProgress();
     renderedProgress = targetProgress;
-    progressVelocity = 0;
-    scrollVelocity = 0;
-    lastScrollY = window.scrollY;
     smoothScrollY = window.scrollY;
     targetScrollY = smoothScrollY;
     scrollAnimationVelocity = 0;
-    lastFrameTime = 0;
     lastSmoothScrollTime = 0;
     setActiveMark(targetProgress);
   }
@@ -403,65 +388,10 @@
   }
 
   function drawFrame(timestamp) {
-    if (!lastFrameTime) {
-      lastFrameTime = timestamp;
-    }
-
-    const deltaSeconds = Math.min(
-      (timestamp - lastFrameTime) / 1000,
-      motion.maxDeltaSeconds
-    );
-    lastFrameTime = timestamp;
-
-    const progressDelta = targetProgress - renderedProgress;
-
-    if (isMobileScrub) {
-      const previousProgress = renderedProgress;
-      const followAmount = 1 - Math.exp(-motion.mobileFollow * deltaSeconds);
-
-      renderedProgress = clamp(
-        renderedProgress + progressDelta * followAmount,
-        0,
-        1
-      );
-      progressVelocity = deltaSeconds > 0
-        ? (renderedProgress - previousProgress) / deltaSeconds
-        : 0;
-    } else {
-      const impulse = clamp(scrollVelocity / Math.max(cachedViewportHeight, 1), -0.04, 0.04);
-      const acceleration = progressDelta * motion.spring + impulse * 8;
-      const drag = Math.exp(-motion.damping * deltaSeconds);
-
-      progressVelocity = (progressVelocity + acceleration * deltaSeconds) * drag;
-      renderedProgress = clamp(renderedProgress + progressVelocity * deltaSeconds, 0, 1);
-    }
-
-    const remainingDistance = Math.abs(targetProgress - renderedProgress);
-    const remainingVelocity = Math.abs(progressVelocity);
-
-    if (
-      remainingDistance < motion.settleDistance &&
-      remainingVelocity < motion.settleVelocity
-    ) {
-      renderedProgress = targetProgress;
-      progressVelocity = 0;
-    }
-
-    setVideoTime(renderedProgress, timestamp, progressVelocity === 0);
+    renderedProgress = targetProgress;
+    setVideoTime(renderedProgress, timestamp, true);
     updateSceneProgress();
-
-    scrollVelocity *= 0.88;
-
-    if (
-      Math.abs(targetProgress - renderedProgress) > motion.settleDistance ||
-      Math.abs(progressVelocity) > motion.settleVelocity ||
-      Math.abs(scrollVelocity) > 0.5
-    ) {
-      rafId = requestAnimationFrame(drawFrame);
-    } else {
-      rafId = null;
-      lastFrameTime = 0;
-    }
+    rafId = null;
   }
 
   function requestDraw() {
@@ -551,54 +481,25 @@
     sectionSettleTimer = window.setTimeout(settleToNearestSection, delay);
   }
 
-  function normalizeWheelDelta(event) {
-    if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
-      return event.deltaY * 18;
-    }
-
-    if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-      return event.deltaY * cachedViewportHeight;
-    }
-
-    return event.deltaY;
-  }
-
   function handleWheel(event) {
-    if (!loaderDismissed) {
-      event.preventDefault();
+    if (!loaderDismissed || event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
       return;
     }
-
-    if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-      return;
-    }
-
-    event.preventDefault();
-
-    const deltaY = normalizeWheelDelta(event);
-    if (!deltaY) return;
 
     if (isJumpingToSection) {
       isJumpingToSection = false;
       scrollAnimationVelocity = 0;
     }
 
-    if (smoothScrollId === null) {
-      smoothScrollY = window.scrollY;
-      targetScrollY = smoothScrollY;
-      scrollAnimationVelocity = 0;
-      lastSmoothScrollTime = 0;
+    if (smoothScrollId !== null) {
+      cancelAnimationFrame(smoothScrollId);
+      smoothScrollId = null;
     }
 
-    lastWheelTime = performance.now();
-    targetScrollY = clamp(
-      targetScrollY + deltaY * scrollMotion.wheelMultiplier,
-      0,
-      getMaxScrollY()
-    );
-
-    requestSmoothScroll();
-    scheduleSectionSettle();
+    smoothScrollY = window.scrollY;
+    targetScrollY = smoothScrollY;
+    scrollAnimationVelocity = 0;
+    lastSmoothScrollTime = 0;
   }
 
   function handleKeydown(event) {
@@ -659,15 +560,12 @@
   function handleScroll() {
     if (!loaderDismissed) return;
 
-    scrollVelocity = window.scrollY - lastScrollY;
-    lastScrollY = window.scrollY;
     updateTargetFromScroll();
     requestDraw();
 
     const now = performance.now();
     const isProgrammatic = now < programmaticScrollUntil ||
-      smoothScrollId !== null ||
-      now - lastWheelTime < scrollMotion.nativeSettleDelay;
+      smoothScrollId !== null;
 
     if (!isProgrammatic && !isTouching) {
       smoothScrollY = window.scrollY;
@@ -690,6 +588,55 @@
 
   function keepVideoScrubOnly() {
     video.pause();
+  }
+
+  function getSelectedVideoSource() {
+    return Array.from(video.querySelectorAll("source")).find((source) => {
+      return !source.media || window.matchMedia(source.media).matches;
+    });
+  }
+
+  function activateVideoSource(sourceUrl) {
+    video.src = sourceUrl;
+    video.load();
+  }
+
+  async function prepareVideoSource() {
+    const source = getSelectedVideoSource();
+    const deferredSource = source?.dataset.src;
+    if (!deferredSource) {
+      console.error("No scroll video source is configured.");
+      dismissPreloader();
+      return;
+    }
+
+    const sourceUrl = new URL(deferredSource, document.baseURI).href;
+    if (window.location.protocol === "file:") {
+      activateVideoSource(sourceUrl);
+      return;
+    }
+
+    try {
+      const response = await fetch(sourceUrl, { method: "HEAD", cache: "no-store" });
+      const acceptsRanges = response.headers.get("accept-ranges")?.toLowerCase() === "bytes";
+
+      if (acceptsRanges) {
+        activateVideoSource(sourceUrl);
+        return;
+      }
+
+      const fullResponse = await fetch(sourceUrl, { cache: "no-store" });
+      if (!fullResponse.ok) {
+        throw new Error(`Video request failed with ${fullResponse.status}.`);
+      }
+
+      const videoBlob = await fullResponse.blob();
+      videoBlobUrl = URL.createObjectURL(videoBlob);
+      activateVideoSource(videoBlobUrl);
+    } catch (error) {
+      console.warn("Could not prepare the optimized scrub source; using the direct video URL.", error);
+      activateVideoSource(sourceUrl);
+    }
   }
 
   function animateScrollTo(destination) {
@@ -734,6 +681,11 @@
     }
   });
   video.addEventListener("contextmenu", (event) => event.preventDefault());
+  video.addEventListener("error", () => {
+    document.body.classList.add("has-video-error");
+    console.error("The scroll video could not be loaded.");
+    dismissPreloader();
+  });
 
   if (video.readyState >= 1) {
     initializeVideoScrub();
@@ -752,7 +704,7 @@
       handleScroll();
     }
   }, { passive: true });
-  window.addEventListener("wheel", handleWheel, { passive: false });
+  window.addEventListener("wheel", handleWheel, { passive: true });
   window.addEventListener("keydown", handleKeydown);
 
   function handleTouchStart(event) {
@@ -814,6 +766,9 @@
   window.addEventListener("touchmove", handleTouchMove, { passive: false });
   window.addEventListener("touchend", handleTouchEnd, { passive: true });
   window.addEventListener("touchcancel", handleTouchCancel, { passive: true });
+  window.addEventListener("beforeunload", () => {
+    if (videoBlobUrl) URL.revokeObjectURL(videoBlobUrl);
+  }, { once: true });
 
   rail.addEventListener("click", (event) => {
     if (event.target.classList.contains("rail-mark")) {
@@ -892,8 +847,5 @@
   }
 
   syncInitialScrollState();
-
-  if (video.readyState >= 1) {
-    initializeVideoScrub();
-  }
+  prepareVideoSource();
 })();

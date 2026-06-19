@@ -1,7 +1,7 @@
 param(
   [string]$InputPath = "Video\Sequence 01.mp4",
-  [string]$OutputPath = "Video\Sequence 01_scrub.mp4",
-  [string]$MobileOutputPath = "Video\Sequence 01_mobile_scrub.mp4",
+  [string]$OutputPath = "Video\Sequence 01_scrub_v2.mp4",
+  [string]$MobileOutputPath = "Video\Sequence 01_mobile_scrub_v2.mp4",
   [int]$FrameRate = 24,
   [int]$MobileFrameRate = 24,
   [int]$MobileWidth = 960,
@@ -45,9 +45,11 @@ if (!$OnlyMobile) {
     -pix_fmt yuv420p `
     -r $FrameRate `
     -preset slow `
+    -tune fastdecode `
     -crf $DesktopCrf `
     -g 6 `
     -keyint_min 6 `
+    -bf 0 `
     -sc_threshold 0 `
     -movflags +faststart `
     $OutputFile
