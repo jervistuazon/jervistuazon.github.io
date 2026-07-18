@@ -4,11 +4,14 @@ const { execSync } = require('child_process');
 
 // Configuration
 const ASSETS_DIR = path.join(__dirname, 'assets');
+const PRESENTATION_DIR = path.join(__dirname, 'presentation');
 const FILES_TO_UPDATE = [
     path.join(__dirname, 'gallery-data.js'),
     path.join(__dirname, 'styles.css'),
     path.join(__dirname, 'index.html'),
-    path.join(__dirname, '404.html')
+    path.join(__dirname, '404.html'),
+    path.join(__dirname, 'presentation/Interactive Web Presentation/index.html'),
+    path.join(__dirname, 'presentation/cinematic_web_presentation/index.html')
 ];
 
 const QUALITY = 80;
@@ -53,8 +56,11 @@ function getAllFiles(dirPath, arrayOfFiles) {
 }
 
 async function convertImages() {
-    console.log(`[INFO] Scanning directory: ${ASSETS_DIR}`);
-    const files = getAllFiles(ASSETS_DIR);
+    console.log(`[INFO] Scanning directories: ${ASSETS_DIR} and ${PRESENTATION_DIR}`);
+    const files = [
+        ...getAllFiles(ASSETS_DIR),
+        ...getAllFiles(PRESENTATION_DIR)
+    ];
     console.log(`[INFO] Found ${files.length} images to optimize.`);
 
     let converted = 0;

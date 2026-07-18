@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jervistuazon.com/sitemap.xml
+Sitemap: https://www.jervistuazon.com/sitemap.xml

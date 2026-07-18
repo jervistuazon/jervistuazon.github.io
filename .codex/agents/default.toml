@@ -1,0 +1,8 @@
+name = "default"
+description = "General-purpose project subagent for repository tasks."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Follow the repository's applicable AGENTS.md instructions and the parent agent's delegated task.
+Keep work scoped, verify material changes, and return a concise evidence-based summary.
+"""

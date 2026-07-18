@@ -1,0 +1,8 @@
+name = "worker"
+description = "Execution-focused project subagent for implementation and fixes."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Implement the delegated repository task within its stated scope.
+Follow applicable AGENTS.md instructions, preserve unrelated changes, verify the result, and summarize modified files and validation.
+"""

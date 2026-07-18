@@ -1314,6 +1314,36 @@ function updateTransform() {
              const getPlanMaxScale = () => getLockedMinScale() * PLAN_ZOOM_MULTIPLIER;
              const clampPlanScale = value => Math.min(Math.max(getLockedMinScale(), value), getPlanMaxScale());
 
+             let isAnimating = false;
+             const animate = () => {
+                 const factor = 0.15;
+                 
+                 const dScale = targetScale - scale;
+                 const dX = targetX - pX;
+                 const dY = targetY - pY;
+                 
+                 if (Math.abs(dScale) > 0.0001 || Math.abs(dX) > 0.1 || Math.abs(dY) > 0.1) {
+                     scale = lerp(scale, targetScale, factor);
+                     pX = lerp(pX, targetX, factor);
+                     pY = lerp(pY, targetY, factor);
+                     updateView();
+                     requestAnimationFrame(animate);
+                 } else {
+                     scale = targetScale;
+                     pX = targetX;
+                     pY = targetY;
+                     updateView();
+                     isAnimating = false;
+                 }
+             };
+             
+             const triggerAnimationLoop = () => {
+                 if (!isAnimating) {
+                     isAnimating = true;
+                     requestAnimationFrame(animate);
+                 }
+             };
+
              const refreshPlanViewport = () => {
                  if (!img.naturalWidth) return;
                  const vw = view.offsetWidth;
@@ -1332,6 +1362,7 @@ function updateTransform() {
                  pX = targetX;
                  pY = targetY;
                  updateView();
+                 triggerAnimationLoop();
              };
              window.refreshPlanViewport = refreshPlanViewport;
 
@@ -1352,6 +1383,7 @@ function updateTransform() {
                  clampToViewport();
                  
                  updateView(); 
+                 triggerAnimationLoop();
              };
              window.fitToScreen = fitToScreen;
              
@@ -1388,23 +1420,7 @@ function updateTransform() {
              // Animation Loop for Smoothing
              const lerp = (start, end, factor) => start + (end - start) * factor;
              
-             const animate = () => {
-                 // Smoothness factor (0.1 = very smooth/slow, 0.3 = snappy)
-                 const factor = 0.15;
-                 
-                 const dScale = targetScale - scale;
-                 const dX = targetX - pX;
-                 const dY = targetY - pY;
-                 
-                 if (Math.abs(dScale) > 0.0001 || Math.abs(dX) > 0.1 || Math.abs(dY) > 0.1) {
-                     scale = lerp(scale, targetScale, factor);
-                     pX = lerp(pX, targetX, factor);
-                     pY = lerp(pY, targetY, factor);
-                     updateView();
-                 }
-                 requestAnimationFrame(animate);
-             };
-             requestAnimationFrame(animate);
+             triggerAnimationLoop();
 
              // Event Listeners
              let isDown = false, startX, startY, initialTargetX, initialTargetY;
@@ -1428,6 +1444,7 @@ function updateTransform() {
                  targetX = mouseX - xs * targetScale; 
                  targetY = mouseY - ys * targetScale; 
                  clampToViewport();
+                 triggerAnimationLoop();
              }, { passive: false });
 
              const handleStart = (clientX, clientY) => { 
@@ -1446,6 +1463,7 @@ function updateTransform() {
                  targetX = initialTargetX + dx;
                  targetY = initialTargetY + dy;
                  clampToViewport();
+                 triggerAnimationLoop();
              };
              
              const handleEnd = () => { isDown = false; view.style.cursor = 'grab'; };
@@ -1534,6 +1552,7 @@ function updateTransform() {
                          targetX = mouseX - pinchStartImageX * newScale;
                          targetY = mouseY - pinchStartImageY * newScale;
                          clampToViewport();
+                         triggerAnimationLoop();
                      }
                  } else if (!isZooming && e.touches.length === 1 && isDown) { 
                      e.preventDefault(); 
@@ -1666,8 +1685,32 @@ function updateTransform() {
             return 'https://' + url;
         };
 
-        el.addEventListener('mouseenter', () => adjustPreviewPosition(el));
-        el.addEventListener('mouseleave', () => resetPreviewPosition(el));
+        const loadLazyVideo = () => {
+            const video = el.querySelector('.marker-preview video');
+            if (video && !video.src && video.dataset.src) {
+                video.src = video.dataset.src;
+                video.load();
+                video.play().catch(() => {});
+            }
+        };
+
+        const stopLazyVideo = () => {
+            const video = el.querySelector('.marker-preview video');
+            if (video && video.src) {
+                video.pause();
+            }
+        };
+
+        el.addEventListener('mouseenter', () => {
+            adjustPreviewPosition(el);
+            loadLazyVideo();
+        });
+        el.addEventListener('focus', loadLazyVideo);
+        el.addEventListener('mouseleave', () => {
+            resetPreviewPosition(el);
+            stopLazyVideo();
+        });
+        el.addEventListener('blur', stopLazyVideo);
         
         el.addEventListener('click', function(e) { 
             e.stopPropagation(); 
@@ -1769,7 +1812,7 @@ function updateTransform() {
         if(markerInteractive && m.images && m.images.length > 0 && m.showPreview !== false) { 
             const first = m.images[0];
             if (first.type === 'video') {
-                 preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video src="${first.src}" muted autoplay loop playsinline preload="metadata" onloadedmetadata="adjustPreviewPosition(this.closest('.marker-wrapper'))"></video></div>`;
+                 preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video data-src="${first.src}" muted autoplay loop playsinline preload="none" onloadedmetadata="adjustPreviewPosition(this.closest('.marker-wrapper'))"></video></div>`;
             } else {
                  const previewSource = m.useHighResPreview ? first.src : (first.thumbnail || first.src);
                  preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><img src="${previewSource}" loading="lazy" decoding="async" onload="adjustPreviewPosition(this.closest('.marker-wrapper'))"></div>`; 
@@ -1896,7 +1939,7 @@ function updateTransform() {
         const first = (l.images && l.images.length > 0) ? l.images[0] : (l.image || null);
         if(labelInteractive && first && l.showPreview !== false) { 
             if (first.type === 'video') {
-                preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video src="${first.src}" muted autoplay loop playsinline preload="metadata" onloadedmetadata="adjustPreviewPosition(this.closest('.text-label-wrapper'))"></video></div>`;
+                preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video data-src="${first.src}" muted autoplay loop playsinline preload="none" onloadedmetadata="adjustPreviewPosition(this.closest('.text-label-wrapper'))"></video></div>`;
             } else {
                 const previewSource = l.useHighResPreview ? first.src : (first.thumbnail || first.src);
                 preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><img src="${previewSource}" loading="lazy" decoding="async" onload="adjustPreviewPosition(this.closest('.text-label-wrapper'))"></div>`;
@@ -1939,7 +1982,7 @@ function updateTransform() {
             if (iconInteractive && (hasGallery || fallbackSrc) && c.showPreview !== false) { 
                 const first = hasGallery ? c.images[0] : null;
                 if (first && first.type === 'video') {
-                    preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video src="${first.src}" muted autoplay loop playsinline preload="metadata" onloadedmetadata="adjustPreviewPosition(this.closest('.custom-icon-wrapper'))"></video></div>`;
+                    preview = `<div class="marker-preview"${previewDataAttr}${previewStyleAttr}><video data-src="${first.src}" muted autoplay loop playsinline preload="none" onloadedmetadata="adjustPreviewPosition(this.closest('.custom-icon-wrapper'))"></video></div>`;
                 } else {
                     const previewSource = first ? (c.useHighResPreview ? first.src : (first.thumbnail || first.src)) : fallbackSrc;
                     if (previewSource) {

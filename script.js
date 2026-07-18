@@ -97,12 +97,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Scroll Animation for Navbar
     const navbar = document.querySelector('.navbar');
     const heroSection = document.getElementById('hero');
+    let cachedHeroHeightForNavbar = 0;
+
+    const cacheNavbarBounds = () => {
+        if (heroSection) {
+            cachedHeroHeightForNavbar = heroSection.offsetHeight || window.innerHeight;
+        }
+    };
 
     const updateNavbarVisibility = () => {
         if (!navbar || !heroSection) return;
 
         const scrollY = window.scrollY || window.pageYOffset;
-        const heroHeight = heroSection.offsetHeight || window.innerHeight;
+        const heroHeight = cachedHeroHeightForNavbar || window.innerHeight;
 
         // Navbar appears when the user scrolls past the hero section.
         // We use a small threshold (50px before the end of the hero section) to make the transition smooth.
@@ -113,8 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    window.addEventListener('resize', () => {
+        cacheNavbarBounds();
+        updateNavbarVisibility();
+    });
+    cacheNavbarBounds();
     window.addEventListener('scroll', updateNavbarVisibility, { passive: true });
-    window.addEventListener('resize', updateNavbarVisibility);
     updateNavbarVisibility();
 
     initHeroFade();
@@ -186,14 +197,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Scroll Spy for active nav link
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-links a');
+    let cachedSectionBounds = [];
+
+    const cacheSectionBounds = () => {
+        cachedSectionBounds = Array.from(sections).map(current => ({
+            element: current,
+            id: current.getAttribute('id'),
+            height: current.offsetHeight,
+            top: current.offsetTop
+        }));
+    };
 
     const scrollSpy = () => {
         const scrollY = window.scrollY || window.pageYOffset;
         
-        sections.forEach(current => {
-            const sectionHeight = current.offsetHeight;
-            const sectionTop = current.offsetTop - 150;
-            const sectionId = current.getAttribute('id');
+        cachedSectionBounds.forEach(current => {
+            const sectionHeight = current.height;
+            const sectionTop = current.top - 150;
+            const sectionId = current.id;
             
             if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
                 navLinks.forEach(link => {
@@ -205,6 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     };
+    window.addEventListener('resize', cacheSectionBounds);
+    cacheSectionBounds();
     window.addEventListener('scroll', scrollSpy, { passive: true });
     scrollSpy();
 
@@ -237,10 +260,15 @@ function initHeroFade() {
     }
 
     let isTicking = false;
+    let cachedHeroHeight = heroSection.offsetHeight || 1;
+
+    const cacheHeroHeight = () => {
+        cachedHeroHeight = heroSection.offsetHeight || 1;
+    };
 
     const updateHeroFade = () => {
         const scrollY = window.scrollY || window.pageYOffset;
-        const heroHeight = heroSection.offsetHeight || 1;
+        const heroHeight = cachedHeroHeight;
         const fadeDistance = heroHeight * 0.8;
         const progress = Math.min(scrollY / fadeDistance, 1);
         const opacity = Math.max(1 - progress, 0);
@@ -258,7 +286,10 @@ function initHeroFade() {
 
     updateHeroFade();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', () => {
+        cacheHeroHeight();
+        onScroll();
+    });
 }
 
 // Utility function to encode file paths for URLs (handle spaces and special characters)
@@ -276,7 +307,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1781878539373';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1784387063995';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -855,8 +886,10 @@ function renderMediaItem(container, category, folder, filename) {
 
     const encodedPath = encodePath(path);
 
+    const parent = container.closest('.gallery-item') || container;
+
     // Add loading state
-    container.classList.add('loading');
+    parent.classList.add('loading');
 
     if (isVideo(filename)) {
         const video = document.createElement('video');
@@ -869,11 +902,11 @@ function renderMediaItem(container, category, folder, filename) {
         video.setAttribute('data-autoplay-on-visible', 'true'); // Mark for Intersection Observer
 
         video.addEventListener('loadeddata', () => {
-            container.classList.remove('loading');
-            container.classList.add('loaded');
+            parent.classList.remove('loading');
+            parent.classList.add('loaded');
         });
         video.addEventListener('error', () => {
-            container.classList.remove('loading');
+            parent.classList.remove('loading');
         });
 
         container.appendChild(video);
@@ -892,11 +925,11 @@ function renderMediaItem(container, category, folder, filename) {
         img1.style.opacity = '1';
 
         img1.addEventListener('load', () => {
-            container.classList.remove('loading');
-            container.classList.add('loaded');
+            parent.classList.remove('loading');
+            parent.classList.add('loaded');
         });
         img1.addEventListener('error', () => {
-            container.classList.remove('loading');
+            parent.classList.remove('loading');
         });
 
         container.appendChild(img1); // Add first image on top
@@ -1026,9 +1059,13 @@ function openGallery(category, projectName) {
         const path = `${basePath}/${filename}`;
         const encodedPath = encodePath(path);
 
+        // Create card media wrapper
+        const mediaWrapper = document.createElement('div');
+        mediaWrapper.className = 'card-media-wrapper';
+        item.appendChild(mediaWrapper);
+
         // Add loading state
         item.classList.add('loading');
-
 
         if (isVideo(filename)) {
             const video = document.createElement('video');
@@ -1036,8 +1073,9 @@ function openGallery(category, projectName) {
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
-            video.autoplay = true;
+            video.preload = 'metadata';
             video.className = 'gallery-video';
+            video.setAttribute('data-autoplay-on-visible', 'true');
 
             // Handle video load
             video.addEventListener('loadeddata', () => {
@@ -1048,12 +1086,15 @@ function openGallery(category, projectName) {
                 item.classList.remove('loading');
             });
 
-            item.appendChild(video);
+            mediaWrapper.appendChild(video);
+            observeVideoForAutoplay(video);
         } else {
             const img = document.createElement('img');
             img.src = encodedPath;
             img.alt = filename;
             img.className = 'gallery-img';
+            img.loading = 'lazy';
+            img.decoding = 'async';
 
             // Handle image load
             img.addEventListener('load', () => {
@@ -1064,7 +1105,7 @@ function openGallery(category, projectName) {
                 item.classList.remove('loading');
             });
 
-            item.appendChild(img);
+            mediaWrapper.appendChild(img);
         }
 
         // No text overlay needed for individual images usually, or maybe filename?
@@ -1167,7 +1208,11 @@ function closeProjectView() {
         setPageBackgroundInert(false);
         if (typeof lenis !== 'undefined') lenis.start();
         // Restore scroll position
-        window.scrollTo(0, savedScrollPosition);
+        if (typeof lenis !== 'undefined' && lenis) {
+            lenis.scrollTo(savedScrollPosition, { immediate: true });
+        } else {
+            window.scrollTo(0, savedScrollPosition);
+        }
         restoreDialogFocus(projectReturnFocus);
         projectReturnFocus = null;
     }, 300);
@@ -1440,9 +1485,9 @@ function filterGallery(category, evt, isLoadMore = false) {
         return itemCategory === category;
     });
 
-    const shouldPrioritizeInteractive = category === 'all' || category === 'featured';
+    const shouldPrioritizeInteractive = category === 'all' || category === 'featured' || category === 'interactive-presentation';
     const pinnedPresentationPriority = [
-        'presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.png',
+        'presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.webp',
         'presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4'
     ];
 
@@ -1533,8 +1578,6 @@ function filterGallery(category, evt, isLoadMore = false) {
         grid.style.gridTemplateColumns = '';
     }
 
-    // Re-assign span classes to maintain layout rhythm for visible items
-    reassignLayoutPattern();
 }
 
 function loadMoreItems() {
@@ -1542,13 +1585,7 @@ function loadMoreItems() {
     filterGallery(currentFilter, null, true);
 }
 
-function reassignLayoutPattern() {
-    const visibleItems = Array.from(document.querySelectorAll('.gallery-item')).filter(item => item.style.display !== 'none');
-
-    visibleItems.forEach((item) => {
-        item.classList.remove('span-3-2', 'span-2-2', 'span-2-1', 'span-1-2', 'span-2-2-right');
-    });
-}
+// Redundant layout re-assignment code removed.
 
 // Obfuscated Contact Info Injection
 document.addEventListener('DOMContentLoaded', function () {

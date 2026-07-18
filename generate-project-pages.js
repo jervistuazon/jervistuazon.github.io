@@ -25,6 +25,7 @@ function generateProjectPage(category, projectName, thumbnailFile) {
     const projectSlug = slugify(projectName);
     const cleanName = projectName.replace(/ - F$| -F$/, '');
     const thumbnailPath = `../assets/${encodeURIComponent(category)}/${encodeURIComponent(projectName)}/${encodeURIComponent(thumbnailFile)}`;
+    const absoluteThumbnailUrl = `https://www.jervistuazon.com/assets/${encodeURIComponent(category)}/${encodeURIComponent(projectName)}/${encodeURIComponent(thumbnailFile)}`;
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -38,14 +39,15 @@ function generateProjectPage(category, projectName, thumbnailFile) {
     <meta property="og:type" content="website">
     <meta property="og:title" content="${cleanName} | Jervis Tuazon">
     <meta property="og:description" content="${cleanName} - ${category} visualization project">
-    <meta property="og:image" content="${thumbnailPath}">
+    <meta property="og:image" content="${absoluteThumbnailUrl}">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${cleanName} | Jervis Tuazon">
     <meta name="twitter:description" content="${cleanName} - ${category} visualization project">
+    <meta name="twitter:image" content="${absoluteThumbnailUrl}">
     
-    <link rel="canonical" href="https://jervistuazon.com/projects/${projectSlug}.html">
+    <link rel="canonical" href="https://www.jervistuazon.com/projects/${projectSlug}.html">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     
     <style>
@@ -164,13 +166,13 @@ console.log(`\nTotal pages generated: ${generated}`);
 
 // Generate sitemap
 const sitemapEntries = projectList.map(p =>
-    `  <url>\n    <loc>https://jervistuazon.com/${p.url}</loc>\n    <changefreq>monthly</changefreq>\n  </url>`
+    `  <url>\n    <loc>https://www.jervistuazon.com/${p.url}</loc>\n    <changefreq>monthly</changefreq>\n  </url>`
 ).join('\n');
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://jervistuazon.com/</loc>
+    <loc>https://www.jervistuazon.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -184,7 +186,7 @@ console.log('Generated: sitemap.xml');
 const robots = `User-agent: *
 Allow: /
 
-Sitemap: https://jervistuazon.com/sitemap.xml`;
+Sitemap: https://www.jervistuazon.com/sitemap.xml`;
 
 fs.writeFileSync(path.join(__dirname, 'robots.txt'), robots);
 console.log('Generated: robots.txt');

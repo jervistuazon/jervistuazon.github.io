@@ -72,11 +72,25 @@
 
   let cachedViewportWidth = window.innerWidth;
   let cachedViewportHeight = window.innerHeight;
+  let stageOffsetHeight = 0;
+  let stageOffsetTop = 0;
+  let sectionsOffsetTops = [];
+
+  function updateCachedBounds() {
+    if (stage) {
+      stageOffsetHeight = stage.offsetHeight;
+      stageOffsetTop = stage.offsetTop;
+    }
+    if (sections) {
+      sectionsOffsetTops = sections.map((section) => section.offsetTop);
+    }
+  }
 
   function updateViewportDimensions() {
     cachedViewportWidth = window.innerWidth;
     cachedViewportHeight = window.innerHeight;
     document.documentElement.style.setProperty("--vh", `${cachedViewportHeight * 0.01}px`);
+    updateCachedBounds();
   }
 
   updateViewportDimensions();
@@ -217,7 +231,7 @@
   }
 
   function getScrollableDistance() {
-    return Math.max(stage.offsetHeight - window.innerHeight, 1);
+    return Math.max(stageOffsetHeight - window.innerHeight, 1);
   }
 
   function getMaxScrollY() {
@@ -225,14 +239,13 @@
   }
 
   function getScrollProgress() {
-    const stageTop = stage.offsetTop;
-    const stageScroll = window.scrollY - stageTop;
+    const stageScroll = window.scrollY - stageOffsetTop;
     return clamp(stageScroll / getScrollableDistance(), 0, 1);
   }
 
   function getNavigationPoints() {
     const maxScrollY = getMaxScrollY();
-    const points = sections.map((section) => clamp(section.offsetTop, 0, maxScrollY));
+    const points = sectionsOffsetTops.map((offsetTop) => clamp(offsetTop, 0, maxScrollY));
 
     if (marks.length > points.length) {
       points.push(maxScrollY);
