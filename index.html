@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.min.css?v=1784387063995">
+    <link rel="stylesheet" href="styles.min.css?v=1784387645240">
     <link rel="manifest" href="site.webmanifest">
     <link rel="canonical" href="https://www.jervistuazon.com/">
 
@@ -88,10 +88,10 @@
             <div class="container">
                 <div class="work-header">
                     <div class="work-title-group">
-                        <h2 class="section-title fade-in-scroll">Selected Work</h2>
+                        <h2 class="section-title reveal-clip">Selected Work</h2>
                     </div>
                     <!-- Desktop filter buttons -->
-                    <div class="filter-bar fade-in-scroll delay-1">
+                    <div class="filter-bar reveal-up delay-100">
                         <button class="filter-btn active" type="button" data-filter="all">All Projects</button>
                         <button class="filter-btn" type="button" data-filter="featured">Featured</button>
                         <button class="filter-btn" type="button" data-filter="interactive-presentation">Interactive Presentation</button>
@@ -102,34 +102,34 @@
                     </div>
                     <!-- Mobile filter dropdown -->
                     <!-- Mobile filter dropdown (Custom) -->
-                    <div class="custom-dropdown fade-in-scroll delay-1">
+                    <div class="custom-dropdown reveal-up delay-100">
                         <button class="selected-option" type="button" aria-haspopup="listbox"
                             aria-controls="mobile-filter-options" aria-expanded="false">ALL PROJECTS</button>
                         <ul class="options-list" id="mobile-filter-options" role="listbox">
                             <li role="presentation"><button class="option-item" type="button" data-filter="all"
-                                    role="option">All Projects</button></li>
+                                     role="option">All Projects</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="featured"
-                                    role="option">Featured</button></li>
+                                     role="option">Featured</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="interactive-presentation"
-                                    role="option">Interactive Presentation</button></li>
+                                     role="option">Interactive Presentation</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="residential"
-                                    role="option">Residential</button></li>
+                                     role="option">Residential</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="commercial"
-                                    role="option">Commercial</button></li>
+                                     role="option">Commercial</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="hospitality"
-                                    role="option">Hospitality</button></li>
+                                     role="option">Hospitality</button></li>
                             <li role="presentation"><button class="option-item" type="button" data-filter="institutional"
-                                    role="option">Institutional</button></li>
+                                     role="option">Institutional</button></li>
                         </ul>
                     </div>
                 </div>
-
-                                <div class="gallery-grid" id="gallery-grid">
+ 
+                                 <div class="gallery-grid" id="gallery-grid">
                     <!-- Gallery items will be injected via JS -->
                 </div>
-
+ 
                 <!-- Load More Button -->
-                <div id="load-more-container" class="load-more-container fade-in-scroll">
+                <div id="load-more-container" class="load-more-container reveal-up">
                     <button id="load-more-btn" onclick="loadMoreItems()">See more</button>
                 </div>
             </div>
@@ -138,30 +138,30 @@
         <section id="about" class="about-section">
             <div class="container about-grid">
                 <!-- Portrait Column -->
-                <div class="portrait-column fade-in-scroll">
-                    <div class="portrait-wrapper">
+                <div class="portrait-column">
+                    <div class="portrait-wrapper reveal-img">
                         <img src="assets/profile.webp" alt="Jervis Tuazon - Senior Visual Artist" class="portrait-img" loading="lazy" decoding="async">
                         <div class="portrait-overlay"></div>
                     </div>
                 </div>
 
                 <!-- Content Column (Bio + Expertise) -->
-                <div class="content-column fade-in-scroll">
+                <div class="content-column">
                     <div class="bio-block">
-                        <h2 class="about-title">About</h2>
-                        <p class="bio-paragraph">My practice focuses on <span class="highlight-medium">architectural visualization</span> across high-fidelity renders, <span class="highlight-medium">cinematic animation</span>, and <span class="highlight-medium">real-time interactive presentations</span>. Recently, I've been exploring <span class="highlight-medium">AI-assisted workflows</span> and custom tools to push speed and storytelling.</p>
+                        <h2 class="about-title reveal-clip">About</h2>
+                        <p class="bio-paragraph reveal-up delay-100">My practice focuses on <span class="highlight-medium">architectural visualization</span> across high-fidelity renders, <span class="highlight-medium">cinematic animation</span>, and <span class="highlight-medium">real-time interactive presentations</span>. Recently, I've been exploring <span class="highlight-medium">AI-assisted workflows</span> and custom tools to push speed and storytelling.</p>
                         
-                        <p class="bio-paragraph">I'm Jervis, a Senior Visual Artist with 12+ years of experience in the design industry. For the last 9 years at <span class="highlight-medium">Park + Associates</span>, I've worked on visualizations that help people understand projects clearly before they're built. Prior to that, I spent 5 years at <span class="highlight-medium">HBA Clark Philippines</span> as a 2D Designer, developing a strong foundation in composition and detail.</p>
+                        <p class="bio-paragraph reveal-up delay-200">I'm Jervis, a Senior Visual Artist with 12+ years of experience in the design industry. For the last 9 years at <span class="highlight-medium">Park + Associates</span>, I've worked on visualizations that help people understand projects clearly before they're built. Prior to that, I spent 5 years at <span class="highlight-medium">HBA Clark Philippines</span> as a 2D Designer, developing a strong foundation in composition and detail.</p>
                         
-                        <p class="bio-paragraph">Currently, I'm expanding the craft by integrating AI into visual workflows and exploring dynamic presentation methods — aiming to merge traditional artistry with emerging technology and create deeper, more cohesive visual narratives.</p>
+                        <p class="bio-paragraph reveal-up delay-300">Currently, I'm expanding the craft by integrating AI into visual workflows and exploring dynamic presentation methods — aiming to merge traditional artistry with emerging technology and create deeper, more cohesive visual narratives.</p>
                     </div>
 
                     <div class="expertise-block">
-                        <h3 class="expertise-title">Expertise</h3>
+                        <h3 class="expertise-title reveal-clip delay-200">Expertise</h3>
                         
                         <div class="expertise-list">
                             <!-- Expertise Item 1 -->
-                            <div class="expertise-item">
+                            <div class="expertise-item reveal-up delay-300">
                                 <div class="expertise-icon">
                                     <!-- Compass / 3D navigation coordinate -->
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -177,7 +177,7 @@
                             </div>
 
                             <!-- Expertise Item 2 -->
-                            <div class="expertise-item">
+                            <div class="expertise-item reveal-up delay-400">
                                 <div class="expertise-icon">
                                     <!-- Perspective framing box -->
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -194,7 +194,7 @@
                             </div>
 
                             <!-- Expertise Item 3 -->
-                            <div class="expertise-item">
+                            <div class="expertise-item reveal-up delay-500">
                                 <div class="expertise-icon">
                                     <!-- Film video camera -->
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -247,12 +247,12 @@
 
         <section id="contact" class="contact-section">
             <div class="contact-watermark">JT</div>
-            <div class="container fade-in-scroll">
+            <div class="container">
                 <div class="contact-grid">
                     <div class="contact-info-block">
-                        <h2 class="contact-title">Contact</h2>
+                        <h2 class="contact-title reveal-clip">Contact</h2>
                         
-                        <div class="contact-details" id="contact-container">
+                        <div class="contact-details reveal-up delay-100" id="contact-container">
                             <!-- Contact info injected via JS to prevent scraping -->
                         </div>
                     </div>
@@ -267,8 +267,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-    <script src="gallery-data.js?v=1784387063995"></script>
-    <script src="script.min.js?v=1784387063995"></script>
+    <script src="gallery-data.js?v=1784387645240"></script>
+    <script src="script.min.js?v=1784387645240"></script>
 </body>
 
 </html>

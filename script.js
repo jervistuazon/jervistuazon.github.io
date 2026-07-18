@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    const scrollElements = document.querySelectorAll('.fade-in-scroll');
+    const scrollElements = document.querySelectorAll('.fade-in-scroll, .reveal-up, .reveal-clip, .reveal-img, .reveal-scale');
     scrollElements.forEach(el => observer.observe(el));
 
     // Scroll Animation for Navbar
@@ -307,7 +307,7 @@ function isExternalMediaPath(filename) {
     return /^(?:assets|presentation|projects|s)\//.test(filename);
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1784387063995';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1784387645240';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -1141,6 +1141,7 @@ function openGallery(category, projectName) {
 
     // Show Overlay
     projectView.style.display = 'block';
+    projectView.scrollTop = 0; // Reset scroll position of DOM element
     projectView.setAttribute('aria-hidden', 'false');
     setPageBackgroundInert(true);
     setTimeout(() => {
@@ -1162,6 +1163,11 @@ function openGallery(category, projectName) {
                 touchMultiplier: 2,
                 infinite: false,
             });
+        }
+
+        // Ensure scroll position is reset to 0 in Lenis as well
+        if (projectLenis) {
+            projectLenis.scrollTo(0, { immediate: true });
         }
 
         // Set up ResizeObserver to update Lenis when project-grid changes size (e.g. as images/videos load)
@@ -1200,6 +1206,7 @@ function closeProjectView() {
 
     setTimeout(() => {
         projectView.style.display = 'none';
+        projectView.scrollTop = 0; // Reset scroll position of DOM element on close too
         if (savedBodyOverflow) {
             document.body.style.overflow = savedBodyOverflow;
         } else {
