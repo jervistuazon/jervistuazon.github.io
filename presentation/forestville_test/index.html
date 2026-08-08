@@ -747,7 +747,14 @@ html.presentation-cursor-hidden *{
 }
 .preloader-progress-track{ width: 200px; height: 1px; margin: 0 auto 16px; background: rgba(255, 255, 255, 0.12); }
 .preloader-progress-bar{ width: 0%; height: 100%; background: var(--accent); transition: width 220ms ease; }
-.preloader-status{ color: var(--muted); font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; }
+.preloader-status{
+  min-width: 4ch;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.36);
+  font: 500 0.64rem/1 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
 .preloader-status-label{ margin-top: 6px; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; }
 .preloader.splash-mode{
   background: #000000;
@@ -1187,7 +1194,7 @@ Font stylesheet for selected element font styles: local fonts
           </div>
           <p class="splash-loading-label">Loading presentation</p>
           <div class="preloader-progress-track" hidden aria-hidden="true"><div id="preloaderProgress" class="preloader-progress-bar"></div></div>
-          <div id="preloaderStatus" class="preloader-status" hidden aria-hidden="true">0%</div>
+          <div id="preloaderStatus" class="preloader-status" aria-hidden="true">0%</div>
           <div id="preloaderStatusLabel" class="preloader-status-label" hidden aria-hidden="true">Loading presentation</div>
         </div>
         <div class="preloader-splash-ui">
@@ -1199,6 +1206,7 @@ Font stylesheet for selected element font styles: local fonts
               </svg>
             </div>
             <p class="splash-loading-label">Loading presentation</p>
+            <div id="splashPreloaderStatus" class="preloader-status" aria-hidden="true">0%</div>
           </div>
           <div id="splashStartState" class="splash-start-state" aria-hidden="true">
             <button id="startPresentationButton" class="splash-start-button" type="button" disabled>Start</button>
@@ -1358,6 +1366,7 @@ and effortless poolside living.</span></div></div>
   const preloader = document.querySelector("#preloader");
   const progressBar = document.querySelector("#preloaderProgress");
   const progressText = document.querySelector("#preloaderStatus");
+  const splashProgressText = document.querySelector("#splashPreloaderStatus");
   const splashLoadingState = document.querySelector("#splashLoadingState");
   const splashStartState = document.querySelector("#splashStartState");
   const startPresentationButton = document.querySelector("#startPresentationButton");
@@ -2197,6 +2206,7 @@ and effortless poolside living.</span></div></div>
     loaderProgress = clamp(value, 0, 100);
     if (progressBar) progressBar.style.width = loaderProgress + "%";
     if (progressText) progressText.textContent = Math.floor(loaderProgress) + "%";
+    if (splashProgressText) splashProgressText.textContent = Math.floor(loaderProgress) + "%";
   }
   function markMainVideoReady() {
     mainVideoReady = true;
