@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "build:dist": "node scripts/build-dist.js",
+    "verify:dist": "node scripts/verify-dist.js",
+    "build:cloudflare": "npm run build:dist && npm run verify:dist",
+    "test:cloudflare": "node scripts/test-cloudflare.js"
+  },
   "dependencies": {
     "clean-css": "^5.3.3",
     "sharp": "^0.34.5",
