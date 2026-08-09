@@ -294,20 +294,68 @@ function initHeroFade() {
 
 // Utility function to encode file paths for URLs (handle spaces and special characters)
 function encodePath(path) {
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(path)) {
+        return path;
+    }
     return path.split('/').map(segment => encodeURIComponent(segment)).join('/');
 }
 
 // Utility function to check if a file is a video
 function isVideo(filename) {
     const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv'];
-    return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+    const cleanFilename = String(filename || '').split(/[?#]/, 1)[0].toLowerCase();
+    return videoExtensions.some(ext => cleanFilename.endsWith(ext));
+}
+
+function isAbsoluteMediaPath(filename) {
+    return /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(String(filename || ''));
 }
 
 function isExternalMediaPath(filename) {
-    return /^(?:assets|presentation|projects|s)\//.test(filename);
+    return isAbsoluteMediaPath(filename) || /^(?:assets|presentation|projects|s)\//.test(String(filename || ''));
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1784387645240';
+function getMediaPath(category, folder, filename) {
+    if (isExternalMediaPath(filename)) {
+        return filename;
+    }
+
+    if (folder === '.' || !folder) {
+        return `assets/${category}/${filename}`;
+    }
+
+    return `assets/${category}/${folder}/${filename}`;
+}
+
+function getMediaLabel(filename, fallback = '') {
+    const value = fallback || filename || '';
+    if (!isAbsoluteMediaPath(value)) {
+        return value;
+    }
+
+    try {
+        const url = new URL(value, window.location.href);
+        const pathname = decodeURIComponent(url.pathname);
+        return pathname.split('/').pop() || value;
+    } catch {
+        return value;
+    }
+}
+
+function normalizeMediaReference(filename) {
+    if (!isAbsoluteMediaPath(filename)) {
+        return filename;
+    }
+
+    try {
+        const url = new URL(filename, window.location.href);
+        return decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    } catch {
+        return filename;
+    }
+}
+
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=8479905135577';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -323,7 +371,7 @@ function getPresentationHref(itemData) {
 }
 
 function getGalleryItemLabel(filename, fallback = '') {
-    return (fallback || filename)
+    return getMediaLabel(filename, fallback)
         .replace(/\.[^/.]+$/, "")
         .replace(/^\d+\.\s*/, "")
         .replace(/\s-\s*F$/, "");
@@ -430,8 +478,12 @@ function getRandomProjectSpan(index, projectName = null) {
 // Checks for manual overrides first
 function getRandomStandaloneSpan(index, filename = null) {
     // Check for manual override first
+    const overrideKey = filename ? getMediaLabel(filename) : filename;
     if (filename && standaloneSizeOverrides[filename]) {
         return standaloneSizeOverrides[filename];
+    }
+    if (overrideKey && standaloneSizeOverrides[overrideKey]) {
+        return standaloneSizeOverrides[overrideKey];
     }
     const rand = seededRandom(index * 7919 + 123);
 
@@ -739,7 +791,10 @@ function renderGalleryItem(itemData, index) {
         item.setAttribute('aria-label', presentationHref ? `Explore interactive presentation: ${standaloneLabel}` : `Open image: ${standaloneLabel}`);
     } else if (itemData.type === 'video') {
         // Video item
-        const videoLabel = itemData.filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "").replace(/\s-\s*F$/, "");
+        const videoLabel = getMediaLabel(itemData.filename)
+            .replace(/\.[^/.]+$/, "")
+            .replace(/^\d+\.\s*/, "")
+            .replace(/\s-\s*F$/, "");
 
         // Special handling for Interactive Presentation Demo - redirect to presentation page
         if (itemData.filename.includes('Interactive Presentation Demo')) {
@@ -787,7 +842,9 @@ function setupHoverSlideshow(container, category, folder, files) {
         alternateImage.style.opacity = '0';
 
         const primaryImage = container.querySelector('.gallery-img');
-        if (primaryImage) container.insertBefore(alternateImage, primaryImage);
+        if (primaryImage && primaryImage.parentElement) {
+            primaryImage.parentElement.insertBefore(alternateImage, primaryImage);
+        }
         return alternateImage;
     };
 
@@ -807,7 +864,7 @@ function setupHoverSlideshow(container, category, folder, files) {
             // Show second image immediately
             currentSlideIndex = 1;
             const nextImage = slideshowImages[1];
-            const path = `assets/${category}/${folder}/${nextImage}`;
+            const path = getMediaPath(category, folder, nextImage);
 
             img2.src = encodePath(path);
             img2.style.opacity = '1';
@@ -826,7 +883,7 @@ function setupHoverSlideshow(container, category, folder, files) {
             const img2 = container.querySelector('.gallery-img-alt');
 
             if (img1 && img2) {
-                const path = `assets/${category}/${folder}/${nextImage}`;
+                const path = getMediaPath(category, folder, nextImage);
 
                 if (useSecondImage) {
                     // Load into img2, fade it in
@@ -857,7 +914,7 @@ function setupHoverSlideshow(container, category, folder, files) {
 
         if (img1 && img2) {
             const firstImage = slideshowImages[0];
-            const path = `assets/${category}/${folder}/${firstImage}`;
+            const path = getMediaPath(category, folder, firstImage);
             img1.src = encodePath(path);
             img1.style.opacity = '1';
             img2.style.opacity = '0';
@@ -875,14 +932,7 @@ function setupHoverSlideshow(container, category, folder, files) {
 // Supports both nested paths (assets/Category/Project/File) and flat paths (assets/Category/File)
 // If folder is '.', it treats it as a direct child of category
 function renderMediaItem(container, category, folder, filename) {
-    let path;
-    if (isExternalMediaPath(filename)) {
-        path = filename;
-    } else if (folder === '.' || !folder) {
-        path = `assets/${category}/${filename}`;
-    } else {
-        path = `assets/${category}/${folder}/${filename}`;
-    }
+    const path = getMediaPath(category, folder, filename);
 
     const encodedPath = encodePath(path);
 
@@ -984,7 +1034,6 @@ function renderInfo(container, mediaWrapper, category, title, metadata, ctaText)
 function openGallery(category, projectName) {
     let rawData;
     let displayName;
-    let basePath;
 
     // Handle category nested structure (Category/ProjectName)
     if (category && projectName) {
@@ -992,14 +1041,12 @@ function openGallery(category, projectName) {
         rawData = galleryData[category][projectName];
         // Display name: strip the " - F" suffix for display
         displayName = projectName.replace(/ - F$| -F$/, '');
-        basePath = `assets/${category}/${projectName}`;
         currentFolder = `${category}/${projectName}`;
     } else {
         // Legacy fallback for flat structure (e.g., Video)
         if (!galleryData[category]) return;
         rawData = galleryData[category];
         displayName = category;
-        basePath = `assets/${category}`;
         currentFolder = category;
     }
 
@@ -1056,7 +1103,7 @@ function openGallery(category, projectName) {
 
         index++;
 
-        const path = `${basePath}/${filename}`;
+        const path = getMediaPath(category, projectName || '.', filename);
         const encodedPath = encodePath(path);
 
         // Create card media wrapper
@@ -1118,7 +1165,9 @@ function openGallery(category, projectName) {
 
         const h4 = document.createElement('h4');
         // Strip extension AND leading numbers (e.g., "1. Name" -> "Name")
-        const lightboxLabel = filename.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+        const lightboxLabel = getMediaLabel(filename)
+            .replace(/\.[^/.]+$/, "")
+            .replace(/^\d+\.\s*/, "");
         h4.textContent = lightboxLabel;
 
         info.appendChild(h4);
@@ -1364,7 +1413,7 @@ function updateLightboxContent() {
 
     if (!imgName) return;
 
-    const path = isExternalMediaPath(imgName) ? imgName : `assets/${currentFolder}/${imgName}`;
+    const path = getMediaPath(currentFolder, '.', imgName);
     const encodedPath = encodePath(path);
 
     container.innerHTML = '';
@@ -1393,7 +1442,9 @@ function updateLightboxContent() {
 
     container.appendChild(contentElement);
     // Strip extension AND leading numbers
-    caption.textContent = imgName.replace(/\.[^/.]+$/, "").replace(/^\d+\.\s*/, "");
+    caption.textContent = getMediaLabel(imgName)
+        .replace(/\.[^/.]+$/, "")
+        .replace(/^\d+\.\s*/, "");
 }
 
 // Note: Keyboard navigation is handled by the main keydown listener in DOMContentLoaded
@@ -1500,7 +1551,9 @@ function filterGallery(category, evt, isLoadMore = false) {
 
     const getPinnedPresentationRank = (item) => {
         const key = item.filename || item.thumbSrc || '';
-        return pinnedPresentationPriority.indexOf(key);
+        const normalizedKey = normalizeMediaReference(key);
+        const rank = pinnedPresentationPriority.indexOf(key);
+        return rank !== -1 ? rank : pinnedPresentationPriority.indexOf(normalizedKey);
     };
 
     const orderedItems = shouldPrioritizeInteractive

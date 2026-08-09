@@ -29,7 +29,12 @@ const Terser = require('terser');
 const CleanCSS = require('clean-css');
 
 async function build() {
-    const version = Date.now();
+    const requestedVersion = process.env.BUILD_VERSION;
+    if (requestedVersion !== undefined && !/^\d+$/.test(requestedVersion)) {
+        throw new Error(`BUILD_VERSION must contain only digits; received: ${requestedVersion}`);
+    }
+    const version = requestedVersion || Date.now().toString();
+    let buildFailed = false;
 
     // 2. Update cache-busted public URLs before minifying
     console.log('[INFO] Updating cache-busted public URLs...');
@@ -56,6 +61,7 @@ async function build() {
         console.log(`[OK] Public URLs updated with version: ${version}`);
     } catch (err) {
         console.error('[FAIL] Public URL version update failed:', err);
+        buildFailed = true;
     }
 
     // 2a. Update cinematic web presentation sub-assets
@@ -77,6 +83,7 @@ async function build() {
         console.log(`[OK] cinematic_web_presentation/index.html updated with version: ${version}`);
     } catch (err) {
         console.error('[FAIL] Cinematic presentation asset version update failed:', err);
+        buildFailed = true;
     }
 
     // 3. Minify JavaScript
@@ -91,6 +98,7 @@ async function build() {
         console.log(`[OK] script.js -> script.min.js (${(fs.statSync('script.min.js').size / 1024).toFixed(1)} KB)`);
     } catch (err) {
         console.error('[FAIL] JS Minification failed:', err);
+        buildFailed = true;
     }
 
     // 4. Minify CSS
@@ -105,6 +113,7 @@ async function build() {
         console.log(`[OK] styles.css -> styles.min.css (${(fs.statSync('styles.min.css').size / 1024).toFixed(1)} KB)`);
     } catch (err) {
         console.error('[FAIL] CSS Minification failed:', err);
+        buildFailed = true;
     }
 
     // 5. Update index.html versioning for Cache Busting
@@ -125,6 +134,15 @@ async function build() {
         console.log(`[OK] index.html updated with version: ${version}`);
     } catch (err) {
         console.error('[FAIL] index.html version update failed:', err);
+        buildFailed = true;
+    }
+
+    if (buildFailed) {
+        console.error('==========================================');
+        console.error('       BUILD FAILED                       ');
+        console.error('==========================================');
+        process.exitCode = 1;
+        return;
     }
 
     console.log('==========================================');

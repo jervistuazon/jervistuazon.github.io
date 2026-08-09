@@ -3,6 +3,7 @@ placeholder files/
 Thumbs.db
 *.log
 node_modules/
+dist/
 
 # Local backup/export folders; keep them out of published site commits.
 assets_backup/
