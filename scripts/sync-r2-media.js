@@ -46,40 +46,47 @@ function getOversizedVideos() {
     return listOversizedVideoFiles(ROOT_DIR);
 }
 
-function runWranglerUpload({ bucket, relativePath, bytes }) {
+function runS3Upload({ accountId, bucket, relativePath, bytes }) {
     const absolutePath = path.join(ROOT_DIR, relativePath.replaceAll('/', path.sep));
     if (!fs.existsSync(absolutePath)) {
-        throw new Error(`Media file does not exist: ${relativePath}`);
+        throw new Error('Media file does not exist: ' + relativePath);
     }
 
-    const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    const objectPath = `${bucket}/${relativePath}`;
+    const awsCommand = process.platform === 'win32' ? 'aws.exe' : 'aws';
+    const endpoint = 'https://' + accountId + '.r2.cloudflarestorage.com';
     const args = [
-        '--yes',
-        'wrangler@4',
-        'r2',
-        'object',
-        'put',
-        objectPath,
-        '--file',
+        's3api',
+        'put-object',
+        '--bucket',
+        bucket,
+        '--key',
+        relativePath,
+        '--body',
         absolutePath,
-        '--remote',
+        '--endpoint-url',
+        endpoint,
+        '--region',
+        'auto',
         '--content-type',
         'video/mp4',
         '--cache-control',
-        process.env.R2_MEDIA_CACHE_CONTROL || DEFAULT_CACHE_CONTROL
+        process.env.R2_MEDIA_CACHE_CONTROL || DEFAULT_CACHE_CONTROL,
+        '--no-cli-pager'
     ];
 
-    console.log(`[R2] uploading ${relativePath} (${bytes} bytes)`);
-    const result = spawnSync(npxCommand, args, {
+    console.log('[R2] uploading ' + relativePath + ' (' + bytes + ' bytes)');
+    const result = spawnSync(awsCommand, args, {
         cwd: ROOT_DIR,
-        env: process.env,
+        env: {
+            ...process.env,
+            AWS_EC2_METADATA_DISABLED: 'true'
+        },
         stdio: 'inherit'
     });
 
     if (result.error) throw result.error;
     if (result.status !== 0) {
-        throw new Error(`Wrangler upload failed for ${relativePath} with exit code ${result.status}.`);
+        throw new Error('AWS S3 upload failed for ' + relativePath + ' with exit code ' + result.status + '.');
     }
 }
 
@@ -103,11 +110,14 @@ function main() {
     if (!process.env.CLOUDFLARE_ACCOUNT_ID) {
         throw new Error('CLOUDFLARE_ACCOUNT_ID is required for R2 media sync.');
     }
-    if (!process.env.CLOUDFLARE_API_TOKEN) {
-        throw new Error('CLOUDFLARE_API_TOKEN is required for R2 media sync.');
+    if (!process.env.AWS_ACCESS_KEY_ID) {
+        throw new Error('AWS_ACCESS_KEY_ID is required for R2 media sync.');
+    }
+    if (!process.env.AWS_SECRET_ACCESS_KEY) {
+        throw new Error('AWS_SECRET_ACCESS_KEY is required for R2 media sync.');
     }
 
-    selected.forEach(file => runWranglerUpload({ bucket, ...file }));
+    selected.forEach(file => runS3Upload({ accountId: process.env.CLOUDFLARE_ACCOUNT_ID, bucket, ...file }));
     console.log(`[R2] uploaded ${selected.length} file(s) successfully.`);
 }
 
