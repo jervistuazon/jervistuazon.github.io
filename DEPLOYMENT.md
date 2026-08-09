@@ -38,11 +38,12 @@ Do not add a `_redirects` file unless a concrete route requires one. Do not add 
 
 The six oversized source videos above the Cloudflare Pages 25 MiB asset limit are uploaded to the portfolio R2 bucket by `.github/workflows/sync-r2-media.yml`. The workflow runs on pushes to `main` that change video files and uploads only changed files from the source-media inventory. It never deletes old R2 objects.
 
-The workflow uses Wrangler with a least-privilege Cloudflare API token and the repository's `CLOUDFLARE_ACCOUNT_ID` secret. Configure these GitHub Actions secrets before the first media-bearing push:
+The workflow uses the R2 S3-compatible API with a least-privilege bucket-scoped R2 Object Read & Write credential. Configure these GitHub Actions secrets before the first media-bearing push:
 
 - `CLOUDFLARE_ACCOUNT_ID`: the portfolio Cloudflare account ID.
-- `CLOUDFLARE_API_TOKEN`: a token scoped to the portfolio R2 bucket with `Workers R2 Storage Bucket Item Write` permission.
+- `R2_ACCESS_KEY_ID`: the R2 token's S3 Access Key ID.
+- `R2_SECRET_ACCESS_KEY`: the R2 token's S3 Secret Access Key.
 
-For a local, explicit sync after configuring the same environment variables, run `npm run media:sync`. Use `npm run media:sync:dry` to preview the oversized source-media inventory without uploading. A new video should be pushed once by itself so the media workflow can publish it before a later commit adds its gallery reference.
+For a local, explicit sync after configuring the same environment variables, run `npm run media:sync`. Use `npm run media:sync:dry` to preview the oversized source-media inventory without uploading. The local sync requires the AWS CLI. A new video should be pushed once by itself so the media workflow can publish it before a later commit adds its gallery reference.
 
 Git integration settings for this staging project are: production branch `main`, automatic preview deployments enabled for non-production branches and pull requests, and no custom domain attached during staging. This phase does not merge the branch, change DNS, disable GitHub Pages, publish R2, or attach `jervistuazon.com`.
