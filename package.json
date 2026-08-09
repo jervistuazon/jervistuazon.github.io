@@ -3,7 +3,9 @@
     "build:dist": "node scripts/build-dist.js",
     "verify:dist": "node scripts/verify-dist.js",
     "build:cloudflare": "npm run build:dist && npm run verify:dist",
-    "test:cloudflare": "node scripts/test-cloudflare.js"
+    "test:cloudflare": "node scripts/test-cloudflare.js",
+    "media:sync": "node scripts/sync-r2-media.js --all",
+    "media:sync:dry": "node scripts/sync-r2-media.js --all --dry-run"
   },
   "dependencies": {
     "clean-css": "^5.3.3",

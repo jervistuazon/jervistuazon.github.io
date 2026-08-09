@@ -34,4 +34,15 @@ PORTFOLIO_MEDIA_ORIGIN=https://media.jervistuazon.com
 
 Do not add a `_redirects` file unless a concrete route requires one. Do not add aggressive cache overrides for the unhashed HTML/CSS/JS; Pages supplies its normal asset caching behavior. The committed `_headers` file contains only baseline security headers.
 
+## Automated oversized-media sync
+
+The six oversized source videos above the Cloudflare Pages 25 MiB asset limit are uploaded to the portfolio R2 bucket by `.github/workflows/sync-r2-media.yml`. The workflow runs on pushes to `main` that change video files and uploads only changed files from the source-media inventory. It never deletes old R2 objects.
+
+The workflow uses Wrangler with a least-privilege Cloudflare API token and the repository's `CLOUDFLARE_ACCOUNT_ID` secret. Configure these GitHub Actions secrets before the first media-bearing push:
+
+- `CLOUDFLARE_ACCOUNT_ID`: the portfolio Cloudflare account ID.
+- `CLOUDFLARE_API_TOKEN`: a token scoped to the portfolio R2 bucket with `Workers R2 Storage Bucket Item Write` permission.
+
+For a local, explicit sync after configuring the same environment variables, run `npm run media:sync`. Use `npm run media:sync:dry` to preview the oversized source-media inventory without uploading. A new video should be pushed once by itself so the media workflow can publish it before a later commit adds its gallery reference.
+
 Git integration settings for this staging project are: production branch `main`, automatic preview deployments enabled for non-production branches and pull requests, and no custom domain attached during staging. This phase does not merge the branch, change DNS, disable GitHub Pages, publish R2, or attach `jervistuazon.com`.
