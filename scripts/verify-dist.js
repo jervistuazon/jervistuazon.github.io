@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {
+    FORESTVILLE_PRESENTATION_DIR,
     expectedDistFiles,
     loadGalleryData,
     extractReferenceValues,
@@ -73,7 +74,7 @@ function resolveReference(sourceFile, rawReference) {
 
     const decoded = decodeReference(stripUrlSuffix(rawReference.trim())).replaceAll('\\', '/');
     if (!decoded || decoded === '.') return null;
-    if (!decoded.includes('/') && !/\.(?:html?|css|js|json|xml|txt|webmanifest|png|jpe?g|webp|gif|svg|mp4|webm|woff2?)$/i.test(decoded)) {
+    if (!decoded.includes('/') && !/\.(?:html?|css|js|json|xml|txt|webmanifest|png|jpe?g|webp|gif|svg|mp4|webm|ttf|woff2?)$/i.test(decoded)) {
         return null;
     }
 
@@ -93,8 +94,18 @@ function resolveReference(sourceFile, rawReference) {
 
 function verifyReferences() {
     const referenceFileExtensions = new Set(['.css', '.html', '.js', '.json', '.txt', '.webmanifest', '.xml']);
+    // This exported editor manifest stores candidate paths relative to the
+    // presentation root, not browser-relative URLs from its assets/ folder.
+    // The presentation index is the authoritative web runtime and is checked
+    // normally below; keep the manifest in dist without treating its metadata
+    // paths as broken URLs.
+    const metadataFiles = new Set([
+        `${FORESTVILLE_PRESENTATION_DIR}/assets/project.json`
+    ]);
     const actualFiles = listDistFiles();
-    const files = [...actualFiles].filter(relative => referenceFileExtensions.has(path.posix.extname(relative).toLowerCase()));
+    const files = [...actualFiles].filter(relative =>
+        referenceFileExtensions.has(path.posix.extname(relative).toLowerCase()) && !metadataFiles.has(relative)
+    );
 
     for (const relativeFile of files) {
         const source = fs.readFileSync(distPath(relativeFile), 'utf8');

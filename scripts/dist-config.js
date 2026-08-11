@@ -27,6 +27,7 @@ const ROOT_RUNTIME_FILES = [
 
 const INTERACTIVE_PRESENTATION_DIR = 'presentation/interactive_presentation_demo';
 const CINEMATIC_PRESENTATION_DIR = 'presentation/cinematic_web_presentation';
+const FORESTVILLE_PRESENTATION_DIR = 'presentation/forestville_test';
 
 const RUNTIME_ASSET_EXTENSIONS = new Set([
     '.avif',
@@ -37,6 +38,7 @@ const RUNTIME_ASSET_EXTENSIONS = new Set([
     '.mp4',
     '.png',
     '.svg',
+    '.ttf',
     '.webm',
     '.webp',
     '.woff',
@@ -253,11 +255,18 @@ function expectedDistFiles(rootDir, galleryData = loadGalleryData(rootDir)) {
     expected.add(`${CINEMATIC_PRESENTATION_DIR}/styles.css`);
     for (const asset of collectCinematicRuntimeAssets(rootDir)) expected.add(asset);
 
+    expected.add(`${FORESTVILLE_PRESENTATION_DIR}/index.html`);
+    const forestvilleAssetsDir = path.join(rootDir, FORESTVILLE_PRESENTATION_DIR.replaceAll('/', path.sep), 'assets');
+    for (const asset of collectRuntimeFiles(forestvilleAssetsDir)) {
+        expected.add(`${FORESTVILLE_PRESENTATION_DIR}/assets/${asset}`);
+    }
+
     return expected;
 }
 
 module.exports = {
     CINEMATIC_PRESENTATION_DIR,
+    FORESTVILLE_PRESENTATION_DIR,
     INTERACTIVE_PRESENTATION_DIR,
     PROJECT_PAGE_CATEGORIES,
     ROOT_RUNTIME_FILES,
