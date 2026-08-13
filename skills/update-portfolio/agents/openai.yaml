@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update Portfolio"
+  short_description: "Safely update and publish the portfolio"
+  default_prompt: "Use $update-portfolio to update and publish the portfolio safely."

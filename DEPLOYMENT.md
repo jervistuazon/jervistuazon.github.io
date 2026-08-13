@@ -1,49 +1,95 @@
-# Cloudflare Pages build
+# Cloudflare Pages and R2 deployment
 
-The Git-integrated Pages project uses this exact build configuration:
+GitHub is the source of truth. Cloudflare Pages builds and deploys the portfolio automatically from GitHub; R2 serves production videos that exceed the Pages asset-size limit.
+
+## Live configuration
 
 ```text
-Root directory: repository root
+Production branch: main
 Build command: npm ci && npm run build:cloudflare
 Output directory: dist
 Framework preset: none
 Node version: 22.16.0
+PORTFOLIO_MEDIA_ORIGIN: https://media.jervistuazon.com
+Canonical site: https://www.jervistuazon.com
+Apex redirect: https://jervistuazon.com -> canonical www host
+R2 media domain: https://media.jervistuazon.com
 ```
 
-The committed `.node-version` file pins Node.js `22.16.0`. If the dashboard environment requires an explicit variable, set `NODE_VERSION=22.16.0` in both Preview and Production.
+Preview deployments are enabled for non-production branches and pull requests. The committed `.node-version` pins the Cloudflare and local Node version.
 
-The build regenerates the SEO project pages and `sitemap.xml`/`robots.txt`, runs the existing cache-busting/minification build, recreates `dist/` from scratch, copies only the active runtime site and presentation files, adds the production `_headers` file, and runs the dist preflight. `npm run build:dist` and `npm run verify:dist` can be run separately when needed.
+## Build behavior
 
-The build uses a content-derived cache-busting version, so repeated clean builds produce the same `dist/` contents until a runtime input changes. Running `node build.js` directly keeps the existing timestamp-based version behavior.
+`npm run build:cloudflare` performs the full production build:
 
-## Temporary large-media handling
+1. Regenerate project landing pages, `sitemap.xml`, and `robots.txt`.
+2. Run cache busting and CSS/JavaScript minification.
+3. Recreate `dist/` from scratch.
+4. Copy only production runtime files.
+5. Rewrite active videos larger than 25 MiB to the configured R2 origin and omit them from `dist/`.
+6. Verify the finished deployment artifact.
 
-Cloudflare Pages cannot accept a single asset larger than 25 MiB. The normal/default build leaves the source media inventory intact and reports oversized active videos as warnings. For Pages Preview and Production builds, set:
+The build uses a content-derived cache version, so unchanged sources produce the same `dist/` output. Do not edit or publish `dist/` manually.
 
-```text
-PORTFOLIO_MEDIA_ORIGIN=https://www.jervistuazon.com
+## Routine portfolio update
+
+Before editing a clean `main` checkout:
+
+```powershell
+git pull --ff-only origin main
+npm.cmd ci
 ```
 
-When that variable is set, the build rewrites only the active oversized video references inside `dist/` to encoded absolute URLs on that origin and omits those oversized files from `dist/`. Checked-in source URLs are not rewritten. The small mobile scrub video remains in Pages.
+After editing, run the production-equivalent build and regression test with one command:
 
-This origin is temporary because `media.jervistuazon.com` is not yet live. Once the R2 custom domain is onboarded, change the same Preview and Production variable in one step to:
-
-```text
-PORTFOLIO_MEDIA_ORIGIN=https://media.jervistuazon.com
+```powershell
+npm.cmd run check:update
 ```
 
-Do not add a `_redirects` file unless a concrete route requires one. Do not add aggressive cache overrides for the unhashed HTML/CSS/JS; Pages supplies its normal asset caching behavior. The committed `_headers` file contains only baseline security headers.
+The helper sets `PORTFOLIO_MEDIA_ORIGIN=https://media.jervistuazon.com` only for its child build/test processes.
 
-## Automated oversized-media sync
+Review `git diff`, commit only the intended files, and push a branch for Preview/PR validation. Merging to `main` triggers the production Pages deployment automatically. Use a direct `main` push only when explicitly requested.
 
-The six oversized source videos above the Cloudflare Pages 25 MiB asset limit are uploaded to the portfolio R2 bucket by `.github/workflows/sync-r2-media.yml`. The workflow runs on pushes to `main` that change video files and uploads only changed files from the source-media inventory. It never deletes old R2 objects.
+Do not run `deploy.bat`; it is the legacy GitHub Pages publisher.
 
-The workflow uses the R2 S3-compatible API with a least-privilege bucket-scoped R2 Object Read & Write credential. Configure these GitHub Actions secrets before the first media-bearing push:
+## Oversized-video publishing
 
-- `CLOUDFLARE_ACCOUNT_ID`: the portfolio Cloudflare account ID.
-- `R2_ACCESS_KEY_ID`: the R2 token's S3 Access Key ID.
-- `R2_SECRET_ACCESS_KEY`: the R2 token's S3 Secret Access Key.
+`.github/workflows/sync-r2-media.yml` runs on pushes to `main` that change videos under `assets/` or `presentation/`. It uploads changed source videos above 25 MiB to the `portfolio-media-production` R2 bucket and never deletes old objects.
 
-For a local, explicit sync after configuring the same environment variables, run `npm run media:sync`. Use `npm run media:sync:dry` to preview the oversized source-media inventory without uploading. The local sync requires the AWS CLI. A new video should be pushed once by itself so the media workflow can publish it before a later commit adds its gallery reference.
+For a new or replacement oversized video:
 
-Git integration settings for this staging project are: production branch `main`, automatic preview deployments enabled for non-production branches and pull requests, and no custom domain attached during staging. This phase does not merge the branch, change DNS, disable GitHub Pages, publish R2, or attach `jervistuazon.com`.
+1. Give it a new filename/path; do not overwrite an immutable-cached published object in place.
+2. Push the video file by itself without adding a gallery or presentation reference.
+3. Wait for the GitHub Action named `Sync oversized portfolio media to R2` to pass.
+4. Verify the encoded `https://media.jervistuazon.com/...` URL, including a byte-range request.
+5. Add the gallery/presentation reference, run the build/tests, and publish the second change.
+
+For an explicit local sync, configure the same R2 environment variables and use `npm run media:sync`. Use `npm run media:sync:dry` to list oversized source media without uploading. Local upload requires the AWS CLI. Never expose R2 credentials in code, logs, commits, or documentation.
+
+The GitHub Actions workflow uses these repository secrets:
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+
+Routine content updates must not modify these secrets, Cloudflare DNS, Pages environment variables, or R2 CORS.
+
+## Production verification
+
+After a successful `main` deployment, verify:
+
+- The changed route on `https://www.jervistuazon.com`.
+- Desktop and mobile behavior.
+- Browser console and network errors.
+- Gallery filtering and generated project pages when applicable.
+- Presentation behavior when applicable.
+- Video playback and seeking through `https://media.jervistuazon.com` when applicable.
+- Apex redirects preserve paths and query strings.
+
+Do not assume a successful Git push means the Cloudflare build or live deployment succeeded.
+
+## Rollback
+
+Revert the offending Git commit and publish the revert through the same validation path. For a media problem, restore the previous gallery/presentation reference; old R2 objects are intentionally retained.
+
+Do not change nameservers, disable Cloudflare Pages, or delete R2 objects as a routine rollback. GitHub Pages and the original R2 bucket remain temporary migration rollback protection until the monitoring and retirement phase is complete.

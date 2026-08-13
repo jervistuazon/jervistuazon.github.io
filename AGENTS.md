@@ -3,6 +3,13 @@
 ## Scope
 This file applies to the entire repository unless a deeper `AGENTS.md` overrides it.
 
+## Mandatory Portfolio Update Workflow
+- For any task that edits, validates, publishes, or rolls back the portfolio, read `skills/update-portfolio/SKILL.md` completely before taking action.
+- Treat `skills/update-portfolio/SKILL.md` as the source of truth for Cloudflare Pages publishing, R2 video synchronization, production verification, and rollback.
+- Do not run `deploy.bat`; it is the legacy GitHub Pages publisher and is not the production Cloudflare workflow.
+- A push or merge to `main` automatically deploys the site through Cloudflare Pages. Do not upload `dist/` manually.
+- Oversized videos are synchronized to R2 by `.github/workflows/sync-r2-media.yml`. Never add a new oversized-video reference until its media-only push has completed successfully and the R2 URL has been verified.
+
 ## Safety Rule
 - Non-feature maintenance tasks that add or update only `AGENTS.md` and `SKILL.md` files must not change runtime portfolio behavior.
 - Do not modify HTML/CSS/JS/video assets for instruction-only tasks unless explicitly requested.
@@ -17,7 +24,7 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
 - Before finishing, verify source and minified versions are consistent for the edited behavior so production does not serve stale styling or logic.
 
 ## Cache Busting
-- The repository includes a build script (`node build.js`, which also runs automatically as part of `deploy.bat`) to automate cache-busting and asset minification.
+- The repository includes a build script (`node build.js`, which also runs automatically through `npm run build:cloudflare`) to automate cache-busting and asset minification.
 - When making any changes to stylesheets (`styles.css`), scripts (`script.js`), gallery data (`gallery-data.js`), or assets inside `presentation/`, you **MUST** run `node build.js` before committing.
 - `build.js` automatically:
   - Updates the version suffix (`?v=timestamp`) on references inside `index.html` (CSS, JS, and gallery-data.js).
@@ -40,7 +47,7 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
 ## Asset Optimization & Gallery Data Cautions
 - **Image Conversion (WebP)**: All new image assets must be optimized for performance. Run [optimize_images.bat](file:///d:/Github%20Repo/jervistuazon.github.io/optimize_images.bat) (which runs [convert_to_webp.js](file:///d:/Github%20Repo/jervistuazon.github.io/convert_to_webp.js) using Sharp) to automatically convert PNG/JPG/JPEG files inside `assets/` and update references in source files.
 - **Gallery Data Warning**: Avoid running the automated script [update_gallery.ps1](file:///d:/Github%20Repo/jervistuazon.github.io/update_gallery.ps1) to update [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) as it is a directory scanner that does not support complex configurations and will erase custom properties (such as custom `href`, `label`, or `featured` objects used for interactive presentations and videos). Always edit [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) manually or verify custom fields are preserved.
-- **SEO Landing Pages**: After making updates to [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) or adding new projects, run `node generate-project-pages.js` (which is automated in [deploy.bat](file:///d:/Github%20Repo/jervistuazon.github.io/deploy.bat)) to generate/update the static landing pages under `projects/`.
+- **SEO Landing Pages**: After making updates to [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) or adding new projects, run `node generate-project-pages.js` (which is also automated by `npm run build:cloudflare`) to generate/update the static landing pages under `projects/`.
 
 ## Validation
 For instruction-file-only changes, run at least:

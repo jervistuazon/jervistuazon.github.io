@@ -4,6 +4,7 @@
     "verify:dist": "node scripts/verify-dist.js",
     "build:cloudflare": "npm run build:dist && npm run verify:dist",
     "test:cloudflare": "node scripts/test-cloudflare.js",
+    "check:update": "node scripts/check-update.js",
     "media:sync": "node scripts/sync-r2-media.js --all",
     "media:sync:dry": "node scripts/sync-r2-media.js --all --dry-run"
   },
