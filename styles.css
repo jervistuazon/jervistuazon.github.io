@@ -1098,6 +1098,8 @@ body::after {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     opacity: 0;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1110,8 +1112,9 @@ body::after {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 92%;
+    width: min(92vw, 1440px);
     height: 85vh;
+    padding: 1rem 4.5rem 4rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1123,6 +1126,48 @@ body::after {
     object-fit: contain;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     display: block;
+    opacity: 0;
+    transform: scale(0.985);
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.lightbox-content.is-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.lightbox-meta {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    z-index: 3004;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    width: min(70vw, 760px);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+#caption {
+    position: static;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.lightbox-counter {
+    color: var(--accent-color);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    line-height: 1.2;
 }
 
 /* Modal Buttons */
@@ -1151,23 +1196,47 @@ body::after {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    background: rgba(9, 10, 12, 0.32);
     border: none;
+    border-radius: 50%;
     color: var(--text-secondary);
     font-size: 2.5rem;
     font-weight: 100;
     cursor: pointer;
     z-index: 3005;
-    padding: 1.5rem;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
 
-.nav-btn:hover {
+.nav-btn:hover,
+.nav-btn:focus-visible {
     color: var(--text-primary);
+    background: rgba(9, 10, 12, 0.7);
+    transform: translateY(-50%) scale(1.04);
 }
 
 .prev-btn { left: 1rem; }
 .next-btn { right: 1rem; }
+
+.nav-btn[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lightbox,
+    .lightbox-content,
+    .nav-btn,
+    .close-btn {
+        transition: none;
+    }
+}
 
 /* Sub-Gallery Overlay (#project-view) */
 .project-view {
@@ -1187,6 +1256,35 @@ body::after {
 .project-view.active {
     opacity: 1;
     transform: translateY(0);
+}
+
+.project-view-header {
+    max-width: var(--project-view-max-width);
+    margin: 0 auto;
+    padding: 6rem var(--desktop-padding) 2rem var(--desktop-padding);
+    text-align: left;
+}
+
+.project-view-header h2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.project-view-header .project-name {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 200;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.project-view-header .project-meta {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--accent-color);
+    text-transform: uppercase;
 }
 
 .close-project-btn {
@@ -1218,7 +1316,7 @@ body::after {
     max-width: var(--project-view-max-width);
     margin: 0 auto;
     gap: 4.5rem;
-    padding: 6rem var(--desktop-padding) 8rem var(--desktop-padding);
+    padding: 2rem var(--desktop-padding) 8rem var(--desktop-padding);
 }
 
 .project-view .gallery-item {
@@ -1244,7 +1342,22 @@ body::after {
     min-height: 50vh;
 }
 
-/* ========================================================================== 
+.project-view .gallery-item .item-info {
+    display: block;
+    padding-top: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    max-width: 100%;
+}
+
+.project-view .gallery-item .item-info h4 {
+    font-size: 1.05rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN (BREAKPOINTS)
    ========================================================================== */
 @media (max-width: 1024px) {
@@ -1398,6 +1511,31 @@ body::after {
         top: 1.5rem;
         right: 1.5rem;
     }
+
+    .lightbox-content-container {
+        width: 100%;
+        height: 78vh;
+        padding: 1rem 3.5rem 4.75rem;
+    }
+
+    .lightbox-meta {
+        bottom: 1.25rem;
+        width: calc(100% - 6rem);
+    }
+
+    .lightbox .close-btn {
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .nav-btn {
+        min-width: 3rem;
+        min-height: 3rem;
+        font-size: 1.9rem;
+    }
+
+    .prev-btn { left: 0.5rem; }
+    .next-btn { right: 0.5rem; }
 }
 
 @media (max-width: 480px) {

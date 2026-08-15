@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.min.css?v=2865889413591">
+    <link rel="stylesheet" href="styles.min.css?v=9520505139705">
     <link rel="manifest" href="site.webmanifest">
     <link rel="canonical" href="https://www.jervistuazon.com/">
 
@@ -215,27 +215,35 @@
         </section>
 
         <!-- Lightbox Modal -->
-        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox" aria-hidden="true"
+        <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox"
+            aria-describedby="caption lightbox-counter" aria-keyshortcuts="Escape ArrowLeft ArrowRight Home End" aria-hidden="true"
             onclick="if(event.target === this) closeLightbox()">
             <button class="close-btn" type="button" onclick="closeLightbox()"
                 aria-label="Close lightbox">&times;</button>
 
             <!-- Navigation Buttons -->
-            <button class="nav-btn prev-btn" onclick="event.stopPropagation(); changeImage(-1)"
+            <button class="nav-btn prev-btn" type="button" onclick="event.stopPropagation(); changeImage(-1)"
                 aria-label="Previous image">&#10094;</button>
-            <button class="nav-btn next-btn" onclick="event.stopPropagation(); changeImage(1)"
+            <button class="nav-btn next-btn" type="button" onclick="event.stopPropagation(); changeImage(1)"
                 aria-label="Next image">&#10095;</button>
 
             <div id="lightbox-content-container" class="lightbox-content-container">
                 <!-- Content injected via JS -->
             </div>
+            <div class="lightbox-meta" aria-live="polite">
+                <div id="lightbox-counter" class="lightbox-counter" hidden></div>
+                <div id="caption"></div>
+            </div>
         </div>
 
         <!-- Project View Overlay (Sub-gallery) -->
         <div id="project-view" class="project-view" data-lenis-prevent role="dialog" aria-modal="true"
-            aria-label="Project image gallery" aria-hidden="true" tabindex="-1">
+            aria-labelledby="project-title" aria-hidden="true" tabindex="-1">
             <button class="close-project-btn" type="button" onclick="closeProjectView()"
                 aria-label="Close project view">&times;</button>
+            <div class="project-view-header">
+                <h2 id="project-title">Project Name</h2>
+            </div>
             <div class="gallery-grid" id="project-grid">
                 <!-- Sub-gallery items injected via JS -->
             </div>
@@ -263,8 +271,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-    <script src="gallery-data.js?v=2865889413591"></script>
-    <script src="script.min.js?v=2865889413591"></script>
+    <script src="gallery-data.js?v=9520505139705"></script>
+    <script src="script.min.js?v=9520505139705"></script>
 </body>
 
 </html>
