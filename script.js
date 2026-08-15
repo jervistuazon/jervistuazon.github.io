@@ -381,7 +381,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=9520505139705';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=6459178075907';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -1055,195 +1055,35 @@ function renderInfo(container, mediaWrapper, category, title, metadata, ctaText)
     }
 }
 
-// Open Project View (Sub-Gallery)
+// Open a project's carousel lightbox.
 // For category projects: openGallery('Hospitality', 'Fiji Island Resort')
 function openGallery(category, projectName) {
     let rawData;
-    let displayName;
 
     // Handle category nested structure (Category/ProjectName)
     if (category && projectName) {
         if (!galleryData[category] || !galleryData[category][projectName]) return;
         rawData = galleryData[category][projectName];
-        // Display name: strip the " - F" suffix for display
-        displayName = projectName.replace(/ - F$| -F$/, '');
         currentFolder = `${category}/${projectName}`;
     } else {
         // Legacy fallback for flat structure (e.g., Video)
         if (!galleryData[category]) return;
         rawData = galleryData[category];
-        displayName = category;
         currentFolder = category;
     }
 
-    // Normalize for Lightbox usage (strings only)
+    // Normalize the project media for lightbox navigation.
     currentGalleryImages = rawData.map(f => typeof f === 'object' ? f.src : f);
+    if (!currentGalleryImages.length) return;
 
-    // Populate the project grid
-    const projectGrid = document.getElementById('project-grid');
-    const projectTitle = document.getElementById('project-title');
-    const projectView = document.getElementById('project-view');
-
-    // Add data-featured attribute if project is featured
-    const isFeatured = projectName && /\s-\s*F\s*$/.test(projectName);
-    if (isFeatured) {
-        projectView.setAttribute('data-featured', 'true');
-    } else {
-        projectView.removeAttribute('data-featured');
-    }
-
-    // Parse project name into parts
-    const projectParts = parseProjectName(projectName);
-
-    // Build formatted title with project name large, location/date small
-    projectTitle.innerHTML = `
-        <span class="project-name">${projectParts.name}</span>
-        ${projectParts.location || projectParts.date ?
-            `<span class="project-meta">${[projectParts.location, projectParts.date].filter(Boolean).join(' • ')}</span>` : ''}
-    `;
-    projectGrid.innerHTML = '';
-
-    let index = 0;
-
-    // Observer for project view items
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('is-visible');
-        });
-    }, { threshold: 0.1 });
-
-    rawData.forEach((itemData, i) => {
-        const isObject = typeof itemData === 'object';
-        const filename = isObject ? itemData.src : itemData;
-        const spanConfig = isObject ? itemData.span : null;
-
-        const item = document.createElement('button');
-        item.type = 'button';
-        // Use custom span if available, else fallback to pattern
-        const spanClass = spanConfig || layoutPatternMain[index % layoutPatternMain.length];
-
-        item.className = `gallery-item fade-in-scroll ${spanClass}`;
-
-        // Clicking this opens actual lightbox
-        item.onclick = () => openLightbox(i);
-
-        index++;
-
-        const path = getMediaPath(category, projectName || '.', filename);
-        const encodedPath = encodePath(path);
-
-        // Create card media wrapper
-        const mediaWrapper = document.createElement('div');
-        mediaWrapper.className = 'card-media-wrapper';
-        item.appendChild(mediaWrapper);
-
-        // Add loading state
-        item.classList.add('loading');
-
-        if (isVideo(filename)) {
-            const video = document.createElement('video');
-            video.src = encodedPath;
-            video.muted = true;
-            video.loop = true;
-            video.playsInline = true;
-            video.preload = 'metadata';
-            video.className = 'gallery-video';
-            video.setAttribute('data-autoplay-on-visible', 'true');
-
-            // Handle video load
-            video.addEventListener('loadeddata', () => {
-                item.classList.remove('loading');
-                item.classList.add('loaded');
-            });
-            video.addEventListener('error', () => {
-                item.classList.remove('loading');
-            });
-
-            mediaWrapper.appendChild(video);
-            observeVideoForAutoplay(video);
-        } else {
-            const img = document.createElement('img');
-            img.src = encodedPath;
-            img.alt = filename;
-            img.className = 'gallery-img';
-            img.loading = 'lazy';
-            img.decoding = 'async';
-
-            // Handle image load
-            img.addEventListener('load', () => {
-                item.classList.remove('loading');
-                item.classList.add('loaded');
-            });
-            img.addEventListener('error', () => {
-                item.classList.remove('loading');
-            });
-
-            mediaWrapper.appendChild(img);
-        }
-
-        // Keep the image label available to assistive technologies without rendering it below the media.
-        const lightboxLabel = getMediaLabel(filename)
-            .replace(/\.[^/.]+$/, "")
-            .replace(/^\d+\.\s*/, "");
-        item.setAttribute('aria-label', `Open image: ${lightboxLabel}`);
-
-        projectGrid.appendChild(item);
-        observer.observe(item);
-    });
-
-    // Save scroll and focus state before showing overlay
-    savedScrollPosition = window.scrollY || document.documentElement.scrollTop;
-    projectReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    savedBodyOverflow = document.body.style.overflow;
-
-    // Update URL hash for shareable links (only for project views, not legacy)
+    // Keep project links shareable while the carousel is open.
     if (category && projectName) {
         updateUrlHash(category, projectName);
     }
 
-    // Show Overlay
-    projectView.style.display = 'block';
-    projectView.scrollTop = 0; // Reset scroll position of DOM element
-    projectView.setAttribute('aria-hidden', 'false');
-    setPageBackgroundInert(true);
-    setTimeout(() => {
-        projectView.classList.add('active');
-        const closeButton = projectView.querySelector('.close-project-btn');
-        if (closeButton) closeButton.focus({ preventScroll: true });
-        // Initialize Lenis for Project View Overlay
-        if (!projectLenis) {
-            projectLenis = new Lenis({
-                wrapper: projectView,
-                content: projectView,
-                duration: 1.2,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                orientation: 'vertical',
-                gestureOrientation: 'vertical',
-                smoothWheel: true,
-                wheelMultiplier: 1,
-                smoothTouch: false,
-                touchMultiplier: 2,
-                infinite: false,
-            });
-        }
-
-        // Ensure scroll position is reset to 0 in Lenis as well
-        if (projectLenis) {
-            projectLenis.scrollTo(0, { immediate: true });
-        }
-
-        // Set up ResizeObserver to update Lenis when project-grid changes size (e.g. as images/videos load)
-        if (!projectLenisResizeObserver) {
-            projectLenisResizeObserver = new ResizeObserver(() => {
-                if (projectLenis) {
-                    projectLenis.resize();
-                }
-            });
-            projectLenisResizeObserver.observe(projectGrid);
-        }
-    }, 10);
-    document.body.style.overflow = 'hidden';
-    if (typeof lenis !== 'undefined') lenis.stop();
+    // Open the first project image immediately; the existing lightbox handles
+    // arrows, swipe gestures, keyboard navigation, and the image counter.
+    openLightbox(0);
 }
 
 function closeProjectView() {
@@ -1564,6 +1404,10 @@ function closeLightbox() {
     }
     lightbox.classList.remove('active');
     lightbox.setAttribute('aria-hidden', 'true');
+
+    if (window.location.hash.startsWith('#project/')) {
+        clearUrlHash();
+    }
 
     lightboxCloseTimer = setTimeout(() => {
         lightbox.style.display = 'none';
