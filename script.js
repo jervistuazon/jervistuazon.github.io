@@ -1055,8 +1055,8 @@ function openGallery(category, projectName) {
 
     // Populate the project grid
     const projectGrid = document.getElementById('project-grid');
-    const projectTitle = document.getElementById('project-title');
     const projectView = document.getElementById('project-view');
+    projectView.setAttribute('aria-label', `Project image gallery: ${displayName}`);
 
     // Add data-featured attribute if project is featured
     const isFeatured = projectName && /\s-\s*F\s*$/.test(projectName);
@@ -1066,15 +1066,6 @@ function openGallery(category, projectName) {
         projectView.removeAttribute('data-featured');
     }
 
-    // Parse project name into parts
-    const projectParts = parseProjectName(projectName);
-
-    // Build formatted title with project name large, location/date small
-    projectTitle.innerHTML = `
-        <span class="project-name">${projectParts.name}</span>
-        ${projectParts.location || projectParts.date ?
-            `<span class="project-meta">${[projectParts.location, projectParts.date].filter(Boolean).join(' • ')}</span>` : ''}
-    `;
     projectGrid.innerHTML = '';
 
     let index = 0;
@@ -1155,23 +1146,10 @@ function openGallery(category, projectName) {
             mediaWrapper.appendChild(img);
         }
 
-        // No text overlay needed for individual images usually, or maybe filename?
-        // User requested removing extensions, maybe clear look is better?
-        // Let's add a subtle hover effect if needed, but for now just the media.
-
-        // Add Info Overlay with Filename (User Request)
-        const info = document.createElement('div');
-        info.className = 'item-info';
-
-        const h4 = document.createElement('h4');
-        // Strip extension AND leading numbers (e.g., "1. Name" -> "Name")
+        // Keep the image name available to assistive technology without rendering a label.
         const lightboxLabel = getMediaLabel(filename)
             .replace(/\.[^/.]+$/, "")
             .replace(/^\d+\.\s*/, "");
-        h4.textContent = lightboxLabel;
-
-        info.appendChild(h4);
-        item.appendChild(info);
         item.setAttribute('aria-label', `Open image: ${lightboxLabel}`);
 
         projectGrid.appendChild(item);
@@ -1408,15 +1386,19 @@ function openLightbox(index) {
 
 function updateLightboxContent() {
     const container = document.getElementById('lightbox-content-container');
-    const caption = document.getElementById('caption');
+    const lightbox = document.getElementById('lightbox');
     const imgName = currentGalleryImages[currentImageIndex];
 
     if (!imgName) return;
 
     const path = getMediaPath(currentFolder, '.', imgName);
     const encodedPath = encodePath(path);
+    const lightboxLabel = getMediaLabel(imgName)
+        .replace(/\.[^/.]+$/, "")
+        .replace(/^\d+\.\s*/, "");
 
     container.innerHTML = '';
+    lightbox.setAttribute('aria-label', `Image lightbox: ${lightboxLabel}`);
 
     let contentElement;
 
@@ -1433,7 +1415,7 @@ function updateLightboxContent() {
     } else {
         contentElement = document.createElement('img');
         contentElement.src = encodedPath;
-        contentElement.alt = imgName;
+        contentElement.alt = lightboxLabel;
         contentElement.className = 'lightbox-content';
         contentElement.style.opacity = '1';
         contentElement.style.display = 'block';
@@ -1441,10 +1423,6 @@ function updateLightboxContent() {
     }
 
     container.appendChild(contentElement);
-    // Strip extension AND leading numbers
-    caption.textContent = getMediaLabel(imgName)
-        .replace(/\.[^/.]+$/, "")
-        .replace(/^\d+\.\s*/, "");
 }
 
 // Note: Keyboard navigation is handled by the main keydown listener in DOMContentLoaded
