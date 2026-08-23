@@ -389,7 +389,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=9910206701169';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1787519774026';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -1633,10 +1633,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         contactContainer.innerHTML = '';
 
-        // Create Email Link
+        // Create Email Link with Click-to-Copy Feedback
         const emailA = document.createElement('a');
         emailA.href = `mailto:${email}`;
         emailA.className = 'contact-link';
+        emailA.setAttribute('title', 'Click to copy email address');
         emailA.innerHTML = `
             <span class="contact-icon-circle">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -1644,8 +1645,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     <path d="M22 6l-10 7L2 6" />
                 </svg>
             </span>
-            ${email}
+            <span>${email}</span>
+            <span class="copy-tooltip" aria-live="polite">Copied to clipboard!</span>
         `;
+
+        let copyTooltipTimer = null;
+        emailA.addEventListener('click', function (e) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                e.preventDefault();
+                navigator.clipboard.writeText(email).then(() => {
+                    const tooltip = emailA.querySelector('.copy-tooltip');
+                    if (tooltip) {
+                        tooltip.classList.add('active');
+                        if (copyTooltipTimer) clearTimeout(copyTooltipTimer);
+                        copyTooltipTimer = setTimeout(() => {
+                            tooltip.classList.remove('active');
+                            copyTooltipTimer = null;
+                        }, 2000);
+                    }
+                }).catch(() => {
+                    // Fallback to default mailto if clipboard permission denied
+                    window.location.href = `mailto:${email}`;
+                });
+            }
+        });
 
         // Create Phone Link
         const phoneA = document.createElement('a');
@@ -1657,7 +1680,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
             </span>
-            ${phone}
+            <span>${phone}</span>
         `;
 
         // Append to container

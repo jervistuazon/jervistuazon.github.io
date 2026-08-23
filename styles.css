@@ -347,10 +347,21 @@ body::after {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.btn:active,
+.filter-btn:active,
+#load-more-btn:active,
+.nav-btn:active,
+.close-btn:active,
+.close-project-btn:active,
+.selected-option:active,
+.option-item:active {
+    transform: scale(0.97);
+}
+
 .btn .arrow {
     display: inline-block;
     margin-left: 0.5rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-outlined {
@@ -358,16 +369,19 @@ body::after {
     border: 1px solid var(--border-color);
     background-color: rgba(9, 10, 12, 0.4);
     color: var(--text-primary);
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-outlined:hover {
     border-color: var(--text-primary);
     background-color: var(--text-primary);
     color: var(--bg-color);
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
 }
 
 .btn-outlined:hover .arrow {
-    transform: translateX(5px);
+    transform: translateX(6px);
 }
 
 .btn-link {
@@ -376,8 +390,12 @@ body::after {
     padding: 0.5rem 0;
 }
 
+.btn-link:hover {
+    color: var(--accent-color);
+}
+
 .btn-link:hover .arrow {
-    transform: translateX(4px);
+    transform: translateX(5px);
 }
 
 /* ==========================================================================
@@ -891,6 +909,12 @@ body::after {
     padding: 2rem 0;
     border-bottom: 1px solid var(--border-color);
     align-items: flex-start;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+}
+
+.expertise-item:hover {
+    transform: translateX(6px);
+    border-bottom-color: rgba(255, 255, 255, 0.25);
 }
 
 .expertise-item:last-child {
@@ -908,11 +932,19 @@ body::after {
     align-items: center;
     justify-content: center;
     color: var(--accent-color);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
+}
+
+.expertise-item:hover .expertise-icon {
+    transform: rotate(6deg) scale(1.08);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 16px rgba(198, 161, 107, 0.25);
 }
 
 .expertise-icon svg {
     width: 20px;
     height: 20px;
+    transition: transform 0.3s ease;
 }
 
 .expertise-details {
@@ -1039,6 +1071,13 @@ body::after {
     font-size: clamp(1.2rem, 3vw, 1.6rem);
     font-weight: 300;
     color: var(--text-primary);
+    position: relative;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.contact-link:hover {
+    color: var(--accent-color);
 }
 
 .contact-icon-circle {
@@ -1051,7 +1090,7 @@ body::after {
     border-radius: 50%;
     margin-right: 1.25rem;
     color: var(--text-secondary);
-    transition: all 0.3s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
     flex-shrink: 0;
 }
 
@@ -1063,7 +1102,36 @@ body::after {
 .contact-link:hover .contact-icon-circle {
     color: var(--accent-color);
     border-color: var(--accent-color);
-    box-shadow: 0 0 15px rgba(198, 161, 107, 0.15);
+    transform: scale(1.08);
+    box-shadow: 0 0 18px rgba(198, 161, 107, 0.2);
+}
+
+/* Copy Feedback Tooltip */
+.copy-tooltip {
+    position: absolute;
+    left: 4.5rem;
+    top: -1.8rem;
+    background: var(--bg-secondary);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.copy-tooltip.active {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Footer styling */
@@ -1684,4 +1752,107 @@ body::after {
     opacity: 1;
     transform: scale(1);
 }
+
+/* ==========================================================================
+   HERO SCROLL CUE & REDUCED MOTION
+   ========================================================================== */
+
+/* Minimalist Hero Scroll Indicator */
+.hero-scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.hero-scroll-cue:hover {
+    opacity: 1;
+    transform: translateX(-50%) translateY(3px);
+}
+
+@media (max-height: 680px), (max-width: 480px) {
+    .hero-scroll-cue {
+        display: none;
+    }
+}
+
+.hero-scroll-cue .scroll-line {
+    width: 1px;
+    height: 36px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    position: relative;
+    overflow: hidden;
+    display: block;
+}
+
+.hero-scroll-cue .scroll-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: var(--accent-color);
+    animation: scrollCuePulse 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes scrollCuePulse {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(200%);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn:active,
+    .filter-btn:active,
+    #load-more-btn:active,
+    .nav-btn:active,
+    .close-btn:active,
+    .close-project-btn:active,
+    .selected-option:active,
+    .option-item:active,
+    .expertise-item:hover,
+    .expertise-item:hover .expertise-icon,
+    .contact-link:hover .contact-icon-circle,
+    .hero-scroll-cue:hover {
+        transform: none !important;
+    }
+    
+    .hero-scroll-cue .scroll-line::after {
+        animation: none !important;
+    }
+    
+    .fade-in,
+    .reveal-up,
+    .reveal-clip,
+    .reveal-img,
+    .reveal-scale {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+    }
+}
+
 
