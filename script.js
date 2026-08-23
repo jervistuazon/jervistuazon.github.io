@@ -62,6 +62,7 @@ let visibleLimit = ITEMS_PER_PAGE;
 let currentFilter = 'all';
 let allGalleryItems = [];
 let galleryRevealObserver = null;
+let refreshSectionBounds = () => {};
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Render Gallery Grid from Data
@@ -252,10 +253,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     };
-    window.addEventListener('resize', cacheSectionBounds);
-    cacheSectionBounds();
+
+    refreshSectionBounds = () => {
+        cacheSectionBounds();
+        scrollSpy();
+    };
+
+    window.addEventListener('resize', refreshSectionBounds);
+    refreshSectionBounds();
     window.addEventListener('scroll', scrollSpy, { passive: true });
-    scrollSpy();
 
     // Intercept hash link clicks for smooth scrolling via Lenis (fixes unresponsive double-clicks)
     document.addEventListener('click', (e) => {
@@ -273,8 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!el) return;
 
         e.preventDefault();
-        if (typeof lenis !== 'undefined' && lenis) {
+        if (lenis) {
             lenis.scrollTo(el);
+        } else {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
 });
@@ -381,7 +389,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=6459178075907';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=9910206701169';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -1115,9 +1123,9 @@ function closeProjectView() {
             document.body.style.removeProperty('overflow');
         }
         setPageBackgroundInert(false);
-        if (typeof lenis !== 'undefined') lenis.start();
+        if (lenis) lenis.start();
         // Restore scroll position
-        if (typeof lenis !== 'undefined' && lenis) {
+        if (lenis) {
             lenis.scrollTo(savedScrollPosition, { immediate: true });
         } else {
             window.scrollTo(0, savedScrollPosition);
@@ -1335,7 +1343,7 @@ function openLightbox(index) {
 
     if (typeof projectLenis !== 'undefined' && projectLenis) {
         projectLenis.stop();
-    } else if (typeof lenis !== 'undefined' && lenis) {
+    } else if (lenis) {
         lenis.stop();
     }
 }
@@ -1425,7 +1433,7 @@ function closeLightbox() {
 
     if (typeof projectLenis !== 'undefined' && projectLenis) {
         projectLenis.start();
-    } else if (typeof lenis !== 'undefined' && lenis) {
+    } else if (lenis) {
         lenis.start();
     }
 }
@@ -1433,7 +1441,7 @@ function closeLightbox() {
 // Note: encodePath() and isVideo() are defined at the top of this file (lines 82-90)
 
 // Lenis Smooth Scrolling
-const lenis = new Lenis({
+const lenis = typeof window.Lenis === 'function' ? new window.Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
@@ -1442,13 +1450,13 @@ const lenis = new Lenis({
     wheelMultiplier: 1,
     smoothTouch: false,
     touchMultiplier: 2,
-});
+}) : null;
 
 let projectLenis = null;
 let projectLenisResizeObserver = null;
 
 function raf(time) {
-    lenis.raf(time);
+    if (lenis) lenis.raf(time);
     if (projectLenis) projectLenis.raf(time);
     requestAnimationFrame(raf);
 }
@@ -1470,6 +1478,20 @@ function filterGallery(category, evt, isLoadMore = false) {
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-pressed', isActive.toString());
     });
+
+    const mobileOptions = document.querySelectorAll('.option-item');
+    let selectedMobileOption = null;
+    mobileOptions.forEach(option => {
+        const isSelected = option.dataset.filter === category;
+        option.classList.toggle('selected', isSelected);
+        option.setAttribute('aria-selected', isSelected.toString());
+        if (isSelected) selectedMobileOption = option;
+    });
+
+    const selectedDisplay = document.querySelector('.selected-option');
+    if (selectedDisplay && selectedMobileOption) {
+        selectedDisplay.textContent = selectedMobileOption.textContent.trim().toUpperCase();
+    }
 
     // 2. Filter data and render only the currently visible count.
     const matchingItems = allGalleryItems.filter(itemData => {
@@ -1557,7 +1579,7 @@ function filterGallery(category, evt, isLoadMore = false) {
         });
 
         // Trigger Lenis resize to adjust scroll dimensions for the newly added content
-        if (typeof lenis !== 'undefined' && lenis) {
+        if (lenis) {
             lenis.resize();
         }
     }
@@ -1581,6 +1603,8 @@ function filterGallery(category, evt, isLoadMore = false) {
     if (grid) {
         grid.style.gridTemplateColumns = '';
     }
+
+    requestAnimationFrame(refreshSectionBounds);
 
 }
 
