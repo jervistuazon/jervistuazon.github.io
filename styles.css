@@ -1198,6 +1198,8 @@ body::after {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    width: 3.5rem;
+    height: 3.5rem;
     min-width: 3.5rem;
     min-height: 3.5rem;
     background: rgba(9, 10, 12, 0.32);
@@ -1206,9 +1208,10 @@ body::after {
     color: var(--text-secondary);
     font-size: 2.5rem;
     font-weight: 100;
+    line-height: 1;
     cursor: pointer;
     z-index: 3005;
-    padding: 0.75rem;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1549,6 +1552,8 @@ body::after {
     }
 
     .nav-btn {
+        width: 3rem;
+        height: 3rem;
         min-width: 3rem;
         min-height: 3rem;
         font-size: 1.9rem;

@@ -389,7 +389,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=9910206701169';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=5518537411580';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
