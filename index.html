@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.min.css?v=1787519774026">
+    <link rel="stylesheet" href="styles.min.css?v=1259876716525">
     <link rel="manifest" href="site.webmanifest">
     <link rel="canonical" href="https://www.jervistuazon.com/">
 
@@ -224,18 +224,46 @@
             <button class="close-btn" type="button" onclick="closeLightbox()"
                 aria-label="Close lightbox">&times;</button>
 
+            <!-- Zoom Controls Toolbar -->
+            <div id="lightbox-zoom-toolbar" class="lightbox-zoom-toolbar" hidden>
+                <button class="zoom-btn zoom-out-btn" type="button" onclick="event.stopPropagation(); zoomLightbox(-0.5)" aria-label="Zoom out" title="Zoom out">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
+                </button>
+                <button class="zoom-btn zoom-reset-btn" type="button" onclick="event.stopPropagation(); resetLightboxZoom(true)" aria-label="Reset zoom" title="Reset zoom (100%)">
+                    <span id="zoom-level-text">100%</span>
+                </button>
+                <button class="zoom-btn zoom-in-btn" type="button" onclick="event.stopPropagation(); zoomLightbox(0.5)" aria-label="Zoom in" title="Zoom in">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
+                </button>
+            </div>
+
             <!-- Navigation Buttons -->
             <button class="nav-btn prev-btn" type="button" onclick="event.stopPropagation(); changeImage(-1)"
-                aria-label="Previous image">&#10094;</button>
+                aria-label="Previous image">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
             <button class="nav-btn next-btn" type="button" onclick="event.stopPropagation(); changeImage(1)"
-                aria-label="Next image">&#10095;</button>
+                aria-label="Next image">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
 
             <div id="lightbox-content-container" class="lightbox-content-container">
                 <!-- Content injected via JS -->
             </div>
-            <div class="lightbox-meta" aria-live="polite">
-                <div id="lightbox-counter" class="lightbox-counter" hidden></div>
-                <div id="caption"></div>
+
+            <!-- Bottom Panel: Thumbnail Scrubber & Meta Info -->
+            <div class="lightbox-bottom-panel">
+                <div id="lightbox-thumbnails" class="lightbox-thumbnails-wrapper" hidden>
+                    <div id="lightbox-thumbnails-track" class="lightbox-thumbnails-track" role="tablist" aria-label="Project thumbnails"></div>
+                </div>
+                <div class="lightbox-meta" aria-live="polite">
+                    <div id="lightbox-counter" class="lightbox-counter" hidden></div>
+                    <div id="caption"></div>
+                </div>
             </div>
         </div>
 
@@ -274,8 +302,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-    <script src="gallery-data.js?v=1787519774026"></script>
-    <script src="script.min.js?v=1787519774026"></script>
+    <script src="gallery-data.js?v=1259876716525"></script>
+    <script src="script.min.js?v=1259876716525"></script>
 </body>
 
 </html>
