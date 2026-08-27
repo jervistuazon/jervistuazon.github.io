@@ -42,19 +42,53 @@ jobs:
           const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const existing = new RegExp('\\s*' + escapeRegExp(start) + '[\\s\\S]*?' + escapeRegExp(end) + '\\s*', 'g');
 
-          // Hash the exported presentation without our injected patch. This makes
-          // the cache key change only when the real Forestville export changes,
-          // while keeping repeated workflow runs idempotent.
+          // Remove our injected block before hashing so repeated runs are idempotent.
           html = html.replace(existing, '\n');
-          const cacheVersion = crypto.createHash('sha256').update(html).digest('hex').slice(0, 12);
+
+          // Bump this whenever the injected runtime behavior changes so fixes get
+          // a fresh URL even when the underlying Forestville export is unchanged.
+          const patchRevision = 'mobile-ui-v3';
+          const cacheVersion = crypto
+            .createHash('sha256')
+            .update(patchRevision + '\0' + html)
+            .digest('hex')
+            .slice(0, 12);
 
           const patch = `
           ${start}
           <style>
+            #rotateDeviceFallback {
+              --mobile-ui-scale: 1;
+              transform: translateX(-50%) scale(var(--mobile-ui-scale)) !important;
+              transform-origin: 50% 100%;
+            }
+
             #requestLandscapeButton {
+              box-sizing: border-box;
               width: 168px;
               min-width: 168px;
+              max-width: 168px;
+              height: 42px;
+              min-height: 42px;
+              max-height: 42px;
+              flex: 0 0 168px;
               justify-content: center;
+              gap: 8px;
+              padding: 9px 14px 9px 11px;
+              font-size: 11.2px;
+              line-height: 1;
+              -webkit-text-size-adjust: 100%;
+              text-size-adjust: 100%;
+            }
+
+            #requestLandscapeButton .rotate-device-icon {
+              width: 20px;
+              min-width: 20px;
+              max-width: 20px;
+              height: 20px;
+              min-height: 20px;
+              max-height: 20px;
+              flex: 0 0 20px;
             }
           </style>
           <script>
@@ -67,34 +101,65 @@ jobs:
                 return;
               }
 
+              const overlay = document.getElementById('rotateDeviceFallback');
               const button = document.getElementById('requestLandscapeButton');
               const label = button?.querySelector('span');
-              if (!button || !label) return;
+              if (!overlay || !button || !label) return;
 
-              const resetLandscapeButton = () => {
-                if (!window.matchMedia('(orientation: portrait)').matches) return;
+              let settleTimers = [];
+
+              const isPortrait = () =>
+                window.matchMedia('(orientation: portrait)').matches;
+
+              const syncLandscapeControl = () => {
+                if (!isPortrait()) return;
+
                 label.textContent = 'VIEW LANDSCAPE';
                 button.setAttribute('aria-label', 'View landscape fullscreen');
                 button.disabled = false;
+
+                // Fullscreen/orientation transitions can return to portrait with
+                // visualViewport.scale still changed. Counter-scale this fixed UI
+                // only, preserving the same physical size as the initial render.
+                const visualScale = Number(window.visualViewport?.scale) || 1;
+                const compensation = Math.min(2, Math.max(0.5, 1 / visualScale));
+                overlay.style.setProperty('--mobile-ui-scale', String(compensation));
               };
 
-              const scheduleReset = () => {
-                window.requestAnimationFrame(() => {
-                  window.setTimeout(resetLandscapeButton, 0);
+              const scheduleSync = () => {
+                settleTimers.forEach(window.clearTimeout);
+                settleTimers = [];
+
+                syncLandscapeControl();
+                window.requestAnimationFrame(syncLandscapeControl);
+
+                // Mobile browsers settle fullscreen, orientation, browser chrome
+                // and visualViewport in separate passes, so re-check each phase.
+                [50, 150, 300, 600].forEach((delay) => {
+                  settleTimers.push(window.setTimeout(syncLandscapeControl, delay));
                 });
               };
 
-              window.addEventListener('orientationchange', scheduleReset, { passive: true });
-              document.addEventListener('fullscreenchange', scheduleReset);
+              window.addEventListener('resize', scheduleSync, { passive: true });
+              window.addEventListener('orientationchange', scheduleSync, { passive: true });
+              document.addEventListener('fullscreenchange', scheduleSync);
+              window.visualViewport?.addEventListener('resize', scheduleSync, { passive: true });
+              window.visualViewport?.addEventListener('scroll', scheduleSync, { passive: true });
+
               if (screen.orientation && typeof screen.orientation.addEventListener === 'function') {
-                screen.orientation.addEventListener('change', scheduleReset);
+                screen.orientation.addEventListener('change', scheduleSync);
               }
-              window.addEventListener('pageshow', scheduleReset, { passive: true });
+
+              window.addEventListener('pageshow', scheduleSync, { passive: true });
+              scheduleSync();
             })();
           <\/script>
           ${end}`;
 
-          if (!html.includes('</body>')) throw new Error('Forestville export is missing </body>.');
+          if (!html.includes('</body>')) {
+            throw new Error('Forestville export is missing </body>.');
+          }
+
           html = html.replace('</body>', patch + '\n  </body>');
           fs.writeFileSync(target, html);
           console.log(`Forestville cache version: ${cacheVersion}`);
@@ -110,5 +175,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add presentation/forestville_test/index.html
-          git commit -m "Apply Forestville mobile fix and cache version"
+          git commit -m "Fix Forestville mobile button scale after landscape"
           git push origin HEAD:main
