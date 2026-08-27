@@ -5496,6 +5496,14 @@ and effortless poolside living.</span></div></div>
 </style>
 <script>
   (() => {
+    const cacheVersion = 'af8e8c70da4f';
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.get('v') !== cacheVersion) {
+      currentUrl.searchParams.set('v', cacheVersion);
+      window.location.replace(currentUrl.toString());
+      return;
+    }
+
     const button = document.getElementById('requestLandscapeButton');
     const label = button?.querySelector('span');
     if (!button || !label) return;
