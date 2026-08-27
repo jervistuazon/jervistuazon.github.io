@@ -5485,5 +5485,42 @@ and effortless poolside living.</span></div></div>
   handleScroll();
 })();
     </script>
+  
+<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_START -->
+<style>
+  #requestLandscapeButton {
+    width: 168px;
+    min-width: 168px;
+    justify-content: center;
+  }
+</style>
+<script>
+  (() => {
+    const button = document.getElementById('requestLandscapeButton');
+    const label = button?.querySelector('span');
+    if (!button || !label) return;
+
+    const resetLandscapeButton = () => {
+      if (!window.matchMedia('(orientation: portrait)').matches) return;
+      label.textContent = 'VIEW LANDSCAPE';
+      button.setAttribute('aria-label', 'View landscape fullscreen');
+      button.disabled = false;
+    };
+
+    const scheduleReset = () => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(resetLandscapeButton, 0);
+      });
+    };
+
+    window.addEventListener('orientationchange', scheduleReset, { passive: true });
+    document.addEventListener('fullscreenchange', scheduleReset);
+    if (screen.orientation && typeof screen.orientation.addEventListener === 'function') {
+      screen.orientation.addEventListener('change', scheduleReset);
+    }
+    window.addEventListener('pageshow', scheduleReset, { passive: true });
+  })();
+</script>
+<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_END -->
   </body>
 </html>
