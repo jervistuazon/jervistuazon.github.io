@@ -86,6 +86,77 @@ async function build() {
         buildFailed = true;
     }
 
+    // 2b. Keep Forestville's mobile landscape control stable across
+    // fullscreen/orientation transitions. The exported presentation is a
+    // generated single-file HTML, so inject this idempotent runtime patch at
+    // build time so future re-exports cannot reintroduce the stale button state.
+    console.log('[INFO] Applying Forestville mobile landscape control fix...');
+    try {
+        const forestvilleIndexPath = path.join('presentation', 'forestville_test', 'index.html');
+        let forestvilleIndexHtml = fs.readFileSync(forestvilleIndexPath, 'utf8');
+        const patchStart = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_START -->';
+        const patchEnd = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_END -->';
+        const existingPatchPattern = new RegExp(
+            '\\s*' + patchStart.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') +
+            '[\\s\\S]*?' + patchEnd.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\s*',
+            'g'
+        );
+        forestvilleIndexHtml = forestvilleIndexHtml.replace(existingPatchPattern, '\n');
+
+        const forestvilleMobileFix = `
+${patchStart}
+<style>
+  /* Stable touch target: label changes must never resize the mobile control. */
+  #requestLandscapeButton {
+    width: 168px;
+    min-width: 168px;
+    justify-content: center;
+  }
+</style>
+<script>
+  (() => {
+    const button = document.getElementById('requestLandscapeButton');
+    const label = button?.querySelector('span');
+    if (!button || !label) return;
+
+    const resetLandscapeButton = () => {
+      if (!window.matchMedia('(orientation: portrait)').matches) return;
+      label.textContent = 'VIEW LANDSCAPE';
+      button.setAttribute('aria-label', 'View landscape fullscreen');
+      button.disabled = false;
+    };
+
+    // Returning from landscape can happen through a physical rotation,
+    // fullscreen exit, browser UI gesture, or an orientation-lock release.
+    // Cover both authoritative browser state transitions and defer one frame so
+    // matchMedia/visualViewport have settled before restoring the control.
+    const scheduleReset = () => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(resetLandscapeButton, 0);
+      });
+    };
+
+    window.addEventListener('orientationchange', scheduleReset, { passive: true });
+    document.addEventListener('fullscreenchange', scheduleReset);
+    if (screen.orientation && typeof screen.orientation.addEventListener === 'function') {
+      screen.orientation.addEventListener('change', scheduleReset);
+    }
+    window.addEventListener('pageshow', scheduleReset, { passive: true });
+  })();
+<\/script>
+${patchEnd}`;
+
+        if (!forestvilleIndexHtml.includes('</body>')) {
+            throw new Error('Forestville export is missing </body>; cannot inject mobile fix safely.');
+        }
+        forestvilleIndexHtml = forestvilleIndexHtml.replace('</body>', `${forestvilleMobileFix}\n  </body>`);
+        fs.writeFileSync(forestvilleIndexPath, forestvilleIndexHtml);
+        console.log('[OK] forestville_test mobile landscape control fix applied.');
+    } catch (err) {
+        console.error('[FAIL] Forestville mobile landscape control fix failed:', err);
+        buildFailed = true;
+    }
+
     // 3. Minify JavaScript
     console.log('[INFO] Minifying JavaScript...');
     try {
