@@ -2,7 +2,7 @@
   "scripts": {
     "build:dist": "node scripts/build-dist.js",
     "verify:dist": "node scripts/verify-dist.js",
-    "build:cloudflare": "npm run build:dist && npm run verify:dist",
+    "build:cloudflare": "npm run build:dist && node scripts/fix-forestville-dist.js && npm run verify:dist",
     "test:cloudflare": "node scripts/test-cloudflare.js",
     "check:update": "node scripts/check-update.js",
     "media:sync": "node scripts/sync-r2-media.js --all",
