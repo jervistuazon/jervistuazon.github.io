@@ -7,6 +7,7 @@ const path = require('path');
 
 const {
     FORESTVILLE_PRESENTATION_DIR,
+    HYATT_PRESENTATION_DIR,
     collectRuntimeFiles,
     expectedDistFiles,
     loadGalleryData
@@ -56,12 +57,38 @@ function assertForestvillePresentationInventory() {
     console.log(`[OK] Forestville presentation inventory regression checks passed (${runtimeAssets.length} runtime assets).`);
 }
 
+function assertHyattPresentationInventory() {
+    const presentationRoot = path.join(rootDir, HYATT_PRESENTATION_DIR.replaceAll('/', path.sep));
+    const sourceIndex = path.join(presentationRoot, 'index.html');
+    const sourceAssets = path.join(presentationRoot, 'assets');
+    assert.ok(fs.existsSync(sourceIndex), 'Hyatt source index.html is missing.');
+
+    const runtimeAssets = collectRuntimeFiles(sourceAssets);
+    assert.ok(runtimeAssets.length > 0, 'Hyatt runtime asset inventory is empty.');
+    const runtimeExtensions = new Set(runtimeAssets.map(relative => path.extname(relative).toLowerCase()));
+    for (const extension of ['.jpg', '.mp4', '.png', '.webp']) {
+        assert.ok(runtimeExtensions.has(extension), `Hyatt runtime inventory is missing ${extension} assets.`);
+    }
+
+    const expected = expectedDistFiles(rootDir, loadGalleryData(rootDir));
+    const indexRelative = `${HYATT_PRESENTATION_DIR}/index.html`;
+    assert.ok(expected.has(indexRelative), `Expected dist inventory is missing ${indexRelative}.`);
+
+    for (const asset of runtimeAssets) {
+        const relative = `${HYATT_PRESENTATION_DIR}/assets/${asset}`;
+        assert.ok(expected.has(relative), `Expected dist inventory is missing ${relative}.`);
+    }
+
+    console.log(`[OK] Hyatt presentation inventory regression checks passed (${runtimeAssets.length} runtime assets).`);
+}
+
 const previousOrigin = process.env.PORTFOLIO_MEDIA_ORIGIN;
 const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-pages-media-'));
 const distDir = path.join(temporaryRoot, 'dist');
 
 try {
     assertForestvillePresentationInventory();
+    assertHyattPresentationInventory();
 
     process.env.PORTFOLIO_MEDIA_ORIGIN = origin;
     assert.strictEqual(getPortfolioMediaOrigin(), origin);

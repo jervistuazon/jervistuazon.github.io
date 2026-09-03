@@ -8,6 +8,7 @@ const { execFileSync } = require('child_process');
 const {
     CINEMATIC_PRESENTATION_DIR,
     FORESTVILLE_PRESENTATION_DIR,
+    HYATT_PRESENTATION_DIR,
     INTERACTIVE_PRESENTATION_DIR,
     expectedDistFiles,
     loadGalleryData,
@@ -100,7 +101,8 @@ function main() {
         'assets',
         INTERACTIVE_PRESENTATION_DIR,
         CINEMATIC_PRESENTATION_DIR,
-        FORESTVILLE_PRESENTATION_DIR
+        FORESTVILLE_PRESENTATION_DIR,
+        HYATT_PRESENTATION_DIR
     ].forEach(relativePath => {
         const absolutePath = sourcePath(relativePath);
         if (!fs.existsSync(absolutePath)) throw new Error(`Missing required input: ${relativePath}`);
