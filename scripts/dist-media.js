@@ -68,7 +68,7 @@ function escapeRegExp(value) {
 function getMediaReferenceVariants(relativePath, textFile) {
     const normalizedPath = toPosix(relativePath);
     const variants = new Set([normalizedPath, encodeRelativePath(normalizedPath)]);
-    const presentationPrefix = 'presentation/cinematic_web_presentation/';
+    const presentationPrefix = normalizedPath.match(/^presentation\/[^/]+\//)?.[0] || null;
 
     if (textFile === 'gallery-data.js') {
         const basename = path.posix.basename(normalizedPath);
@@ -76,7 +76,7 @@ function getMediaReferenceVariants(relativePath, textFile) {
         variants.add(encodeURIComponent(basename));
     }
 
-    if (normalizedPath.startsWith(presentationPrefix) && textFile.startsWith(presentationPrefix)) {
+    if (presentationPrefix && textFile.startsWith(presentationPrefix)) {
         const localPath = normalizedPath.slice(presentationPrefix.length);
         variants.add(localPath);
         variants.add(encodeRelativePath(localPath));
