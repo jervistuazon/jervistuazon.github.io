@@ -29,6 +29,19 @@ const INTERACTIVE_PRESENTATION_DIR = 'presentation/interactive_presentation_demo
 const CINEMATIC_PRESENTATION_DIR = 'presentation/cinematic_web_presentation';
 const FORESTVILLE_PRESENTATION_DIR = 'presentation/forestville_test';
 
+const SPECIAL_PRESENTATION_DIRS = new Set([
+    INTERACTIVE_PRESENTATION_DIR,
+    CINEMATIC_PRESENTATION_DIR,
+    FORESTVILLE_PRESENTATION_DIR
+]);
+
+// These are source/authoring copies, not independently published presentations.
+// A .no-publish marker gives future drafts the same explicit opt-out mechanism.
+const EXCLUDED_PRESENTATION_DIR_NAMES = new Set([
+    'Interactive Web Presentation',
+    'animated_webpage'
+]);
+
 const RUNTIME_ASSET_EXTENSIONS = new Set([
     '.avif',
     '.gif',
@@ -43,6 +56,17 @@ const RUNTIME_ASSET_EXTENSIONS = new Set([
     '.webp',
     '.woff',
     '.woff2'
+]);
+
+const PRESENTATION_RUNTIME_EXTENSIONS = new Set([
+    ...RUNTIME_ASSET_EXTENSIONS,
+    '.css',
+    '.html',
+    '.js',
+    '.mjs',
+    '.txt',
+    '.webmanifest',
+    '.xml'
 ]);
 
 function toPosix(relativePath) {
@@ -187,6 +211,77 @@ function collectRuntimeFiles(directory) {
     return walkFiles(directory).filter(relative => RUNTIME_ASSET_EXTENSIONS.has(path.extname(relative).toLowerCase()));
 }
 
+function discoverPresentationDirs(rootDir) {
+    const presentationRoot = path.join(rootDir, 'presentation');
+    if (!fs.existsSync(presentationRoot)) return [];
+
+    return fs.readdirSync(presentationRoot, { withFileTypes: true })
+        .filter(entry => entry.isDirectory())
+        .filter(entry => !EXCLUDED_PRESENTATION_DIR_NAMES.has(entry.name))
+        .filter(entry => !fs.existsSync(path.join(presentationRoot, entry.name, '.no-publish')))
+        .filter(entry => {
+            const indexPath = path.join(presentationRoot, entry.name, 'index.html');
+            return fs.existsSync(indexPath) && fs.lstatSync(indexPath).isFile();
+        })
+        .map(entry => `presentation/${entry.name}`)
+        .sort((left, right) => left.localeCompare(right));
+}
+
+function collectReferencedProjectManifests(presentationRoot, runtimeFiles) {
+    const referenced = new Set();
+    const textExtensions = new Set(['.css', '.html', '.js', '.mjs', '.txt', '.xml']);
+
+    for (const relativeFile of runtimeFiles) {
+        if (!textExtensions.has(path.posix.extname(relativeFile).toLowerCase())) continue;
+        const source = fs.readFileSync(path.join(presentationRoot, relativeFile.replaceAll('/', path.sep)), 'utf8');
+        const manifestReferences = source.matchAll(/["'`]([^"'`]*project\.manifest\.json(?:[?#][^"'`]*)?)["'`]/gi);
+        for (const match of manifestReferences) {
+            const decoded = decodeUrlPath(withoutUrlSuffix(match[1])).replaceAll('\\', '/');
+            if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|\/)/i.test(decoded)) continue;
+            const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(relativeFile), decoded));
+            if (resolved !== '..' && !resolved.startsWith('../')) referenced.add(resolved);
+        }
+    }
+
+    return referenced;
+}
+
+function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
+    const presentationsRoot = path.resolve(rootDir, 'presentation');
+    const presentationRoot = path.resolve(rootDir, presentationDir.replaceAll('/', path.sep));
+    if (path.dirname(presentationRoot) !== presentationsRoot) {
+        throw new Error(`Presentation must be an immediate child of presentation/: ${presentationDir}`);
+    }
+
+    const runtimeFiles = [];
+    for (const entry of fs.readdirSync(presentationRoot, { withFileTypes: true })) {
+        if (entry.isFile()) {
+            const extension = path.extname(entry.name).toLowerCase();
+            if (entry.name.toLowerCase() !== 'project.manifest.json' && PRESENTATION_RUNTIME_EXTENSIONS.has(extension)) {
+                runtimeFiles.push(entry.name);
+            }
+            continue;
+        }
+
+        if (entry.isDirectory() && entry.name.toLowerCase() === 'assets') {
+            const assetsRoot = path.join(presentationRoot, entry.name);
+            for (const relative of collectRuntimeFiles(assetsRoot)) {
+                runtimeFiles.push(toPosix(path.join(entry.name, relative)));
+            }
+        }
+    }
+
+    const referencedManifests = collectReferencedProjectManifests(presentationRoot, runtimeFiles);
+    const manifestPath = path.join(presentationRoot, 'project.manifest.json');
+    if (referencedManifests.has('project.manifest.json')
+        && fs.existsSync(manifestPath)
+        && fs.lstatSync(manifestPath).isFile()) {
+        runtimeFiles.push('project.manifest.json');
+    }
+
+    return runtimeFiles.sort((left, right) => left.localeCompare(right));
+}
+
 function collectCinematicRuntimeAssets(rootDir) {
     const presentationRoot = path.join(rootDir, CINEMATIC_PRESENTATION_DIR.replaceAll('/', path.sep));
     const references = new Set();
@@ -261,20 +356,30 @@ function expectedDistFiles(rootDir, galleryData = loadGalleryData(rootDir)) {
         expected.add(`${FORESTVILLE_PRESENTATION_DIR}/assets/${asset}`);
     }
 
+    for (const presentationDir of discoverPresentationDirs(rootDir)) {
+        if (SPECIAL_PRESENTATION_DIRS.has(presentationDir)) continue;
+        for (const relativeFile of collectGenericPresentationRuntimeFiles(rootDir, presentationDir)) {
+            expected.add(`${presentationDir}/${relativeFile}`);
+        }
+    }
+
     return expected;
 }
 
 module.exports = {
     CINEMATIC_PRESENTATION_DIR,
+    EXCLUDED_PRESENTATION_DIR_NAMES,
     FORESTVILLE_PRESENTATION_DIR,
     INTERACTIVE_PRESENTATION_DIR,
     PROJECT_PAGE_CATEGORIES,
     ROOT_RUNTIME_FILES,
     collectCinematicRuntimeAssets,
+    collectGenericPresentationRuntimeFiles,
     collectGalleryAssetReferences,
     collectRootReferencedAssets,
     collectRuntimeFiles,
     decodeUrlPath,
+    discoverPresentationDirs,
     expectedDistFiles,
     expectedProjectPageFiles,
     extractReferenceValues,

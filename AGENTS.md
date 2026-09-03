@@ -33,6 +33,14 @@ This file applies to the entire repository unless a deeper `AGENTS.md` overrides
   - Minifies `script.js` -> `script.min.js` and `styles.css` -> `styles.min.css`.
 - After making cache-busting changes, always run `git diff` to verify the modified files reflect the new versioned URLs, and test the production paths locally to ensure the updated files load correctly.
 
+## Automatic Presentation Publishing
+- A new immediate child folder under `presentation/` is published automatically when it contains a regular `index.html` file.
+- The generic runtime contract includes supported files at the presentation root plus supported assets under an `assets/` directory. Authoring/tool subdirectories are not copied.
+- `project.manifest.json` is excluded unless a shipped runtime file explicitly references it.
+- Add a `.no-publish` marker inside a presentation folder to keep a draft out of `dist/`.
+- `presentation/Interactive Web Presentation/` and `presentation/animated_webpage/` remain excluded legacy authoring copies.
+- Adding a presentation route does not create a homepage card. Update `gallery-data.js` separately when gallery visibility is required.
+
 ## Gallery & Layout Design Standards
 - **Cinematic & Minimalist Aesthetic**: Maintain the editorial layout. The gallery is structured with a single-column layout on mobile, while on desktop featured items (`data-featured="true"`) occupy 2 columns (`grid-column: span 2`).
 - **Viewport Constraints**: Featured images must have an aspect ratio of `2.0` on desktop and a `max-height: 60vh` limit so that the image, label, and metadata fit completely in a single viewport page without scrolling (configured in [styles.css](file:///d:/Github%20Repo/jervistuazon.github.io/styles.css)).
