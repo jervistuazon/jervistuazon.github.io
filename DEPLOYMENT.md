@@ -31,6 +31,16 @@ Preview deployments are enabled for non-production branches and pull requests. T
 
 The build uses a content-derived cache version, so unchanged sources produce the same `dist/` output. Do not edit or publish `dist/` manually.
 
+## Adding a web presentation
+
+For a standard exported presentation, add a new immediate child folder such as `presentation/client_web_presentation/` containing:
+
+- `index.html`
+- optional root runtime files such as CSS or JavaScript
+- optional runtime media and data under `assets/`
+
+The Cloudflare build discovers and publishes the folder automatically. Use a `.no-publish` file inside a draft folder to exclude it. Authoring subdirectories and an unreferenced `project.manifest.json` are not shipped. Add or edit `gallery-data.js` only when the presentation should also appear as a portfolio gallery card.
+
 ## Routine portfolio update
 
 Before editing a clean `main` checkout:
