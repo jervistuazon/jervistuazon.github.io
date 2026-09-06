@@ -41,6 +41,8 @@ For a standard exported presentation, add a new immediate child folder such as `
 
 The Cloudflare build discovers and publishes the folder automatically. Use a `.no-publish` file inside a draft folder to exclude it. Authoring subdirectories and an unreferenced `project.manifest.json` are not shipped. Add or edit `gallery-data.js` only when the presentation should also appear as a portfolio gallery card.
 
+`presentation/site_feasibility/` has a scoped runtime exception: its `_next/` framework assets, `development/` viewer (including the split `.bin` model), and root `.rsc` payload are published. Its `.vite/` build metadata is excluded. Preserve folder-relative asset URLs when replacing this export and run `npm run check:update` before pushing.
+
 ## Routine portfolio update
 
 Before editing a clean `main` checkout:

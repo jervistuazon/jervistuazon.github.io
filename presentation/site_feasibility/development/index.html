@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Untitled Project</title>
+    <link rel="stylesheet" href="./vendor/pannellum.css"/>
+    <script type="text/javascript" src="./vendor/pannellum.js"></script>
+    <script src="./vendor/purify.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #292929, #000000); font-family: sans-serif; color: white; }
+
+        #vignette-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%); }
+        #branding-overlay { position: absolute; bottom: 20px; left: 20px; z-index: 5; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .hidden { display: none !important; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; filter: contrast(0.9) saturate(0.85); opacity: 1; transition: opacity 0.5s ease-out; touch-action: none !important; user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
+        #canvas-container canvas { touch-action: none !important; user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
+        #nav-speed-toast { pointer-events: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-10px); z-index: 9000; background: rgba(15,23,42,0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.18); color: white; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 6px 14px; border-radius: 9999px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; display: flex; align-items: center; gap: 6px; }
+        #nav-speed-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-out; pointer-events: none; }
+        .pulsing-dots { display: flex; gap: 8px; }
+        .dot { width: 10px; height: 10px; background-color: rgba(255,255,255,0.8); border-radius: 50%; animation: pulse 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes pulse { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+        
+        :root { --card-scale: 75vmin; }
+        
+#vignette-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%); }
+#branding-overlay { position: absolute; bottom: 30px; left: 30px; z-index: 5; pointer-events: none; text-shadow: 0 4px 12px rgba(0,0,0,0.8); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+#branding-overlay h1 { font-size: 24px; line-height: 32px; font-weight: 300; margin: 0; color: white; letter-spacing: 0.025em; }
+#branding-overlay p { font-size: 12px; line-height: 16px; font-weight: 400; color: #a3a3a3; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.1em; }
+.hotspot-card {
+    position: absolute; top: 0; left: 0;
+    width: var(--card-scale); height: auto; max-height: var(--card-scale);
+    overflow: auto; background: transparent;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: none; border-radius: 0; padding: 0; color: white; z-index: 100;
+    font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.9);
+    display: flex; flex-direction: column;
+    --popup-origin-x: 50%; --popup-origin-y: 110%; --popup-scale: 0.2;
+    transform-origin: var(--popup-origin-x) var(--popup-origin-y);
+    transform: translate(-50%, -110%) scale(var(--popup-scale));
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1), transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.32s;
+    will-change: transform, opacity;
+}
+.hotspot-card, .hotspot-card * { box-sizing: border-box; }
+.hotspot-card.visible {
+    opacity: 1; visibility: visible; pointer-events: auto; --popup-scale: 1;
+    transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1), transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+.hotspot-card.closing { opacity: 0; visibility: visible; pointer-events: none; --popup-scale: 0.2; }
+.hotspot-card-inner { display: flex; flex-direction: column; width: 100%; }
+.hotspot-card img, .hotspot-card video {
+    display: block; margin: 0; width: 100%; height: auto; max-width: 100%;
+    max-height: var(--card-scale); object-fit: contain; border-bottom: none;
+}
+#card-content { display: flex; flex-direction: column; overflow: auto; max-height: 100%; width: 100%; }
+.hotspot-content-inner { padding: 12px 16px; }
+.hotspot-content-inner p { font-size: 14px; color: #e5e5e5; line-height: 1.6; margin: 0; font-weight: 400; }
+.hotspot-content-inner:empty { display: none; }
+
+
+        #panorama-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; 
+            background: black; display: none; opacity: 0; transition: opacity 0.8s ease-in-out;
+        }
+        #panorama-overlay.visible { opacity: 1; }
+        #panorama-viewer { width: 100%; height: 100%; }
+        #panorama-close { position: absolute; top: 20px; right: 20px; z-index: 210; background: rgba(0,0,0,0.5); border: none; color: white; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        #panorama-close:hover { background: rgba(255,255,255,0.2); }
+        .pnlm-load-box, .pnlm-about-msg, .pnlm-lbar { display: none !important; }
+        
+        /* Fullscreen Media Overlay */
+        #fullscreen-media-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+            opacity: 0; pointer-events: none;
+            transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #fullscreen-media-overlay.visible {
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            opacity: 1; pointer-events: auto;
+        }
+        .fullscreen-media-content {
+            --origin-x: 50%; --origin-y: 50%;
+            max-width: 90vw; max-height: 85vh;
+            transform-origin: var(--origin-x) var(--origin-y); transform: scale(0); opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px; overflow: hidden; box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.9);
+        }
+        #fullscreen-media-overlay.visible .fullscreen-media-content { transform: scale(1); opacity: 1; }
+        .fullscreen-media-content.closing { transform: scale(0); opacity: 0; }
+        .fullscreen-media-content img, .fullscreen-media-content video {
+            display: block; max-width: 90vw; max-height: 85vh; width: auto; height: auto; object-fit: contain; border-radius: 12px;
+        }
+        .fullscreen-media-hint {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            padding: 8px 16px; border-radius: 20px; color: rgba(255, 255, 255, 0.5);
+            font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s ease 0.5s; pointer-events: none;
+        }
+        #fullscreen-media-overlay.visible .fullscreen-media-hint { opacity: 1; }
+        .fullscreen-media-close {
+            position: absolute; top: 20px; right: 20px; z-index: 10001;
+            background: rgba(255, 255, 255, 0.1); border: none; color: white;
+            border-radius: 50%; width: 44px; height: 44px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s, transform 0.2s; opacity: 0;
+        }
+        #fullscreen-media-overlay.visible .fullscreen-media-close { opacity: 1; }
+        .fullscreen-media-close:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+
+        /* Camera Views Overlay */
+        #view-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 60;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        #view-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #view-toggle:hover { background: rgba(255, 255, 255, 0.2); }
+        #view-panel {
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 160px;
+            max-height: 240px;
+            overflow: auto;
+            backdrop-filter: blur(10px);
+        }
+        #view-panel.visible { display: block; }
+        #view-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .view-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .view-item button {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .view-item button:hover { background: rgba(255, 255, 255, 0.18); }
+        #view-reset {
+            margin-top: 8px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        #view-reset:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        </style>
+    <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/examples/jsm/"}}</script>
+<style>#branding-overlay,#vignette-overlay{display:none!important}</style></head>
+<body>
+    <div id="loading-overlay"><div class="pulsing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    
+    <div id="vignette-overlay"></div>
+    <div id="branding-overlay" class="">
+        <h1>Untitled Project</h1>
+        <p>By Author</p>
+    </div>
+    
+    <div id="view-controls">
+        <button id="view-toggle">Views</button>
+        <div id="view-panel">
+            <div id="view-list"></div>
+            <button id="view-reset">Reset View</button>
+        </div>
+    </div>
+    
+    <div id="panorama-overlay">
+        <div id="panorama-viewer"></div>
+        <button id="panorama-close" title="Close 360 View">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div id="hotspot-card" class="hotspot-card">
+        <div class="hotspot-card-inner"><div id="card-content"></div></div>
+    </div>
+
+    <!-- Fullscreen Media Overlay -->
+    <div id="fullscreen-media-overlay">
+        <div class="fullscreen-media-content" id="fullscreen-media-content"></div>
+        <button id="fullscreen-media-close" class="fullscreen-media-close" title="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="fullscreen-media-hint">Tap outside or press ESC to close</div>
+    </div>
+
+    <div id="boot-error" style="display:none;position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,0.92);color:white;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;">
+        <div style="max-width:560px;text-align:center;">
+            <h2 data-error-title style="margin:0 0 10px 0;font-size:20px;font-weight:600;">Viewer failed to start</h2>
+            <p data-error-detail style="margin:0;color:#c4c4c4;font-size:14px;line-height:1.5;"></p>
+        </div>
+    </div>
+    <div id="nav-speed-toast"><span style="color:#f59e0b;">⚡</span><span id="nav-speed-toast-text">Speed: 1x (Normal)</span></div>
+    <div id="canvas-container"></div>
+    
+    
+    <!-- Local File Access "Launcher" UI -->
+    <div id="file-picker-fallback" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;flex-direction:column;align-items:center;justify-content:center;background:#000;">
+        <div style="text-align:center;cursor:pointer;opacity:0.8;transition:opacity 0.3s;" id="fallback-select-btn">
+            <h1 style="font-family:'Helvetica Neue', Arial, sans-serif; font-weight:200; font-size:16px; letter-spacing:8px; color:white; margin:0; border:1px solid rgba(255,255,255,0.3); padding:15px 40px; text-transform:uppercase;">
+                Launch
+            </h1>
+        </div>
+        <input type="file" id="fallback-file-input" accept=".ply" style="display:none;">
+    </div>
+    
+    <script>
+        // Simple hover effect for the border
+        const btnDiv = document.getElementById('fallback-select-btn');
+        if (btnDiv) {
+            const btnText = btnDiv.querySelector('h1');
+            btnDiv.addEventListener('mouseenter', () => {
+                btnText.style.borderColor = 'rgba(255,255,255,0.8)';
+                btnText.style.background = 'rgba(255,255,255,0.05)';
+            });
+            btnDiv.addEventListener('mouseleave', () => {
+                btnText.style.borderColor = 'rgba(255,255,255,0.3)';
+                btnText.style.background = 'transparent';
+            });
+        }
+    </script>
+    
+    <script type="module">import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+        const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":-0.00006,"normalBias":0.048,"shadowOpacity":0.5,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":0.9,"saturation":0.85,"camPos":{"x":-0.02761031585858388,"y":1.5992401053292151,"z":1.1309653325247},"camTarget":{"x":-0.02164205701923224,"y":0.1499999999999999,"z":0.22645704926443633},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.48503658731782856,"y":-0.002885054703472718,"z":-0.0016002022563487259,"w":0.8744876355759246},"camUp":{"x":0,"y":1,"z":0},"camNear":0.005,"camFar":2000,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.1,"hsOpacity":0.8,"hsPopupScale":75,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788704475213};
+        const modelData = await (async () => {
+ try {
+ const response = await fetch('./model-manifest.json');
+ if (!response.ok) throw new Error('Model manifest unavailable');
+ const manifest = await response.json();
+ let loaded = 0;
+ const parts = await Promise.all(manifest.parts.map(async name => {
+   const r = await fetch('./' + name); if (!r.ok) throw new Error('Model part unavailable: ' + name);
+   const data = await r.arrayBuffer(); loaded += data.byteLength;
+   parent.postMessage({type:'atlas-progress',value:Math.round(loaded / manifest.bytes * 100)}, location.origin);
+   return data;
+ }));
+ const url = URL.createObjectURL(new Blob(parts, {type:'model/gltf-binary'}));
+ window.addEventListener('pagehide', () => URL.revokeObjectURL(url), {once:true});
+ return url;
+ } catch(error) { parent.postMessage({type:'atlas-error',message:error.message}, location.origin); throw error; }
+})();
+        const hdriData = null;
+        const hotspotsData = [{"id":"hs_1788624170095_87nte3c4c","position":{"x":-0.2627412959340015,"y":0.051698008806755145,"z":0.5406898299415241},"content":"<img alt=\"commercial_05 (1).jpg\" data-src-relative=\"./assets/commercial_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624174150_70otwtilw","position":{"x":0.4325800993475136,"y":0.04500521178608223,"z":0.4503888697859005},"content":"<img alt=\"aerial_view_09 (1).jpg\" data-src-relative=\"./assets/aerial_view_09 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624216056_mwvnmtxbh","position":{"x":-0.005342745432400518,"y":0.5616091461124716,"z":-0.03298961537538575},"content":"<img alt=\"masterplan_05 (1).jpg\" data-src-relative=\"./assets/masterplan_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624218434_0r8jz9620","position":{"x":-0.009207524696656127,"y":0.10613020909171167,"z":-0.3072532363093175},"content":"<img alt=\"WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\" data-src-relative=\"./assets/WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\">","isPanoramic":false,"type":"hotspot"}];
+        const transform = {"position":{"x":0,"y":0.0016646754741668768,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":0.0016666666666666668,"y":0.0016666666666666668,"z":0.0016666666666666668}};
+        const initialView = {position:config.camPos,target:config.camTarget,fov:config.camFov,zoom:config.camZoom,quaternion:config.camQuaternion,up:config.camUp,near:config.camNear,far:config.camFar};
+        const cameraBookmarks = Array.isArray(config.cameraBookmarks) ? config.cameraBookmarks : [];
+        const defaultBookmarkId = config.defaultCameraBookmarkId || null;
+        const defaultBookmark = cameraBookmarks.find(b => b.id === defaultBookmarkId) || null;
+        const initialBookmark = config.anchoredOrbitEnabled ? null : defaultBookmark;
+        const fallbackPos = { x: 0, y: 5, z: 15 };
+        const fallbackTarget = { x: 0, y: 0, z: 0 };
+        const initialPos = initialView?.position || initialBookmark?.position || config.camPos || fallbackPos;
+        const initialTarget = initialView?.target || initialBookmark?.target || config.camTarget || fallbackTarget;
+        const initialFov = Number.isFinite(initialView?.fov) ? initialView.fov : (Number.isFinite(initialBookmark?.fov) ? initialBookmark.fov : (Number.isFinite(config.camFov) ? config.camFov : 45));
+        const initialZoom = Number.isFinite(initialView?.zoom) ? initialView.zoom : (Number.isFinite(initialBookmark?.zoom) ? initialBookmark.zoom : (Number.isFinite(config.camZoom) ? config.camZoom : 1));
+        const initialNear = Number.isFinite(initialView?.near) ? initialView.near : (Number.isFinite(config.camNear) ? config.camNear : 0.01);
+        const initialFar = Number.isFinite(initialView?.far) ? initialView.far : (Number.isFinite(config.camFar) ? config.camFar : 2000);
+        const initialUp = initialView?.up || initialBookmark?.up || config.camUp || { x: 0, y: 1, z: 0 };
+        const initialQuaternion = initialView?.quaternion || config.camQuaternion || null;
+        const hasInitialQuaternion = !!(initialQuaternion && Number.isFinite(initialQuaternion.x) && Number.isFinite(initialQuaternion.y) && Number.isFinite(initialQuaternion.z) && Number.isFinite(initialQuaternion.w));
+        const isZipMode = true;
+        
+        let rotationTimeout;
+        let activeHotspot = null;
+        let modelObject = null;
+        let hotspots = [];
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+        const clock = new THREE.Clock();
+        let anchoredOrbit = null;
+        let smoothZoom = null;
+        let cameraController = null;
+
+        const lastCameraPosition = new THREE.Vector3(Infinity, Infinity, Infinity);
+        const lastCameraQuaternion = new THREE.Quaternion();
+        let lastOcclusionTime = 0;
+        let pendingOcclusionChecks = 0;
+        let occlusionRoundRobinIndex = 0;
+        const tempCameraPos = new THREE.Vector3();
+        const tempScreenPos = new THREE.Vector3();
+        const modelBox = new THREE.Box3();
+        let hasModelBox = false;
+        let cachedMeshes = [];
+        const raycastHits = [];
+
+        
+        function createAnchoredOrbitController(camera, controls, domElement, config) {
+            if (!config.anchoredOrbitEnabled) return null;
+
+            const clamp = THREE.MathUtils.clamp;
+            const state = {
+                basePosition: new THREE.Vector3(),
+                baseTarget: new THREE.Vector3(),
+                baseUp: new THREE.Vector3(0, 1, 0),
+                baseRight: new THREE.Vector3(1, 0, 0),
+                baseViewUp: new THREE.Vector3(0, 1, 0),
+                spherical: new THREE.Spherical(),
+                baseFov: camera.fov,
+                baseZoom: camera.zoom,
+                targetYaw: 0,
+                targetPitch: 0,
+                targetPanX: 0,
+                targetPanY: 0,
+                yaw: 0,
+                pitch: 0,
+                panX: 0,
+                panY: 0,
+                dragging: false,
+                pointerId: null,
+                lastX: 0,
+                lastY: 0
+            };
+            const horizontalLimit = THREE.MathUtils.degToRad(clamp(Number(config.anchoredOrbitHorizontalLimit) || 8, 0, 45));
+            const verticalLimit = THREE.MathUtils.degToRad(clamp(Number(config.anchoredOrbitVerticalLimit) || 4, 0, 30));
+            const returnToCenter = config.anchoredOrbitReturnToCenter !== false;
+            const sensitivity = Math.max(0.05, Number(config.anchoredOrbitSensitivity) || 1);
+            const returnSmoothing = Math.max(0.1, Number(config.anchoredOrbitReturnSmoothing) || 8);
+            const followPointer = config.anchoredOrbitFollowPointer !== false;
+            const panStrength = clamp(Number(config.anchoredOrbitPanStrength) || 0.035, 0, 0.5);
+
+            controls.enabled = false;
+            controls.enableRotate = false;
+            controls.enablePan = false;
+            controls.enableZoom = false;
+            controls.autoRotate = false;
+
+            function applyViewCameraFields(view) {
+                if (view?.up) {
+                    camera.up.set(view.up.x || 0, view.up.y || 1, view.up.z || 0);
+                }
+                if (Number.isFinite(view?.fov)) camera.fov = view.fov;
+                if (Number.isFinite(view?.zoom)) camera.zoom = view.zoom;
+            }
+
+            function setBaseFromView(view) {
+                if (!view?.position || !view?.target) return;
+                applyViewCameraFields(view);
+                camera.position.set(view.position.x, view.position.y, view.position.z);
+                controls.target.set(view.target.x, view.target.y, view.target.z);
+                controls.update();
+                setBaseFromCamera();
+            }
+
+            function setBaseFromCamera() {
+                state.basePosition.copy(camera.position);
+                state.baseTarget.copy(controls.target);
+                state.baseUp.copy(camera.up);
+                state.baseFov = camera.fov;
+                state.baseZoom = camera.zoom;
+                state.spherical.setFromVector3(state.basePosition.clone().sub(state.baseTarget));
+                state.baseRight.set(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
+                state.baseViewUp.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+                state.targetYaw = 0;
+                state.targetPitch = 0;
+                state.targetPanX = 0;
+                state.targetPanY = 0;
+                state.yaw = 0;
+                state.pitch = 0;
+                state.panX = 0;
+                state.panY = 0;
+                applyCamera();
+            }
+
+            function applyCamera() {
+                const phi = clamp(state.spherical.phi + state.pitch, 0.001, Math.PI - 0.001);
+                const theta = state.spherical.theta + state.yaw;
+                const offset = new THREE.Vector3().setFromSphericalCoords(state.spherical.radius, phi, theta);
+                camera.position.copy(state.baseTarget).add(offset);
+                camera.up.copy(state.baseUp);
+                camera.fov = state.baseFov;
+                camera.zoom = state.baseZoom;
+                camera.lookAt(state.baseTarget);
+                const cameraShift = new THREE.Vector3()
+                    .addScaledVector(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion), state.panX)
+                    .addScaledVector(new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion), state.panY);
+                camera.position.add(cameraShift);
+                camera.lookAt(state.baseTarget);
+                camera.updateProjectionMatrix();
+                controls.target.copy(state.baseTarget);
+            }
+
+            function setTargetsFromPointer(event) {
+                const nx = clamp((event.clientX / Math.max(window.innerWidth, 1)) * 2 - 1, -1, 1);
+                const ny = clamp((event.clientY / Math.max(window.innerHeight, 1)) * 2 - 1, -1, 1);
+                const panLimit = state.spherical.radius * panStrength;
+                state.targetYaw = clamp(-nx * horizontalLimit * sensitivity, -horizontalLimit, horizontalLimit);
+                state.targetPitch = clamp(-ny * verticalLimit * sensitivity, -verticalLimit, verticalLimit);
+                state.targetPanX = -nx * panLimit;
+                state.targetPanY = ny * panLimit;
+            }
+
+            function onPointerDown(event) {
+                if (event.button !== undefined && event.button !== 0) return;
+                if (event.target !== domElement) return;
+                state.dragging = true;
+                state.pointerId = event.pointerId;
+                state.lastX = event.clientX;
+                state.lastY = event.clientY;
+                if (domElement.setPointerCapture) domElement.setPointerCapture(event.pointerId);
+                event.preventDefault();
+            }
+
+            function onPointerMove(event) {
+                if (!state.dragging) {
+                    if (followPointer && event.pointerType !== 'touch' && event.target === domElement) {
+                        setTargetsFromPointer(event);
+                    }
+                    return;
+                }
+                if (event.pointerId !== state.pointerId) return;
+                const dx = event.clientX - state.lastX;
+                const dy = event.clientY - state.lastY;
+                state.lastX = event.clientX;
+                state.lastY = event.clientY;
+                const dragScale = Math.max(window.innerWidth, window.innerHeight, 1);
+                const panLimit = state.spherical.radius * panStrength;
+                state.targetYaw = clamp(state.targetYaw - (dx / dragScale) * horizontalLimit * 4 * sensitivity, -horizontalLimit, horizontalLimit);
+                state.targetPitch = clamp(state.targetPitch - (dy / dragScale) * verticalLimit * 4 * sensitivity, -verticalLimit, verticalLimit);
+                state.targetPanX = clamp(state.targetPanX - (dx / dragScale) * panLimit * 2 * sensitivity, -panLimit, panLimit);
+                state.targetPanY = clamp(state.targetPanY + (dy / dragScale) * panLimit * 2 * sensitivity, -panLimit, panLimit);
+                state.yaw = state.targetYaw;
+                state.pitch = state.targetPitch;
+                state.panX = state.targetPanX;
+                state.panY = state.targetPanY;
+                applyCamera();
+                event.preventDefault();
+            }
+
+            function endDrag(event) {
+                if (event.pointerId !== state.pointerId) return;
+                state.dragging = false;
+                state.pointerId = null;
+                if (returnToCenter) {
+                    state.targetYaw = 0;
+                    state.targetPitch = 0;
+                    state.targetPanX = 0;
+                    state.targetPanY = 0;
+                }
+                if (domElement.releasePointerCapture) {
+                    try { domElement.releasePointerCapture(event.pointerId); } catch (error) {}
+                }
+            }
+
+            domElement.style.touchAction = 'none';
+            domElement.addEventListener('pointerdown', onPointerDown);
+            domElement.addEventListener('pointermove', onPointerMove);
+            domElement.addEventListener('pointerleave', () => {
+                if (!returnToCenter || state.dragging) return;
+                state.targetYaw = 0;
+                state.targetPitch = 0;
+                state.targetPanX = 0;
+                state.targetPanY = 0;
+            });
+            domElement.addEventListener('pointerup', endDrag);
+            domElement.addEventListener('pointercancel', endDrag);
+            setBaseFromCamera();
+
+            return {
+                setBaseFromView,
+                setBaseFromCamera,
+                update(delta) {
+                    if (state.dragging) return;
+                    const t = returnToCenter ? 1 - Math.exp(-returnSmoothing * delta) : 1;
+                    state.yaw = THREE.MathUtils.lerp(state.yaw, state.targetYaw, t);
+                    state.pitch = THREE.MathUtils.lerp(state.pitch, state.targetPitch, t);
+                    state.panX = THREE.MathUtils.lerp(state.panX, state.targetPanX, t);
+                    state.panY = THREE.MathUtils.lerp(state.panY, state.targetPanY, t);
+                    if (Math.abs(state.yaw) < 0.00001 && Math.abs(state.pitch) < 0.00001 && Math.abs(state.panX) < 0.00001 && Math.abs(state.panY) < 0.00001 && returnToCenter) {
+                        state.yaw = 0;
+                        state.pitch = 0;
+                        state.panX = 0;
+                        state.panY = 0;
+                    }
+                    applyCamera();
+                }
+            };
+        }
+        
+        
+        class SmoothZoomController {
+            constructor(camera, controls, domElement) {
+                this.camera = camera;
+                this.controls = controls;
+                this.domElement = domElement;
+
+                // Tuning parameters (matching editor viewer exactly)
+                this.damping = 14.0;             // Exponential decay constant lambda (1/s)
+                this.baseSensitivity = 0.0020;   // Responsive sensitivity for decisive, silky zoom
+                this.minStep = 0.0005;           // Relative settling tolerance (0.05% of distance)
+                this.speedMultiplier = 1.0;      // Scaled by navigation speed (1-4)
+
+                // State
+                this.targetDistance = this.getCurrentDistance();
+                this.isZooming = false;
+                this.lastTime = performance.now();
+
+                this._onWheel = this.onWheel.bind(this);
+                this._onPointerDown = this.onPointerDown.bind(this);
+
+                this.init();
+            }
+
+            init() {
+                if (this.domElement) {
+                    this.domElement.addEventListener('wheel', this._onWheel, { passive: false, capture: true });
+                    this.domElement.addEventListener('pointerdown', this._onPointerDown, { passive: true, capture: true });
+                }
+                // Capture window wheel events so scrolling anywhere over the viewport reliably zooms
+                window.addEventListener('wheel', this._onWheel, { passive: false, capture: true });
+            }
+
+            setSpeedMultiplier(multiplier) {
+                this.speedMultiplier = Math.max(0.1, Number(multiplier) || 1.0);
+            }
+
+            getCurrentDistance() {
+                if (!this.camera || !this.controls || !this.controls.target) return 5.0;
+                return this.camera.position.distanceTo(this.controls.target);
+            }
+
+            sync() {
+                this.targetDistance = this.getCurrentDistance();
+                this.isZooming = false;
+                this.lastTime = performance.now();
+            }
+
+            onPointerDown() {
+                if (this.isZooming) {
+                    this.sync();
+                }
+            }
+
+            onWheel(e) {
+                // Prevent browser page zoom on trackpad pinch regardless of control state
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                }
+
+                // Do not intercept if scrolling inside a scrollable card or panel
+                if (e.target && typeof e.target.closest === 'function') {
+                    const scrollableUI = e.target.closest(
+                        '#view-panel, #card-content, .hotspot-card, #shortcuts-panel, select, textarea, [data-scrollable], [data-scroll]'
+                    );
+                    if (scrollableUI) return;
+                    let el = e.target;
+                    while (el && el !== document.body && el !== document.documentElement && el !== this.domElement) {
+                        if (el.nodeType === 1) {
+                            const style = window.getComputedStyle(el);
+                            if (style && (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflow === 'auto' || style.overflow === 'scroll')) {
+                                return;
+                            }
+                        }
+                        el = el.parentElement;
+                    }
+                }
+
+                if (!this.controls || !this.controls.enabled || !this.controls.enableZoom) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
+
+                // Guard against non-finite deltaY
+                if (!Number.isFinite(e.deltaY)) return;
+
+                let dy = e.deltaY;
+                if (e.deltaMode === 1) {
+                    dy *= 20;
+                } else if (e.deltaMode === 2) {
+                    dy *= 100;
+                }
+
+                const clampedDy = Math.max(-300, Math.min(300, dy));
+                if (Math.abs(clampedDy) < 1e-3) return;
+
+                const sensitivity = this.baseSensitivity * this.speedMultiplier;
+                const factor = Math.exp(clampedDy * sensitivity);
+
+                // Match editor reversal: discard queued travel in the opposite direction.
+                const currentDistance = this.getCurrentDistance();
+                const pendingDirection = Math.sign(this.targetDistance - currentDistance);
+                if (!this.isZooming || pendingDirection !== Math.sign(clampedDy)) {
+                    this.targetDistance = currentDistance;
+                    this.isZooming = true;
+                }
+
+                const minDist = this.controls.minDistance || 0.1;
+                const maxDist = this.controls.maxDistance || Infinity;
+                this.targetDistance = Math.max(minDist, Math.min(maxDist, this.targetDistance * factor));
+            }
+
+            update(dt) {
+                if (!this.controls || !this.controls.enabled || !this.controls.enableZoom) {
+                    this.sync();
+                    return;
+                }
+
+                const now = performance.now();
+                if (typeof dt !== 'number' || dt <= 0 || dt > 0.2) {
+                    dt = Math.min((now - this.lastTime) / 1000, 0.1);
+                }
+                this.lastTime = now;
+
+                const currentDistance = this.getCurrentDistance();
+
+                if (!this.isZooming) {
+                    this.targetDistance = currentDistance;
+                    return;
+                }
+
+                const distanceDelta = Math.abs(currentDistance - this.targetDistance);
+                const threshold = Math.max(this.targetDistance * this.minStep, 1e-4);
+
+                if (distanceDelta <= threshold) {
+                    this.applyDistance(this.targetDistance);
+                    this.isZooming = false;
+                    return;
+                }
+
+                const alpha = 1 - Math.exp(-this.damping * dt);
+                const newDistance = THREE.MathUtils.lerp(currentDistance, this.targetDistance, alpha);
+
+                const minDist = this.controls.minDistance || 0.1;
+                const maxDist = this.controls.maxDistance || Infinity;
+                const clampedDistance = Math.max(minDist, Math.min(maxDist, newDistance));
+
+                this.applyDistance(clampedDistance);
+            }
+
+            applyDistance(distance) {
+                const offset = new THREE.Vector3().subVectors(this.camera.position, this.controls.target);
+                let curDist = offset.length();
+
+                if (curDist <= 1e-6) {
+                    offset.set(0, 0, 1).applyQuaternion(this.camera.quaternion);
+                    if (offset.lengthSq() < 1e-6) offset.set(0, 0, 1);
+                    curDist = 1.0;
+                }
+
+                offset.multiplyScalar(distance / curDist);
+                this.camera.position.copy(this.controls.target).add(offset);
+            }
+
+            dispose() {
+                if (this.domElement) {
+                    this.domElement.removeEventListener('wheel', this._onWheel, { capture: true });
+                    this.domElement.removeEventListener('pointerdown', this._onPointerDown, { capture: true });
+                }
+                window.removeEventListener('wheel', this._onWheel, { capture: true });
+                this.isZooming = false;
+            }
+        }
+        
+        
+        class CameraController {
+            constructor(camera, controls, options = {}) {
+                this.camera = camera;
+                this.controls = controls;
+                this.target = controls ? controls.target : null;
+
+                this.baseAcceleration = options.acceleration || 150.0;
+                this.baseMaxSpeed = options.maxSpeed || 80.0;
+                this.speedMultiplier = 1.0;
+
+                this.acceleration = this.baseAcceleration;
+                this.damping = options.damping || 0.95;
+                this.maxSpeed = this.baseMaxSpeed;
+                this.noCollision = options.noCollision || false;
+
+                this.velocity = new THREE.Vector3();
+                this.keys = {
+                    forward: false,
+                    backward: false,
+                    left: false,
+                    right: false,
+                    up: false,
+                    down: false
+                };
+
+                this._onKeyDown = this.onKeyDown.bind(this);
+                this._onKeyUp = this.onKeyUp.bind(this);
+                this._onBlur = () => {
+                    for (const key in this.keys) this.keys[key] = false;
+                    if (this.velocity) this.velocity.set(0, 0, 0);
+                };
+
+                this.init();
+            }
+
+            get isMoving() {
+                const isKeyActive = Object.values(this.keys || {}).some(Boolean);
+                const hasVelocity = this.velocity ? this.velocity.lengthSq() > 0.0001 : false;
+                return isKeyActive || hasVelocity;
+            }
+
+            init() {
+                window.addEventListener('keydown', this._onKeyDown);
+                window.addEventListener('keyup', this._onKeyUp);
+                window.addEventListener('blur', this._onBlur);
+            }
+
+            setSpeedMultiplier(multiplier) {
+                this.speedMultiplier = Math.max(0.1, Number(multiplier) || 1.0);
+                this.acceleration = this.baseAcceleration * this.speedMultiplier;
+                this.maxSpeed = this.baseMaxSpeed * this.speedMultiplier;
+            }
+
+            setTarget(target) {
+                this.target = target;
+            }
+
+            setNoCollision(enabled) {
+                this.noCollision = Boolean(enabled);
+            }
+
+            onKeyDown(event) {
+                // Ignore controls if user is holding modifiers (e.g. Ctrl+S, Ctrl+A)
+                if (event.ctrlKey || event.metaKey || event.altKey) {
+                    return;
+                }
+
+                // Ignore controls if user is typing in an input field
+                if (document.activeElement instanceof HTMLInputElement ||
+                    document.activeElement instanceof HTMLTextAreaElement ||
+                    (document.activeElement && document.activeElement.isContentEditable)) {
+                    return;
+                }
+                if (typeof fullscreenMediaActive !== 'undefined' && fullscreenMediaActive) {
+                    return;
+                }
+
+                switch (event.code) {
+                    case 'KeyW': this.keys.forward = true; break;
+                    case 'KeyS': this.keys.backward = true; break;
+                    case 'KeyA': this.keys.left = true; break;
+                    case 'KeyD': this.keys.right = true; break;
+                    case 'KeyQ': this.keys.up = true; break;
+                    case 'KeyE': this.keys.down = true; break;
+                }
+            }
+
+            onKeyUp(event) {
+                switch (event.code) {
+                    case 'KeyW': this.keys.forward = false; break;
+                    case 'KeyS': this.keys.backward = false; break;
+                    case 'KeyA': this.keys.left = false; break;
+                    case 'KeyD': this.keys.right = false; break;
+                    case 'KeyQ': this.keys.up = false; break;
+                    case 'KeyE': this.keys.down = false; break;
+                }
+            }
+
+            update(delta) {
+                if (!delta || delta <= 0 || !Number.isFinite(delta)) return;
+                delta = Math.min(delta, 0.1);
+
+                const input = new THREE.Vector3();
+
+                if (this.keys.forward) input.z -= 1;
+                if (this.keys.backward) input.z += 1;
+                if (this.keys.left) input.x -= 1;
+                if (this.keys.right) input.x += 1;
+                if (this.keys.up) input.y += 1;
+                if (this.keys.down) input.y -= 1;
+
+                if (input.lengthSq() > 0) {
+                    input.normalize().multiplyScalar(this.acceleration * delta);
+                    this.velocity.add(input);
+                }
+
+                const dampingFactor = Math.pow(this.damping, delta * 60);
+                this.velocity.multiplyScalar(dampingFactor);
+
+                const speed = this.velocity.length();
+                if (speed > this.maxSpeed) {
+                    this.velocity.setLength(this.maxSpeed);
+                } else if (speed < 0.001) {
+                    this.velocity.set(0, 0, 0);
+                    return;
+                }
+
+                const moveStep = this.velocity.clone().multiplyScalar(delta);
+
+                let carryTargetForward = false;
+                if (!this.noCollision && this.target && moveStep.z < 0) {
+                    const currentDistance = this.camera.position.distanceTo(this.target);
+                    const minAllowedDist = 0.2;
+                    if (currentDistance + moveStep.z < minAllowedDist) {
+                        if (currentDistance <= minAllowedDist + 1e-6) {
+                            carryTargetForward = true;
+                        } else {
+                            const maxForwardStep = -(Math.max(0, currentDistance - minAllowedDist));
+                            moveStep.z = Math.min(0, maxForwardStep);
+                            if (Math.abs(moveStep.z) < 1e-6) {
+                                carryTargetForward = true;
+                            } else {
+                                this.velocity.z = 0;
+                            }
+                        }
+                    }
+                }
+
+                this.camera.translateX(moveStep.x);
+                this.camera.translateY(moveStep.y);
+                this.camera.translateZ(moveStep.z);
+
+                if (this.target) {
+                    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+                    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+                    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.camera.quaternion);
+
+                    this.target.addScaledVector(right, moveStep.x);
+                    this.target.addScaledVector(up, moveStep.y);
+                    if (this.noCollision || carryTargetForward) {
+                        this.target.addScaledVector(forward, moveStep.z);
+                    }
+                }
+            }
+
+            dispose() {
+                window.removeEventListener('keydown', this._onKeyDown);
+                window.removeEventListener('keyup', this._onKeyUp);
+                window.removeEventListener('blur', this._onBlur);
+            }
+        }
+        
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        const maxPixelRatio = 2;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = config.exposure;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth/window.innerHeight, initialNear, initialFar);
+        camera.position.set(initialPos.x, initialPos.y, initialPos.z);
+        camera.up.set(initialUp.x || 0, initialUp.y || 1, initialUp.z || 0);
+        camera.zoom = initialZoom;
+        camera.near = initialNear;
+        camera.far = initialFar;
+        if (hasInitialQuaternion) {
+            camera.quaternion.set(initialQuaternion.x, initialQuaternion.y, initialQuaternion.z, initialQuaternion.w).normalize();
+        }
+        camera.updateProjectionMatrix();
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.1; 
+        controls.enableRotate = true;
+        controls.enableZoom = true; controls.zoomSpeed = 0.8; 
+        controls.enablePan = true; controls.rotateSpeed = 0.8; controls.panSpeed = 0.8;
+        controls.screenSpacePanning = true;
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.PAN,
+            RIGHT: THREE.MOUSE.PAN
+        };
+        controls.touches = {
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN
+        };
+        renderer.domElement.addEventListener('auxclick', (e) => {
+            if (e.button === 1) e.preventDefault();
+        });
+        controls.autoRotate = config.autoRotate; controls.autoRotateSpeed = config.rotateSpeed;
+        controls.minDistance = 0.2; controls.maxDistance = 200; controls.target.set(initialTarget.x, initialTarget.y, initialTarget.z);
+        controls.update();
+        if (hasInitialQuaternion) {
+            camera.quaternion.set(initialQuaternion.x, initialQuaternion.y, initialQuaternion.z, initialQuaternion.w).normalize();
+        }
+        camera.updateProjectionMatrix();
+        anchoredOrbit = createAnchoredOrbitController(camera, controls, renderer.domElement, config);
+        smoothZoom = new SmoothZoomController(camera, controls, renderer.domElement);
+        cameraController = new CameraController(camera, controls, {
+            acceleration: 150.0,
+            damping: 0.95,
+            maxSpeed: 80.0,
+            noCollision: Boolean(config.noCollision)
+        });
+        setNavigationSpeed(config.navSpeedLevel, false);
+        window.__VIEWER__ = { THREE, renderer, scene, camera, controls, smoothZoom, cameraController, anchoredOrbit };
+
+        controls.addEventListener('start', () => { clearTimeout(rotationTimeout); controls.autoRotate = false; });
+        controls.addEventListener('end', () => { if (config.autoRotate) { clearTimeout(rotationTimeout); rotationTimeout = setTimeout(() => { controls.autoRotate = true; }, config.autoRotateDelay * 1000); } });
+
+        function applyView(view) {
+            if (!view) return;
+            camera.position.set(view.position.x, view.position.y, view.position.z);
+            if (view.up) camera.up.set(view.up.x || 0, view.up.y || 1, view.up.z || 0);
+            if (Number.isFinite(view.fov)) camera.fov = view.fov;
+            if (Number.isFinite(view.zoom)) camera.zoom = view.zoom;
+            if (Number.isFinite(view.near)) camera.near = view.near;
+            if (Number.isFinite(view.far)) camera.far = view.far;
+            controls.target.set(view.target.x, view.target.y, view.target.z);
+            controls.update();
+            if (view.quaternion && Number.isFinite(view.quaternion.x) && Number.isFinite(view.quaternion.y) && Number.isFinite(view.quaternion.z) && Number.isFinite(view.quaternion.w)) {
+                camera.quaternion.set(view.quaternion.x, view.quaternion.y, view.quaternion.z, view.quaternion.w).normalize();
+            }
+            camera.updateProjectionMatrix();
+            if (anchoredOrbit) anchoredOrbit.setBaseFromView(view);
+            if (smoothZoom) smoothZoom.sync();
+            if (cameraController) cameraController.setTarget(controls.target);
+        }
+
+        function setupViewControls() {
+            const controlsContainer = document.getElementById('view-controls');
+            const toggle = document.getElementById('view-toggle');
+            const panel = document.getElementById('view-panel');
+            const list = document.getElementById('view-list');
+            const resetBtn = document.getElementById('view-reset');
+
+            if (!controlsContainer || !toggle || !panel || !list || !resetBtn) return;
+            if (cameraBookmarks.length === 0) {
+                controlsContainer.style.display = 'none';
+                return;
+            }
+
+            list.innerHTML = '';
+            cameraBookmarks.forEach((b) => {
+                const row = document.createElement('div');
+                row.className = 'view-item';
+                const btn = document.createElement('button');
+                btn.textContent = b.name || 'View';
+                btn.onclick = () => applyView(b);
+                row.appendChild(btn);
+                list.appendChild(row);
+            });
+
+            toggle.onclick = () => panel.classList.toggle('visible');
+
+            const fallbackResetBookmark = defaultBookmark || (cameraBookmarks.length > 0 ? cameraBookmarks[0] : null);
+            if (!fallbackResetBookmark) {
+                resetBtn.onclick = () => window.resetOrFitView();
+            } else {
+                resetBtn.onclick = () => applyView(fallbackResetBookmark);
+            }
+        }
+
+        const ambientLight = new THREE.AmbientLight(config.ambColor, config.ambIntensity); scene.add(ambientLight);
+        const sunLight = new THREE.DirectionalLight(config.sunColor, config.sunIntensity);
+        sunLight.castShadow = config.sunCastShadow;
+        sunLight.shadow.mapSize.width = 2048; sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = config.shadowBias; sunLight.shadow.normalBias = config.normalBias;
+        sunLight.shadow.radius = config.shadowSoftness !== undefined ? config.shadowSoftness : 1.0;
+        
+        const r = 20;
+        const phi = THREE.MathUtils.degToRad(90 - config.sunElevation);
+        const theta = THREE.MathUtils.degToRad(config.sunAzimuth);
+        sunLight.position.set(r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.cos(theta));
+        scene.add(sunLight);
+
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: config.shadowOpacity }));
+        plane.rotation.x = -Math.PI / 2; plane.position.y = -0.01; plane.receiveShadow = true; plane.visible = !!config.sunCastShadow; scene.add(plane);
+
+        setupViewControls();
+
+        if (hdriData) {
+            (async () => {
+                try {
+                    if (isZipMode) {
+                        await assertAssetAvailable(hdriData, 'HDRI asset');
+                    }
+                    new RGBELoader().load(
+                        hdriData,
+                        (tex) => {
+                            tex.mapping = THREE.EquirectangularReflectionMapping;
+                            scene.environment = tex;
+                        },
+                        undefined,
+                        (error) => {
+                            console.warn('HDRI load failed:', error);
+                        }
+                    );
+                } catch (error) {
+                    console.warn('HDRI boot check failed:', error);
+                }
+            })();
+        }
+        document.getElementById('canvas-container').style.opacity = '1';
+        document.getElementById('canvas-container').style.background = `linear-gradient(to bottom, ${config.bgTop}, ${config.bgBot})`;
+
+        // Icon Drawing Functions
+        
+        function drawCircleIcon(ctx, size, showOutline) {
+            const center = size / 2; const radius = size * 0.4375;
+            ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; ctx.fill();
+            if (showOutline) { ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0, 0, 0, 0.5)"; ctx.stroke(); }
+        }
+        function drawPinIcon(ctx, size, showOutline) {
+            const center = size / 2; const pinWidth = size * 0.55; const pinHeight = size * 0.75;
+            const topCircleRadius = pinWidth / 2; const innerCircleRadius = pinWidth / 4;
+            const bottomY = center + pinHeight / 2; const topY = center - pinHeight / 2;
+            ctx.beginPath();
+            ctx.arc(center, topY + topCircleRadius, topCircleRadius, Math.PI, 0, false);
+            ctx.quadraticCurveTo(center + topCircleRadius, topY + topCircleRadius * 1.5, center, bottomY);
+            ctx.quadraticCurveTo(center - topCircleRadius, topY + topCircleRadius * 1.5, center - topCircleRadius, topY + topCircleRadius);
+            ctx.closePath(); ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; ctx.fill();
+            if (showOutline) { ctx.lineWidth = size * 0.03; ctx.strokeStyle = "rgba(0, 0, 0, 0.5)"; ctx.stroke(); }
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath(); ctx.arc(center, topY + topCircleRadius, innerCircleRadius, 0, Math.PI * 2); ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+        function drawSquareIcon(ctx, size, showOutline) {
+            const center = size / 2; const squareSize = size * 0.625; const cornerRadius = size * 0.125;
+            const x = center - squareSize / 2; const y = center - squareSize / 2;
+            ctx.beginPath(); ctx.moveTo(x + cornerRadius, y);
+            ctx.lineTo(x + squareSize - cornerRadius, y);
+            ctx.quadraticCurveTo(x + squareSize, y, x + squareSize, y + cornerRadius);
+            ctx.lineTo(x + squareSize, y + squareSize - cornerRadius);
+            ctx.quadraticCurveTo(x + squareSize, y + squareSize, x + squareSize - cornerRadius, y + squareSize);
+            ctx.lineTo(x + cornerRadius, y + squareSize);
+            ctx.quadraticCurveTo(x, y + squareSize, x, y + squareSize - cornerRadius);
+            ctx.lineTo(x, y + cornerRadius); ctx.quadraticCurveTo(x, y, x + cornerRadius, y); ctx.closePath();
+            ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; ctx.fill();
+            if (showOutline) { ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0, 0, 0, 0.5)"; ctx.stroke(); }
+        }
+        function drawDiamondIcon(ctx, size, showOutline) {
+            const center = size / 2; const diamondSize = size * 0.5;
+            ctx.beginPath(); ctx.moveTo(center, center - diamondSize);
+            ctx.lineTo(center + diamondSize, center); ctx.lineTo(center, center + diamondSize);
+            ctx.lineTo(center - diamondSize, center); ctx.closePath();
+            ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; ctx.fill();
+            if (showOutline) { ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0, 0, 0, 0.5)"; ctx.stroke(); }
+        }
+        function drawStarIcon(ctx, size, showOutline) {
+            const center = size / 2; const outerRadius = size * 0.45; const innerRadius = size * 0.2; const points = 5;
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (i * Math.PI) / points - Math.PI / 2;
+                const x = center + radius * Math.cos(angle); const y = center + radius * Math.sin(angle);
+                if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+            }
+            ctx.closePath(); ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; ctx.fill();
+            if (showOutline) { ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0, 0, 0, 0.5)"; ctx.stroke(); }
+        }
+        
+
+        // Sprite Material
+        const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const iconType = config.hsIconType || 'circle'; const showOutline = config.hsShowOutline;
+        switch (iconType) {
+            case 'pin': drawPinIcon(ctx, 256, showOutline); break;
+            case 'square': drawSquareIcon(ctx, 256, showOutline); break;
+            case 'diamond': drawDiamondIcon(ctx, 256, showOutline); break;
+            case 'star': drawStarIcon(ctx, 256, showOutline); break;
+            case 'circle': default: drawCircleIcon(ctx, 256, showOutline); break;
+        }
+        const spriteMat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: false, depthWrite: false });
+
+        function setupScene(gltf) {
+            modelObject = gltf.scene;
+            const box = new THREE.Box3().setFromObject(modelObject);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scaleFactor = 10/maxDim;
+            modelObject.scale.setScalar(scaleFactor);
+            const newBox = new THREE.Box3().setFromObject(modelObject);
+            modelObject.position.sub(newBox.getCenter(new THREE.Vector3()));
+            modelObject.position.y -= new THREE.Box3().setFromObject(modelObject).min.y;
+
+            // Apply saved transform overrides
+            if (transform) {
+                if (transform.position) modelObject.position.set(transform.position.x, transform.position.y, transform.position.z);
+                if (transform.rotation) modelObject.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z);
+                if (transform.scale) modelObject.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
+            }
+
+            modelObject.traverse(n => {
+                if(n.isMesh) {
+                    n.castShadow = true; n.receiveShadow = true;
+                    if(!(n.material instanceof THREE.MeshPhysicalMaterial)) {
+                        const newMat = new THREE.MeshPhysicalMaterial();
+                        THREE.MeshStandardMaterial.prototype.copy.call(newMat, n.material);
+                        n.material = newMat;
+                    }
+                    n.material.shadowSide = THREE.DoubleSide;
+                    if(config.disableReflections) { n.material.roughness = 1.0; n.material.metalness = 0.0; n.material.specularIntensity = 0.0; }
+                    else { n.material.roughness = config.roughness; n.material.metalness = config.metalness; n.material.envMapIntensity = config.envMapIntensity; n.material.specularIntensity = config.specularIntensity; }
+                    if(config.edgeVisible) {
+                        const edgesGeom = new THREE.EdgesGeometry(n.geometry, parseFloat(config.edgeThreshold));
+                        const edgesMat = new THREE.LineBasicMaterial({ color: config.edgeColor, transparent: true, opacity: config.edgeOpacity });
+                        const edges = new THREE.LineSegments(edgesGeom, edgesMat);
+                        n.add(edges);
+                    }
+                }
+            });
+            scene.add(modelObject);
+            
+            // Init Hotspots
+            hotspotsData.forEach(h => {
+                const sprite = new THREE.Sprite(spriteMat.clone());
+                sprite.position.set(h.position.x, h.position.y, h.position.z);
+                sprite.scale.set(config.hsSize, config.hsSize, config.hsSize);
+                sprite.material.opacity = config.hsOpacity;
+                sprite.material.transparent = true;
+                sprite.renderOrder = 999;
+                sprite.userData = { id: h.id };
+                scene.add(sprite);
+                hotspots.push({ ...h, spriteRef: sprite });
+            });
+            pendingOcclusionChecks = hotspots.length;
+
+            modelBox.setFromObject(modelObject);
+            hasModelBox = !modelBox.isEmpty();
+            cachedMeshes = [];
+            modelObject.traverse(child => {
+                if (child.isMesh && child.geometry) {
+                    if (!child.geometry.boundingSphere) child.geometry.computeBoundingSphere();
+                    if (!child.geometry.boundingBox) child.geometry.computeBoundingBox();
+                    cachedMeshes.push(child);
+                }
+            });
+
+            const shadowBox = modelBox;
+            const shadowSize = shadowBox.getSize(new THREE.Vector3());
+            const shadowCenter = shadowBox.getCenter(new THREE.Vector3());
+            const shadowMaxDim = Math.max(shadowSize.x, shadowSize.y, shadowSize.z) || 10;
+            sunLight.target.position.copy(shadowCenter);
+            scene.add(sunLight.target);
+            if (plane) { plane.position.x = shadowCenter.x; plane.position.z = shadowCenter.z; }
+            const sunDist = Math.max(30, shadowMaxDim * 2.5);
+            sunLight.position.set(
+                shadowCenter.x + sunDist * Math.sin(phi) * Math.sin(theta),
+                shadowCenter.y + sunDist * Math.cos(phi),
+                shadowCenter.z + sunDist * Math.sin(phi) * Math.cos(theta)
+            );
+            const d = Math.max(15, shadowMaxDim * 1.8);
+            sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d; sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = sunDist * 2;
+            sunLight.shadow.camera.updateProjectionMatrix();
+            const maxSize = 10; controls.maxDistance = maxSize * 20; camera.near = initialNear; camera.far = initialFar; camera.updateProjectionMatrix();
+            document.getElementById('loading-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 800);
+        }
+
+        function updateHotspotPos(hotspotOverride = null) {
+            const hotspot = hotspotOverride || activeHotspot;
+            if (!hotspot || !hotspot.spriteRef) return false;
+            const card = document.getElementById('hotspot-card');
+            if (!card) return false;
+            cardScreenPos.copy(hotspot.spriteRef.position).project(camera);
+            
+            const x = (cardScreenPos.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-(cardScreenPos.y * 0.5) + 0.5) * window.innerHeight;
+            
+            // Boundary clamping
+            // Use the CSS variable value for width (fixed size)
+            const cardScale = config.hsPopupScale || 30; // This is in vmin units
+            const vmin = Math.min(window.innerWidth, window.innerHeight);
+            const width = (cardScale / 100) * vmin;
+            if (cachedCardHeight <= 0) {
+                cachedCardHeight = card.offsetHeight || 0;
+            }
+            const height = cachedCardHeight;
+            const padding = 20;
+
+            const minX = padding + width / 2;
+            const maxX = window.innerWidth - padding - width / 2;
+            const clampedX = Math.max(minX, Math.min(x, maxX));
+
+            const minY = padding + height * 1.1; // Account for -110% transform
+            const maxY = window.innerHeight - padding;
+            const clampedY = Math.max(minY, Math.min(y, maxY));
+
+            if (Math.abs(clampedX - lastCardLeft) > 0.5) {
+                card.style.left = `${clampedX}px`; 
+                lastCardLeft = clampedX;
+            }
+            if (Math.abs(clampedY - lastCardTop) > 0.5) {
+                card.style.top = `${clampedY}px`;
+                lastCardTop = clampedY;
+            }
+            return true;
+        }
+        
+        function openPanoramicView(hotspot) {
+            const overlay = document.getElementById('panorama-overlay');
+            const viewerContainer = document.getElementById('panorama-viewer');
+            const closeBtn = document.getElementById('panorama-close');
+            
+            overlay.style.display = 'block';
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(hotspot.content, 'text/html');
+            try {
+                const img = doc.querySelector('img');
+                const imagePath = img ? img.getAttribute('src') : null;
+
+                if (!imagePath) {
+                    console.warn('No image found for panoramic view');
+                    return;
+                }
+                
+                if (window.pannellum) {
+                    window.pannellum.viewer('panorama-viewer', {
+                        type: 'equirectangular',
+                        panorama: imagePath,
+                        autoLoad: true,
+                        showControls: false,
+                        compass: false,
+                        title: '',
+                        author: '', 
+                        hotSpotDebug: false
+                    });
+                }
+            } catch (err) {
+                console.error('Error opening panoramic view:', err);
+                return;
+            }
+            
+            closeBtn.onclick = closePanoramicView;
+        }
+
+        function closePanoramicView() {
+            const overlay = document.getElementById('panorama-overlay');
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                document.getElementById('panorama-viewer').innerHTML = ''; // Destroy viewer
+            }, 800);
+        }
+
+        const activePointers = new Map();
+        let hadMultiTouch = false;
+
+        window.addEventListener('pointerdown', (event) => {
+            if (event.button !== undefined && event.button !== 0) return;
+            if (event.target.id !== 'canvas-container' && event.target.tagName !== 'CANVAS') return;
+            activePointers.set(event.pointerId, {
+                startX: event.clientX,
+                startY: event.clientY,
+                startTime: performance.now(),
+                pointerType: event.pointerType || 'mouse',
+                isTapCandidate: true
+            });
+            if (activePointers.size > 1) {
+                hadMultiTouch = true;
+                for (const p of activePointers.values()) p.isTapCandidate = false;
+            }
+        });
+
+        window.addEventListener('pointermove', (event) => {
+            if (activePointers.has(event.pointerId)) {
+                const p = activePointers.get(event.pointerId);
+                const dist = Math.hypot(event.clientX - p.startX, event.clientY - p.startY);
+                const threshold = p.pointerType === 'touch' ? 10 : 6;
+                if (dist > threshold) p.isTapCandidate = false;
+            }
+        });
+
+        window.addEventListener('pointerup', (event) => {
+            const p = activePointers.get(event.pointerId);
+            const wasMulti = hadMultiTouch;
+            activePointers.delete(event.pointerId);
+            if (activePointers.size === 0) hadMultiTouch = false;
+
+            if (!p || !p.isTapCandidate || wasMulti) return;
+            if (event.target.id !== 'canvas-container' && event.target.tagName !== 'CANVAS') return;
+
+            const elapsed = performance.now() - p.startTime;
+            const dist = Math.hypot(event.clientX - p.startX, event.clientY - p.startY);
+            const maxDist = p.pointerType === 'touch' ? 12 : 8;
+            if (elapsed > 350 || dist > maxDist) return;
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            pointer.x = ((event.clientX - rect.left) / (rect.width || 1)) * 2 - 1;
+            pointer.y = -((event.clientY - rect.top) / (rect.height || 1)) * 2 + 1;
+            raycaster.setFromCamera(pointer, camera);
+            const sprites = hotspots.map(h => h.spriteRef);
+            const intersects = raycaster.intersectObjects(sprites, false);
+            if (intersects.length > 0) {
+                const id = intersects[0].object.userData.id;
+                const h = hotspots.find(x => x.id === id);
+                if (h) {
+                    markerAnimationState.clickedHotspotId = h.id;
+                    markerAnimationState.clickAnimationTime = 0;
+                    const isPano = h.isPanoramic || h.content.includes('panoramic-preview');
+
+                    if (isPano) {
+                        openPanoramicView(h);
+                    } else {
+                        // Check if fullscreen media mode is enabled
+                        if (config.hsFullscreenMedia) {
+                            // Get marker screen position for animation origin
+                            const spritePos = cardScreenPos.copy(h.spriteRef.position).project(camera);
+                            const screenX = (spritePos.x * 0.5 + 0.5) * window.innerWidth;
+                            const screenY = (-(spritePos.y * 0.5) + 0.5) * window.innerHeight;
+                            
+                            if (openFullscreenMedia(h, { x: screenX, y: screenY })) {
+                                return; // Opened in fullscreen mode
+                            }
+                        }
+                        
+                        // Regular popup mode
+                        openHotspotPopup(h);
+                    }
+                }
+            } else {
+                closeHotspotPopup();
+            }
+        });
+
+        window.addEventListener('pointercancel', (event) => {
+            activePointers.delete(event.pointerId);
+            if (activePointers.size === 0) hadMultiTouch = false;
+        });
+
+        window.addEventListener('contextmenu', (event) => {
+            if ((event.target.id === 'canvas-container' || event.target.tagName === 'CANVAS') && event.pointerType === 'touch') {
+                event.preventDefault();
+            }
+        });
+        
+        
+        const markerAnimationState = (function createHotspotAnimationState() {
+    return { hoveredHotspotId: null, clickedHotspotId: null, clickAnimationTime: 0,
+        hoverScaleMultiplier: 1.2, clickScaleMultiplier: 1.35, animationSpeed: 10, clickAnimationDuration: 0.3 };
+})();
+        const updateHotspotScales = function updateHotspotScales(hotspots, state, baseSize, delta) {
+    if (state.clickedHotspotId !== null) {
+        state.clickAnimationTime += delta;
+        if (state.clickAnimationTime > state.clickAnimationDuration) {
+            state.clickedHotspotId = null;
+            state.clickAnimationTime = 0;
+        }
+    }
+    for (const hotspot of hotspots) {
+        if (!hotspot.spriteRef) continue;
+        let target = baseSize;
+        if (state.clickedHotspotId === hotspot.id) {
+            target *= 1 + (state.clickScaleMultiplier - 1) * Math.sin(state.clickAnimationTime / state.clickAnimationDuration * Math.PI);
+        } else if (state.hoveredHotspotId === hotspot.id) {
+            target *= state.hoverScaleMultiplier;
+        }
+        const current = hotspot.spriteRef.scale.x;
+        const next = Math.abs(target - current) > 0.001
+            ? current + (target - current) * (1 - Math.exp(-state.animationSpeed * delta))
+            : target;
+        hotspot.spriteRef.scale.set(next, next, next);
+        hotspot._currentTargetScale = target;
+    }
+};
+        const hoverRaycaster = new THREE.Raycaster();
+        const hoverPointer = new THREE.Vector2();
+        renderer.domElement.addEventListener('pointermove', event => {
+            const rect = renderer.domElement.getBoundingClientRect();
+            hoverPointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1,
+                -((event.clientY - rect.top) / rect.height) * 2 + 1);
+            hoverRaycaster.setFromCamera(hoverPointer, camera);
+            const hits = hoverRaycaster.intersectObjects(hotspots.map(h => h.spriteRef).filter(Boolean), false);
+            markerAnimationState.hoveredHotspotId = hits[0]?.object.userData.id ?? null;
+        });
+        renderer.domElement.addEventListener('pointerleave', () => { markerAnimationState.hoveredHotspotId = null; });
+        let fullscreenMediaActive = false;
+        const popupAnimationDurationMs = 320;
+        let popupCloseTimer = null;
+        let popupOpenToken = 0;
+        const cardScreenPos = new THREE.Vector3();
+        let cachedCardHeight = 0;
+        let lastCardLeft = -9999;
+        let lastCardTop = -9999;
+
+        function showBootError(title, detail = '') {
+            const overlay = document.getElementById('boot-error');
+            if (!overlay) {
+                console.error('[BootError]', title, detail);
+                return;
+            }
+            const titleEl = overlay.querySelector('[data-error-title]');
+            const detailEl = overlay.querySelector('[data-error-detail]');
+            if (titleEl) titleEl.textContent = title || 'Viewer failed to start';
+            if (detailEl) detailEl.textContent = detail || '';
+            overlay.style.display = 'flex';
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+
+        async function assertAssetAvailable(path, label = 'asset') {
+            if (!path || typeof path !== 'string') return;
+            if (/^(data:|blob:|https?:)/i.test(path)) return;
+
+            try {
+                const response = await fetch(path, { method: 'HEAD' });
+                if (!response.ok) {
+                    throw new Error(`${label} not found (${response.status})`);
+                }
+            } catch (headError) {
+                try {
+                    const response = await fetch(path, { method: 'GET' });
+                    if (!response.ok) {
+                        throw new Error(`${label} not found (${response.status})`);
+                    }
+                    if (response.body && typeof response.body.cancel === 'function') {
+                        response.body.cancel();
+                    }
+                } catch (fetchError) {
+                    showBootError(`Missing ${label}`, path);
+                    throw fetchError;
+                }
+            }
+        }
+
+        function setCardContent(html) {
+            cachedCardHeight = 0;
+            lastCardLeft = -9999;
+            lastCardTop = -9999;
+            const cardContent = document.getElementById('card-content');
+            if (!cardContent) return;
+            const safeHtml = (typeof DOMPurify !== 'undefined')
+                ? DOMPurify.sanitize(html || '', {
+                    ALLOWED_TAGS: ['div', 'p', 'span', 'img', 'video', 'source', 'strong', 'em', 'br', 'a'],
+                    ALLOWED_ATTR: ['class', 'style', 'src', 'alt', 'controls', 'autoplay', 'loop', 'muted', 'href', 'target', 'rel', 'data-src-relative']
+                })
+                : String(html || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/\n/g, '<br>');
+            cardContent.innerHTML = safeHtml;
+            // ZIP media paths are stored separately and must be restored after sanitization.
+            cardContent.querySelectorAll('[data-src-relative]').forEach(media => {
+                const relative = media.getAttribute('data-src-relative');
+                if (!relative) return;
+                const url = new URL(relative, document.baseURI);
+                const assets = new URL('./assets/', document.baseURI);
+                if (url.origin === assets.origin && url.pathname.startsWith(assets.pathname)) {
+                    media.setAttribute('src', url.href);
+                    if (media.tagName === 'SOURCE') media.parentElement?.load?.();
+                }
+            });
+        }
+
+        function getHotspotScreenPosition(hotspot) {
+            if (!hotspot || !hotspot.spriteRef || !camera) return null;
+            cardScreenPos.copy(hotspot.spriteRef.position).project(camera);
+            return {
+                x: (cardScreenPos.x * 0.5 + 0.5) * window.innerWidth,
+                y: (-(cardScreenPos.y * 0.5) + 0.5) * window.innerHeight
+            };
+        }
+
+        function setPopupTransformOrigin(hotspot) {
+            const card = document.getElementById('hotspot-card');
+            if (!card) return;
+
+            const markerScreenPos = getHotspotScreenPosition(hotspot);
+            if (!markerScreenPos) {
+                card.style.setProperty('--popup-origin-x', '50%');
+                card.style.setProperty('--popup-origin-y', '110%');
+                return;
+            }
+
+            // Use layout size/anchor coords (not transformed rect), so origin is
+            // stable even while card is in scaled hidden state.
+            const width = card.offsetWidth;
+            if (cachedCardHeight <= 0) {
+                cachedCardHeight = card.offsetHeight || 0;
+            }
+            const height = cachedCardHeight;
+            const anchorX = parseFloat(card.style.left);
+            const anchorY = parseFloat(card.style.top);
+            if (
+                width <= 0 ||
+                height <= 0 ||
+                !Number.isFinite(anchorX) ||
+                !Number.isFinite(anchorY)
+            ) {
+                card.style.setProperty('--popup-origin-x', '50%');
+                card.style.setProperty('--popup-origin-y', '110%');
+                return;
+            }
+
+            const visualLeft = anchorX - (width / 2);
+            const visualTop = anchorY - (height * 1.1);
+            const originXPercent = ((markerScreenPos.x - visualLeft) / width) * 100;
+            const originYPercent = ((markerScreenPos.y - visualTop) / height) * 100;
+
+            card.style.setProperty('--popup-origin-x', originXPercent + '%');
+            card.style.setProperty('--popup-origin-y', originYPercent + '%');
+        }
+
+        function openHotspotPopup(hotspot) {
+            if (!hotspot) return;
+            const card = document.getElementById('hotspot-card');
+            if (!card) return;
+
+            if (popupCloseTimer) {
+                clearTimeout(popupCloseTimer);
+                popupCloseTimer = null;
+            }
+
+            cachedCardHeight = 0;
+            lastCardLeft = -9999;
+            lastCardTop = -9999;
+            const openToken = ++popupOpenToken;
+            activeHotspot = hotspot;
+            setCardContent(hotspot.content);
+            card.classList.remove('closing');
+            card.classList.remove('visible');
+
+            const placePopup = () => {
+                if (openToken !== popupOpenToken || activeHotspot !== hotspot) return false;
+                if (!updateHotspotPos(hotspot)) return false;
+                setPopupTransformOrigin(hotspot);
+                return true;
+            };
+
+            const revealPopup = () => {
+                if (!placePopup()) return;
+                requestAnimationFrame(() => {
+                    if (!placePopup()) return;
+                    card.classList.add('visible');
+                });
+            };
+
+            const cardContent = document.getElementById('card-content');
+            const mediaNodes = cardContent ? Array.from(cardContent.querySelectorAll('img,video')) : [];
+            const pendingMedia = mediaNodes.filter((node) => {
+                if (node.tagName === 'IMG') {
+                    return !(node.complete && node.naturalWidth > 0);
+                }
+                if (node.tagName === 'VIDEO') {
+                    return node.readyState < 1;
+                }
+                return false;
+            });
+
+            if (pendingMedia.length === 0) {
+                revealPopup();
+                return;
+            }
+
+            let remaining = pendingMedia.length;
+            const onMediaSettled = () => {
+                cachedCardHeight = 0;
+                lastCardLeft = -9999;
+                lastCardTop = -9999;
+                if (!placePopup()) return;
+                remaining -= 1;
+                if (remaining <= 0) {
+                    revealPopup();
+                }
+            };
+
+            pendingMedia.forEach((node) => {
+                if (node.tagName === 'IMG') {
+                    node.addEventListener('load', onMediaSettled, { once: true });
+                    node.addEventListener('error', onMediaSettled, { once: true });
+                } else if (node.tagName === 'VIDEO') {
+                    node.addEventListener('loadedmetadata', onMediaSettled, { once: true });
+                    node.addEventListener('error', onMediaSettled, { once: true });
+                }
+            });
+
+            // Avoid long hidden state when media metadata is slow.
+            setTimeout(revealPopup, 220);
+        }
+
+        function closeHotspotPopup(hotspotForOrigin) {
+            const card = document.getElementById('hotspot-card');
+            if (!card) {
+                activeHotspot = null;
+                cachedCardHeight = 0;
+                lastCardLeft = -9999;
+                lastCardTop = -9999;
+                return;
+            }
+
+            const originHotspot = hotspotForOrigin || activeHotspot;
+            if (!card.classList.contains('visible') && !card.classList.contains('closing')) {
+                popupOpenToken += 1;
+                activeHotspot = null;
+                cachedCardHeight = 0;
+                lastCardLeft = -9999;
+                lastCardTop = -9999;
+                return;
+            }
+
+            updateHotspotPos(originHotspot);
+            setPopupTransformOrigin(originHotspot);
+            card.classList.remove('visible');
+            card.classList.add('closing');
+            popupOpenToken += 1;
+            activeHotspot = null;
+            cachedCardHeight = 0;
+            lastCardLeft = -9999;
+            lastCardTop = -9999;
+
+            if (popupCloseTimer) {
+                clearTimeout(popupCloseTimer);
+            }
+            popupCloseTimer = setTimeout(() => {
+                card.classList.remove('closing');
+                popupCloseTimer = null;
+            }, popupAnimationDurationMs);
+        }
+        
+        function closeFullscreenMedia() {
+            const overlay = document.getElementById('fullscreen-media-overlay');
+            const contentContainer = document.getElementById('fullscreen-media-content');
+            if (!overlay || !fullscreenMediaActive) return;
+            fullscreenMediaActive = false;
+            if (contentContainer) contentContainer.classList.add('closing');
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                if (contentContainer) {
+                    contentContainer.classList.remove('closing');
+                    contentContainer.textContent = '';
+                }
+            }, 500);
+        }
+        
+        function openFullscreenMedia(hotspot, markerScreenPos) {
+            const overlay = document.getElementById('fullscreen-media-overlay');
+            const contentContainer = document.getElementById('fullscreen-media-content');
+            if (!overlay || !contentContainer) return false;
+            
+            // Check if hotspot has media
+            const content = hotspot.content || '';
+            if (!content.includes('<img') && !content.includes('<video')) return false;
+            
+            fullscreenMediaActive = true;
+            
+            // Set transform origin from marker position
+            if (markerScreenPos) {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                contentContainer.style.setProperty('--origin-x', 'calc(50% + ' + (markerScreenPos.x - centerX) + 'px)');
+                contentContainer.style.setProperty('--origin-y', 'calc(50% + ' + (markerScreenPos.y - centerY) + 'px)');
+            }
+            
+            // Extract and display media
+            const srcMatch = content.match(/src="([^"]+)"/);
+            const mediaSrc = srcMatch ? srcMatch[1] : null;
+            if (mediaSrc) {
+                const isVideo = content.includes('<video');
+                contentContainer.textContent = '';
+                if (isVideo) {
+                    const video = document.createElement('video');
+                    video.src = mediaSrc;
+                    video.controls = true;
+                    video.autoplay = true;
+                    video.loop = true;
+                    video.style.outline = 'none';
+                    contentContainer.appendChild(video);
+                } else {
+                    const image = document.createElement('img');
+                    image.src = mediaSrc;
+                    image.alt = 'Hotspot media';
+                    contentContainer.appendChild(image);
+                }
+            }
+            
+            contentContainer.classList.remove('closing');
+            overlay.classList.add('visible');
+            
+            // Add close button click handler
+            const closeBtn = document.getElementById('fullscreen-media-close');
+            if (closeBtn) closeBtn.onclick = closeFullscreenMedia;
+            
+            // Add backdrop click to close (clicking outside the media)
+            overlay.onclick = function(e) {
+                if (e.target === overlay) closeFullscreenMedia();
+            };
+            
+            return true;
+        }
+        
+        window.addEventListener('keydown', (e) => { 
+            if(e.key === 'Escape') { 
+                if (fullscreenMediaActive) {
+                    closeFullscreenMedia();
+                    return;
+                }
+                closeHotspotPopup();
+                if (window.closeScenicView) window.closeScenicView();
+                if (window.closePanoramicView) window.closePanoramicView();
+            } else if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'z' || e.key === 'Z' || e.key === 'f' || e.key === 'F')) {
+                if (document.activeElement instanceof HTMLInputElement ||
+                    document.activeElement instanceof HTMLTextAreaElement ||
+                    (document.activeElement && document.activeElement.isContentEditable)) {
+                    return;
+                }
+                if (typeof window.resetOrFitView === 'function') {
+                    e.preventDefault();
+                    window.resetOrFitView();
+                }
+            } else if (!e.ctrlKey && !e.metaKey && !e.altKey && (['1', '2', '3', '4'].includes(e.key) || /^Numpad([1-4])$/.test(e.code))) {
+                if (document.activeElement instanceof HTMLInputElement ||
+                    document.activeElement instanceof HTMLTextAreaElement ||
+                    document.activeElement instanceof HTMLSelectElement ||
+                    (document.activeElement && document.activeElement.isContentEditable) ||
+                    (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT' || e.target.isContentEditable))) {
+                    return;
+                }
+                const numpadMatch = /^Numpad([1-4])$/.exec(e.code);
+                const speedVal = ['1', '2', '3', '4'].includes(e.key) ? Number(e.key) : Number(numpadMatch[1]);
+                e.preventDefault();
+                setNavigationSpeed(speedVal);
+            }
+        });
+
+        var speedToastTimeout = null;
+        function setNavigationSpeed(level, showToast = true) {
+            const num = Math.max(1, Math.min(4, Math.round(Number(level) || 2)));
+            const SPEED_PRESETS = {
+                1: { mult: 0.25, label: '0.25x (Precision)' },
+                2: { mult: 0.5, label: '0.5x (Normal)' },
+                3: { mult: 1.0, label: '1x (Fast)' },
+                4: { mult: 2.0, label: '2x (Turbo)' }
+            };
+            const preset = SPEED_PRESETS[num] || SPEED_PRESETS[2];
+
+            if (typeof controls !== 'undefined' && controls) {
+                controls.rotateSpeed = 0.8 * preset.mult;
+                controls.panSpeed = 0.8 * preset.mult;
+                controls.zoomSpeed = 0.8 * preset.mult;
+            }
+            if (typeof smoothZoom !== 'undefined' && smoothZoom && typeof smoothZoom.setSpeedMultiplier === 'function') {
+                smoothZoom.setSpeedMultiplier(preset.mult);
+            }
+            if (typeof cameraController !== 'undefined' && cameraController && typeof cameraController.setSpeedMultiplier === 'function') {
+                cameraController.setSpeedMultiplier(preset.mult);
+            }
+
+            if (showToast) {
+                const toast = document.getElementById('nav-speed-toast');
+                const text = document.getElementById('nav-speed-toast-text');
+                if (toast && text) {
+                    text.textContent = 'Speed: ' + preset.label;
+                    toast.classList.add('visible');
+                    clearTimeout(speedToastTimeout);
+                    speedToastTimeout = setTimeout(() => {
+                        toast.classList.remove('visible');
+                    }, 1300);
+                }
+            }
+            return preset;
+        }
+        window.setNavigationSpeed = setNavigationSpeed;
+
+        window.addEventListener('resize', () => { 
+            cachedCardHeight = 0;
+            lastCardLeft = -9999;
+            lastCardTop = -9999;
+            if (camera) {
+                camera.aspect = window.innerWidth / window.innerHeight; 
+                camera.updateProjectionMatrix(); 
+            }
+            if (renderer) renderer.setSize(window.innerWidth, window.innerHeight); 
+        });
+        
+
+        (async function bootModel() {
+            if (modelData) {
+                try {
+                    await assertAssetAvailable(modelData, 'model asset');
+                   new GLTFLoader().load(
+                       modelData,
+                       (gltf) => { setupScene(gltf); },
+                       undefined,
+                       (error) => { showBootError('Failed to load model', (error && error.message) ? error.message : String(error)); }
+                   ); 
+                } catch (error) {
+                    showBootError('Viewer failed to initialize', error.message || String(error));
+                }
+            } else {
+                document.getElementById('loading-overlay').style.display = 'none';
+                showBootError('No model data found in export', 'This viewer cannot render because no model data was bundled.');
+            }
+        })();
+        
+        function zoomToExtents() {
+            if (!modelObject) {
+                if (defaultBookmark) applyView(defaultBookmark);
+                return;
+            }
+            const box = new THREE.Box3().setFromObject(modelObject);
+            if (box.isEmpty() || !Number.isFinite(box.min.x)) {
+                if (defaultBookmark) applyView(defaultBookmark);
+                return;
+            }
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            const sphere = new THREE.Sphere();
+            box.getBoundingSphere(sphere);
+            const radius = Math.max(sphere.radius, 0.1);
+
+            const aspect = camera.aspect || (window.innerWidth / window.innerHeight);
+            const halfFovY = THREE.MathUtils.degToRad(camera.fov) / 2;
+            const halfFovX = Math.atan(Math.tan(halfFovY) * aspect);
+            const minHalfFov = Math.min(halfFovY, halfFovX);
+            const distance = (radius / Math.sin(minHalfFov)) * 1.25;
+
+            const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+            if (dir.lengthSq() < 1e-4) dir.set(0.6, 0.5, 0.8);
+            dir.normalize();
+
+            camera.position.copy(center).addScaledVector(dir, distance);
+            controls.target.copy(center);
+            camera.lookAt(center);
+            camera.updateProjectionMatrix();
+            controls.update();
+            if (smoothZoom) smoothZoom.sync();
+            if (cameraController) cameraController.setTarget(controls.target);
+            if (anchoredOrbit) anchoredOrbit.setBaseFromCamera();
+        }
+
+        window.resetOrFitView = function() {
+            if (defaultBookmark) applyView(defaultBookmark);
+            else zoomToExtents();
+        };
+
+        function updateOcclusion(delta) {
+            if (hotspots.length === 0) return;
+            const now = performance.now();
+            const fadeSpeed = 8.0;
+            const total = hotspots.length;
+
+            if (config.hsOcclusion === false) {
+                for (let i = 0; i < total; i++) {
+                    const h = hotspots[i];
+                    if (!h || !h.spriteRef) continue;
+                    h._isOccluded = false;
+                    h._targetOpacity = config.hsOpacity;
+                    if (h.spriteRef.material && Math.abs(h.spriteRef.material.opacity - config.hsOpacity) > 0.005) {
+                        h.spriteRef.material.opacity = THREE.MathUtils.lerp(h.spriteRef.material.opacity, config.hsOpacity, 1 - Math.exp(-fadeSpeed * delta));
+                    } else if (h.spriteRef.material && h.spriteRef.material.opacity !== config.hsOpacity) {
+                        h.spriteRef.material.opacity = config.hsOpacity;
+                    }
+                }
+                return;
+            }
+
+            if (!modelObject) return;
+
+            // Dirty tracking: check if camera moved or rotated
+            const posDelta = lastCameraPosition.distanceTo(camera.position);
+            const rotDelta = lastCameraQuaternion.angleTo(camera.quaternion);
+            const timeSinceLastCheck = now - lastOcclusionTime;
+
+            if ((posDelta > 0.08 || rotDelta > 0.015) && timeSinceLastCheck >= 100) {
+                lastCameraPosition.copy(camera.position);
+                lastCameraQuaternion.copy(camera.quaternion);
+                lastOcclusionTime = now;
+                pendingOcclusionChecks = total;
+            } else if (pendingOcclusionChecks === 0 && (lastCameraPosition.x === Infinity || timeSinceLastCheck > 500)) {
+                lastCameraPosition.copy(camera.position);
+                lastCameraQuaternion.copy(camera.quaternion);
+                lastOcclusionTime = now;
+                pendingOcclusionChecks = total;
+            }
+
+            // Process pending checks in amortized batches of 1 per frame
+            if (pendingOcclusionChecks > 0 && total > 0) {
+                const batchSize = Math.min(1, pendingOcclusionChecks, total);
+                pendingOcclusionChecks -= batchSize;
+
+                for (let b = 0; b < batchSize; b++) {
+                    occlusionRoundRobinIndex = (occlusionRoundRobinIndex + 1) % total;
+                    const hotspot = hotspots[occlusionRoundRobinIndex];
+                    if (!hotspot || !hotspot.spriteRef) continue;
+
+                    // View-space check: is hotspot behind camera plane?
+                    tempCameraPos.copy(hotspot.spriteRef.position).applyMatrix4(camera.matrixWorldInverse);
+                    if (tempCameraPos.z > 0) {
+                        hotspot._isOccluded = true;
+                        hotspot._targetOpacity = 0;
+                        continue;
+                    }
+
+                    // Frustum screen projection check
+                    tempScreenPos.copy(hotspot.spriteRef.position).project(camera);
+                    if (Math.abs(tempScreenPos.x) > 1.1 || Math.abs(tempScreenPos.y) > 1.1) {
+                        continue; // Off screen: retain existing state without pop-in
+                    }
+
+                    const distToSprite = hotspot.spriteRef.position.distanceTo(camera.position);
+                    const maxObstacleDist = distToSprite - 0.2;
+
+                    if (maxObstacleDist <= 0) {
+                        hotspot._isOccluded = false;
+                        hotspot._targetOpacity = config.hsOpacity;
+                        continue;
+                    }
+
+                    // Raycast candidate
+                    raycaster.setFromCamera(tempScreenPos, camera);
+
+                    // AABB early-out: if ray misses model bounding box, it cannot be occluded
+                    if (hasModelBox && !raycaster.ray.intersectsBox(modelBox)) {
+                        hotspot._isOccluded = false;
+                        hotspot._targetOpacity = config.hsOpacity;
+                        continue;
+                    }
+
+                    // Distance capping
+                    raycaster.far = maxObstacleDist;
+
+                    let isOccluded = false;
+                    const meshes = cachedMeshes.length > 0 ? cachedMeshes : null;
+
+                    if (meshes) {
+                        for (let m = 0; m < meshes.length; m++) {
+                            const mesh = meshes[m];
+                            if (!mesh.visible) continue;
+                            raycastHits.length = 0;
+                            mesh.raycast(raycaster, raycastHits);
+                            if (raycastHits.length > 0 && raycastHits[0].distance <= maxObstacleDist) {
+                                isOccluded = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        const intersects = raycaster.intersectObject(modelObject, true);
+                        if (intersects.length > 0 && intersects[0].distance <= maxObstacleDist) {
+                            isOccluded = true;
+                        }
+                    }
+
+                    raycaster.far = Infinity;
+
+                    hotspot._isOccluded = isOccluded;
+                    hotspot._targetOpacity = isOccluded 
+                        ? (config.hsOpacity * 0.2) 
+                        : config.hsOpacity;
+                }
+            }
+
+            // Smooth lerp on all hotspots every frame (super fast, no raycasts)
+            const t = 1 - Math.exp(-fadeSpeed * delta);
+            for (let i = 0; i < total; i++) {
+                const h = hotspots[i];
+                if (h && h.spriteRef && h.spriteRef.material) {
+                    const target = (h._targetOpacity !== undefined) ? h._targetOpacity : config.hsOpacity;
+                    const current = (typeof h.spriteRef.material.opacity === 'number') ? h.spriteRef.material.opacity : config.hsOpacity;
+                    const diff = target - current;
+                    if (Math.abs(diff) > 0.005) {
+                        h.spriteRef.material.opacity = THREE.MathUtils.lerp(current, target, t);
+                    } else if (current !== target) {
+                        h.spriteRef.material.opacity = target;
+                    }
+                }
+            }
+        }
+
+        function animate() { 
+            requestAnimationFrame(animate); 
+            const dt = Math.min(clock.getDelta(), 0.1);
+            if (anchoredOrbit) anchoredOrbit.update(dt);
+            else {
+                if (cameraController) {
+                    cameraController.update(dt);
+                    if (cameraController.isMoving && smoothZoom) smoothZoom.sync();
+                }
+                if (smoothZoom) smoothZoom.update(dt);
+                controls.update();
+            }
+            updateHotspotScales(hotspots, markerAnimationState, config.hsSize, dt);
+            updateHotspotPos();
+            
+            // Occlusion
+            updateOcclusion(dt);
+
+            renderer.render(scene, camera); 
+        }
+        animate();</script><script src="./atlas-bridge.js"></script></body></html>

@@ -1,72 +1,85 @@
 # Repository Agent Guide
 
-## Scope
-This file applies to the entire repository unless a deeper `AGENTS.md` overrides it.
+## Scope and working approach
 
-## Mandatory Portfolio Update Workflow
-- For any task that edits, validates, publishes, or rolls back the portfolio, read `skills/update-portfolio/SKILL.md` completely before taking action.
-- Treat `skills/update-portfolio/SKILL.md` as the source of truth for Cloudflare Pages publishing, R2 video synchronization, production verification, and rollback.
-- Do not run `deploy.bat`; it is the legacy GitHub Pages publisher and is not the production Cloudflare workflow.
-- A push or merge to `main` automatically deploys the site through Cloudflare Pages. Do not upload `dist/` manually.
-- Oversized videos are synchronized to R2 by `.github/workflows/sync-r2-media.yml`. Never add a new oversized-video reference until its media-only push has completed successfully and the R2 URL has been verified.
+This guide applies throughout the repository. Read any deeper `AGENTS.md` or `AGENTS.override.md` governing the target files. Explicit user instructions take precedence over repository and skill guidance, subject to system/developer instructions and tool permissions.
 
-## Safety Rule
-- Non-feature maintenance tasks that add or update only `AGENTS.md` and `SKILL.md` files must not change runtime portfolio behavior.
-- Do not modify HTML/CSS/JS/video assets for instruction-only tasks unless explicitly requested.
+- Carry requested work through implementation and relevant verification. Resolve routine choices from repository evidence; ask only when missing information materially affects the outcome or authorization.
+- Reuse authorization already given. Local editing does not itself authorize a push, merge, or deployment. Prepare a reviewable change before requesting missing publication authority.
+- Preserve unrelated edits and untracked files. Do not reset, stash, clean, or stage user work to simplify the task.
+- Keep changes focused. Instruction-only work must not modify runtime assets or run generators.
+- Follow the session's delegation policy. Small edits do not require subagents; when delegation is authorized, assign independent tasks with distinct file ownership and integrate their results.
+- Report outcomes, relevant checks, and limitations concisely. If a skill blocks progress, link its exact file, quote the blocking instruction, and explain its applicability.
 
-## Repo Conventions
-- Prefer small, isolated commits.
-- Keep task-focused documentation updates in place; avoid broad rewrites.
-- Use relative file paths when referencing files in notes.
+## Project map
 
-## Source/Build File Sync
-- When updating a source asset that has a checked-in minified counterpart (for example `styles.css` ↔ `styles.min.css` or `script.js` ↔ `script.min.js`), update the corresponding minified file in the same change whenever needed.
-- Before finishing, verify source and minified versions are consistent for the edited behavior so production does not serve stale styling or logic.
+This is a static portfolio with animated galleries and standalone presentations, using HTML, CSS, JavaScript, and Node build tools.
 
-## Cache Busting
-- The repository includes a build script (`node build.js`, which also runs automatically through `npm run build:cloudflare`) to automate cache-busting and asset minification.
-- When making any changes to stylesheets (`styles.css`), scripts (`script.js`), gallery data (`gallery-data.js`), or assets inside `presentation/`, you **MUST** run `node build.js` before committing.
-- `build.js` automatically:
-  - Updates the version suffix (`?v=timestamp`) on references inside `index.html` (CSS, JS, and gallery-data.js).
-  - Updates version suffixes for `interactive_presentation_demo` and `cinematic_web_presentation` links inside `gallery-data.js` and `script.js`.
-  - Updates version suffixes inside `presentation/cinematic_web_presentation/index.html` (for `styles.css`, `script.js`, and `.mp4` video files).
-  - Minifies `script.js` -> `script.min.js` and `styles.css` -> `styles.min.css`.
-- After making cache-busting changes, always run `git diff` to verify the modified files reflect the new versioned URLs, and test the production paths locally to ensure the updated files load correctly.
+| Area | Maintained source / responsibility |
+| --- | --- |
+| Homepage | `index.html`, `styles.css`, `script.js` |
+| Gallery content | `gallery-data.js`; preserve custom item fields |
+| Project pages | `generate-project-pages.js` generates `projects/`, `sitemap.xml`, and `robots.txt` |
+| Presentations | `presentation/<name>/index.html` and supported runtime assets |
+| Production artifact | `scripts/build-dist.js`, `scripts/dist-config.js`, `scripts/dist-media.js`, `scripts/verify-dist.js` |
+| Publishing | GitHub to Cloudflare Pages; oversized videos to R2; configuration in `DEPLOYMENT.md` |
 
-## Automatic Presentation Publishing
-- A new immediate child folder under `presentation/` is published automatically when it contains a regular `index.html` file.
-- The generic runtime contract includes supported files at the presentation root plus supported assets under an `assets/` directory. Authoring/tool subdirectories are not copied.
-- `project.manifest.json` is excluded unless a shipped runtime file explicitly references it.
-- Add a `.no-publish` marker inside a presentation folder to keep a draft out of `dist/`.
+## Workflow routing
+
+Read [the portfolio update skill](skills/update-portfolio/SKILL.md) completely before editing, validating, publishing, or rolling back the portfolio. It owns the operational workflow, including documentation-only validation. Read `DEPLOYMENT.md` for runtime/build work and publishing details.
+
+Load additional skills only when relevant:
+
+- [Content updates](skills/repo-content-update/SKILL.md): copy, project metadata, and documentation.
+- [Performance audit](skills/performance-audit/SKILL.md): load time, media cost, or animation jank investigations.
+- [Accessibility audit](skills/accessibility-audit/SKILL.md): semantic, keyboard, contrast, or motion reviews.
+
+Keep repository skills under `skills/<name>/SKILL.md`, reachable through these links. Use scoped frontmatter descriptions and relative links in repository documents. Keep deployment procedures in the update skill instead of duplicating them across skills.
+
+## Runtime invariants
+
+### Gallery and interaction
+
+- Preserve the cinematic, minimalist editorial layout unless a redesign is requested: one column on mobile; desktop featured items span two columns.
+- Desktop featured media uses aspect ratio `2.0` and `max-height: 60vh` so the card and metadata fit in the viewport.
+- Keep category, title, location, and date on one metadata row with bullet separators (`•`).
+- Keep `.card-cta` inside `.card-media-wrapper` as an absolute overlay revealed on hover or active focus; maintain keyboard access and visible focus.
+- Append subsequent gallery items without a full reload. Preserve the `index * 35ms` stagger through `requestAnimationFrame`; call `lenis.resize()` after changing gallery height when the Lenis instance exists.
+- Edit `gallery-data.js` manually. Avoid `update_gallery.ps1`: its directory scan can erase custom `href`, `label`, and `featured` properties.
+
+### Build and asset synchronization
+
+- Edit source files, then regenerate checked-in minified counterparts in the same change. Do not maintain `script.min.js` or `styles.min.css` independently.
+- Changes to `styles.css`, `script.js`, `gallery-data.js`, or files under `presentation/` require `build.js` before commit. `npm.cmd run check:update` invokes it through the production build and satisfies this requirement; a duplicate standalone run is unnecessary.
+- Gallery changes or new projects require `generate-project-pages.js`, also included in the production build.
+- Standalone `node build.js` defaults to a timestamp. The production build supplies a content-derived `BUILD_VERSION`. Review generated URLs and minified files, then test changed paths from the built site.
+- Optimize new raster images through `optimize_images.bat` / `convert_to_webp.js`. Inspect conversion scope and resulting references so unrelated assets and custom gallery fields survive.
+- Treat `dist/` as disposable output. Do not hand-edit or manually upload it.
+
+### Presentation publishing contract
+
+- An immediate child of `presentation/` with a regular `index.html` is discovered automatically. Add `.no-publish` inside a draft folder to exclude it.
+- Generic presentations ship supported root runtime files and supported files under `assets/`. Authoring/tool subdirectories are excluded; consult `scripts/dist-config.js` for exact extensions and special presentation handling.
+- `project.manifest.json` is excluded unless a shipped runtime file references it.
 - `presentation/Interactive Web Presentation/` and `presentation/animated_webpage/` remain excluded legacy authoring copies.
-- Adding a presentation route does not create a homepage card. Update `gallery-data.js` separately when gallery visibility is required.
+- A published route does not create a homepage card; edit `gallery-data.js` when gallery visibility is requested.
 
-## Gallery & Layout Design Standards
-- **Cinematic & Minimalist Aesthetic**: Maintain the editorial layout. The gallery is structured with a single-column layout on mobile, while on desktop featured items (`data-featured="true"`) occupy 2 columns (`grid-column: span 2`).
-- **Viewport Constraints**: Featured images must have an aspect ratio of `2.0` on desktop and a `max-height: 60vh` limit so that the image, label, and metadata fit completely in a single viewport page without scrolling (configured in [styles.css](file:///d:/Github%20Repo/jervistuazon.github.io/styles.css)).
-- **One-Row Metadata**: Project metadata (category, title, location, date) should be aligned on a single row below the image card, separated by a bullet character `•` (e.g. `.item-info > *:not(:last-child)::after { content: "•"; ... }`).
-- **Interactive CTAs**: Interactive action text (e.g. "Explore Project", "Explore Presentation") must be styled as a `.card-cta` absolutely positioned overlay inside `.card-media-wrapper`. They should only become visible upon hover (desktop) or active focus (mobile).
+## Publication boundaries
 
-## Smooth Staggered Loading & Scroll Integration
-- **Dynamic Loading**: Subsequent projects should load dynamically without full page reloads, using JavaScript to append new items to the gallery grid (managed in [script.js](file:///d:/Github%20Repo/jervistuazon.github.io/script.js) via `filterGallery`).
-- **Staggered Animation**: Newly added gallery items must fade in with a staggered transition delay (`index * 35ms`) using `requestAnimationFrame` for a smooth transition.
-- **Scroll Syncing**: Always invoke `lenis.resize()` after dynamically loading gallery items so that the Lenis smooth scroll instance recalculates the container's height and bounds.
+An update to `main` automatically deploys through Cloudflare Pages. Never run legacy `deploy.bat`. New oversized video references must wait for a separate media-only update to reach `main`, the R2 sync Action to succeed, and the public media URL to pass verification. Follow the update skill for sequencing, production checks, and rollback.
 
-## Asset Optimization & Gallery Data Cautions
-- **Image Conversion (WebP)**: All new image assets must be optimized for performance. Run [optimize_images.bat](file:///d:/Github%20Repo/jervistuazon.github.io/optimize_images.bat) (which runs [convert_to_webp.js](file:///d:/Github%20Repo/jervistuazon.github.io/convert_to_webp.js) using Sharp) to automatically convert PNG/JPG/JPEG files inside `assets/` and update references in source files.
-- **Gallery Data Warning**: Avoid running the automated script [update_gallery.ps1](file:///d:/Github%20Repo/jervistuazon.github.io/update_gallery.ps1) to update [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) as it is a directory scanner that does not support complex configurations and will erase custom properties (such as custom `href`, `label`, or `featured` objects used for interactive presentations and videos). Always edit [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) manually or verify custom fields are preserved.
-- **SEO Landing Pages**: After making updates to [gallery-data.js](file:///d:/Github%20Repo/jervistuazon.github.io/gallery-data.js) or adding new projects, run `node generate-project-pages.js` (which is also automated by `npm run build:cloudflare`) to generate/update the static landing pages under `projects/`.
+## Verification scope
 
-## Validation
-For instruction-file-only changes, run at least:
-- `git status --short` (if git is available in the environment)
-- `rg --files -g 'AGENTS.md' -g 'SKILL.md'` (or equivalent powershell commands if rg is unavailable)
+- Instruction-only edits: run `git status --short`, `rg --files -g 'AGENTS.md' -g 'SKILL.md'`, and `git diff --check`; review changed instructions and local links. Do not run the portfolio build merely to validate Markdown.
+- Runtime/build edits: run `npm.cmd run check:update` and browser checks relevant to the changed route or interaction, as specified in the skill.
+- Use meaningful tests for changed behavior. After required checks pass, expand testing only for a new failure, change, or unresolved concern. Report unavailable checks accurately.
 
-## Skill Layout Recommendation
-- Place reusable skills under `skills/<skill-name>/SKILL.md`.
-- Keep each skill narrowly scoped with:
-  - frontmatter (`name`, `description`),
-  - when-to-use guidance,
-  - step-by-step workflow,
-  - verification checklist,
-  - known pitfalls.
+## Instruction maintenance references
+
+Reviewed against official documentation on 2026-09-07:
+
+- [GPT-6 Astra prompting guidance](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra): autonomy, instruction clarity, communication, delegation, and proportional verification.
+- [AGENTS.md guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md): repository and nested instructions.
+- [Skill authoring guidance](https://learn.chatgpt.com/docs/build-skills): scoped descriptions and progressive loading.
+
+These references inform agent instructions; they do not change this static site's runtime or select the session model.

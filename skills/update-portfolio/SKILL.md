@@ -1,84 +1,109 @@
 ---
 name: update-portfolio
-description: Safely edit, validate, preview, publish, and roll back the jervistuazon.com portfolio through GitHub, Cloudflare Pages, and R2. Use for portfolio content, gallery, styling, JavaScript, project-page, presentation, image, video, deployment, production verification, or rollback tasks in this repository.
+description: Edit, validate, publish, or roll back this repository's portfolio and presentations using its Cloudflare Pages and R2 workflow. Includes a documentation-only path; not a general Cloudflare administration skill.
 ---
 
 # Update Portfolio
 
-Use GitHub as the source of truth. Cloudflare Pages deploys `main`; R2 serves oversized videos through `media.jervistuazon.com`. Never publish `dist/` manually and never run legacy `deploy.bat`.
+## Choose the applicable path
 
-## 1. Establish the update type
+Read the root `AGENTS.md` and instructions governing the target files. Commands and code paths below are relative to the repository root; Markdown links resolve from this skill.
 
-- **Normal update:** HTML, CSS, JavaScript, gallery data, project content, images, or videos at or below 25 MiB.
-- **Oversized-media update:** Any `.mp4`, `.webm`, `.mov`, `.mkv`, or `.avi` above 25 MiB under `assets/` or `presentation/`.
-- **Publish request:** The user explicitly asks to push, deploy, publish, merge, or make the update live.
-- **Edit-only request:** Make and validate local changes, but do not push or merge without publication authority.
+| Request | Work to perform |
+| --- | --- |
+| Instruction/documentation only | Edit requested documents and use documentation checks; skip dependency installation, generators, and deployment unless requested |
+| Portfolio content, styling, interaction, presentation, or build change | Read [DEPLOYMENT.md](../../DEPLOYMENT.md), make the change, run production-equivalent checks, and inspect affected browser behavior |
+| Publish, push, merge, deploy, or make live | Complete relevant local checks, then use existing publication authority and verify deployment |
+| New or replacement oversized video | Use the two-stage R2 sequence before publishing any reference |
+| Rollback | Restore intended prior behavior through a Git revert and normal publication checks |
 
-Read `AGENTS.md` and `DEPLOYMENT.md` before editing. Preserve unrelated working-tree changes.
+An edit request authorizes local work and necessary validation. It does not automatically authorize remote publication. Honor publication authority already given; do not ask again. If authority is missing for a required remote action, finish independent preparation before asking. An edit-only task is complete with verified local changes.
 
-## 2. Prepare safely
+## Prepare the workspace
 
-1. Run `git status --short --branch`.
-2. On a clean `main`, run `git pull --ff-only origin main`.
-3. If the tree is dirty, inspect the changes and do not pull across uncommitted user work.
-4. Run `npm.cmd ci` on Windows (`npm ci` elsewhere) when dependencies are missing or `package-lock.json` changed.
-5. Create a `codex/` branch for an agent-authored update unless the user explicitly requests a direct `main` push.
+1. Run `git status --short --branch` and inspect changes relevant to the task. Preserve unrelated edits and untracked files.
+2. For runtime work on a clean `main`, run `git pull --ff-only origin main`. Do not pull across uncommitted work. Read-only reviews and instruction-only edits do not require a pull.
+3. Use an existing task branch/worktree when appropriate. Otherwise prefer a `codex/` branch for implementation; direct `main` publication requires an explicit request. Documentation edits do not require branch creation just to proceed.
+4. For runtime builds, use the Node version in `.node-version`. Run `npm.cmd ci` on Windows (`npm ci` elsewhere) if dependencies are missing or the lockfile changed.
 
-## 3. Make the update
+If a tool or permission is unavailable, complete unaffected work and report the specific blocked step. A local access problem does not establish that production deployment failed.
 
-- Follow all design, gallery, cache-busting, and source/minified sync rules in `AGENTS.md`.
-- Edit `gallery-data.js` manually; never use `update_gallery.ps1` without verifying that custom fields survive.
-- Optimize new raster images with the repository image workflow.
-- Do not hand-edit `dist/`; it is disposable build output.
-- Do not edit Cloudflare DNS, Pages environment variables, R2 CORS, or GitHub Actions secrets for a routine content update.
+## Make the change
 
-## 4. Handle oversized video safely
+- Follow the gallery, media optimization, presentation discovery, and source/minified rules in `AGENTS.md`.
+- Change maintained sources. Preserve custom gallery fields and generate landing pages through the build rather than editing generated pages alone.
+- Keep runtime changes within scope. For instruction-only tasks, modify only instruction files and leave HTML, CSS, JavaScript, media, and generated output untouched.
+- Inspect build side effects before staging: `build.js` also updates cinematic URLs and injects the Forestville mobile landscape patch. Preserve overlapping user work and isolate task-owned changes.
+- Do not hand-edit `dist/`, run legacy `deploy.bat`, or substitute a manual artifact upload for the GitHub deployment workflow.
+- Routine content updates do not include changing DNS, Pages environment variables, R2 CORS, or GitHub Actions secrets.
 
-For a new or replacement video above 25 MiB:
+## Validate according to the change
 
-1. Use a new filename/path. Do not overwrite a published immutable-cached object in place.
-2. Commit and push only the video addition to `main` as the first change. Do not reference it yet.
-3. Wait for `Sync oversized portfolio media to R2` to succeed.
-4. Verify the encoded public URL under `https://media.jervistuazon.com/` returns the expected video content type and a `206` response for a byte-range request.
-5. Only then add or update the gallery/presentation reference in a second change.
+### Documentation and instruction files only
 
-The R2 workflow uploads changed oversized source videos and never deletes old objects. Do not manually upload during normal publishing. If GitHub rejects the file size, stop and request an approved alternative; do not introduce Git LFS or expose R2 credentials ad hoc.
+Run from the repository root:
 
-## 5. Build and validate
+```powershell
+git status --short
+rg --files -g 'AGENTS.md' -g 'SKILL.md'
+git diff --check
+git diff -- AGENTS.md skills/
+```
 
-Run the production-equivalent validation from the repository root:
+Adjust diff paths to the documents edited. Verify local links, skill frontmatter names/descriptions, and workflow accuracy against checked-in scripts. Compare final and initial status to distinguish your changes from user work. Do not run a site build for this path: it rewrites source/generated files.
+
+### Runtime, content, assets, or build logic
+
+Run:
 
 ```powershell
 npm.cmd run check:update
+git diff --check
 ```
 
-On non-Windows systems, use `npm run check:update`. This helper supplies the production R2 origin to the build and runs both `build:cloudflare` and `test:cloudflare`.
+Use `npm` instead of `npm.cmd` outside Windows. `check:update` sets the production R2 origin for child processes and runs `build:cloudflare` plus `test:cloudflare`. This includes SEO generation, `build.js` cache busting/minification, clean artifact assembly, the Forestville dist fix, and artifact verification. Do not repeat generators separately after a successful full check without a reason.
 
-Then:
+Review `git diff` for expected generated pages, versioned URLs, and minified counterparts. Confirm the artifact excludes oversized active videos and references the R2 origin. Serve `dist/` over local HTTP and inspect the changed route in a real browser:
 
-1. Run `git diff --check` and review `git diff`.
-2. Confirm expected generated pages, cache-busted references, minified counterparts, and `dist/` verification output.
-3. Test the changed interaction or route locally in a real browser when behavior changed.
-4. Confirm no oversized active video remains inside `dist/` and references use the R2 origin.
+- Layout: relevant desktop/mobile widths, media sizing, metadata, and CTA focus/hover states.
+- Gallery: filtering, appended items, staggered loading, scroll bounds, and linked project pages.
+- Presentations: direct routes, asset requests, navigation, and affected touch/orientation controls.
+- Media: loading, playback, and seeking.
 
-## 6. Publish and verify
+Check console/network errors for the affected flow. Report unavailable browser verification. Add regression tests for meaningful behavioral failures; avoid tests that restate implementation or repeated broad audits after checks pass.
+
+## Oversized video: publish media before references
+
+Apply this sequence to `.mp4`, `.webm`, `.mov`, `.mkv`, and `.avi` above 25 MiB under `assets/` or `presentation/`.
+
+1. Give each new/replacement object a new filename or path. Published R2 objects use immutable caching; replacing the same path can leave stale content.
+2. With publication authorized, commit only the video addition first. Bring that media-only change to `main` through a branch/merge, or a direct push only if explicitly requested. Do not add its runtime reference yet.
+3. Wait for `Sync oversized portfolio media to R2` in `.github/workflows/sync-r2-media.yml` to succeed for that update.
+4. Verify the public URL under `https://media.jervistuazon.com/`, encoding each path segment and preserving slashes. Check the expected video content type and a byte-range request returning `206` with a valid `Content-Range`.
+5. Only then add the gallery/presentation reference in a second change, validate it, and publish it.
+
+For an edit-only media task, prepare the media addition and report the pending sequence; do not introduce a reference to an unverified object. If sync or URL verification fails, fix the identified cause within scope or report it; keep the reference unpublished.
+
+The Action uploads changed oversized videos and retains old objects. Normal publishing does not require manual R2 uploads. If GitHub rejects the file size, request a concrete alternative after preparing what is possible; do not introduce Git LFS or expose credentials ad hoc. Use local `media:sync` only when that upload is explicitly requested, following `DEPLOYMENT.md`.
+
+## Publish and verify
 
 When publication is authorized:
 
-1. Stage only task-related files; do not use blanket staging when unrelated changes exist.
-2. Commit intentionally and push the branch.
-3. Verify the Cloudflare Preview deployment before merging when the change affects behavior or layout.
-4. Merge or push to `main` only after checks pass. A `main` update triggers Cloudflare Pages automatically.
-5. Wait for the production deployment to succeed; do not assume a successful Git push means a successful deployment.
-6. Check `https://www.jervistuazon.com` for the changed route, mobile/desktop behavior, console errors, and media playback.
-7. For media, confirm seeking/range playback through `https://media.jervistuazon.com`.
+1. Review the exact diff and stage task-related files only. Prefer small, isolated commits.
+2. Commit and push the task branch. For behavior/layout changes, verify its Cloudflare Preview before merging. Use direct `main` only when explicitly requested.
+3. Merge or push the validated change to `main`; Cloudflare Pages deploys automatically. Do not manually upload `dist/`.
+4. Wait for production deployment corresponding to the published commit. A successful Git push is not deployment evidence.
+5. Check the changed route on `https://www.jervistuazon.com`, relevant desktop/mobile behavior, and console/network errors. Check gallery/project pages, presentation controls, or media playback/seeking when affected. Verify apex path/query redirects when routing changed.
 
-## 7. Roll back
+If checks or deployment fail, diagnose the actual failure and continue with an in-scope correction. Do not repeatedly push unchanged commits or mutate infrastructure to bypass a failure. Report unresolved blockers with the last verified state.
 
-- Revert the offending Git commit and publish the revert through the same validation path.
-- For a media issue, restore the previous gallery/presentation reference; old R2 objects are intentionally retained.
-- Do not disable Pages, delete an R2 bucket/object, or change nameservers as a routine rollback.
+## Roll back
 
-## Completion report
+Revert the offending commit while preserving unrelated work, validate the resulting site, and publish using the same authority and workflow. Restore previous media references when appropriate; retained R2 objects support this. Do not force-reset shared history, disable Pages, delete R2 objects, or change nameservers for a routine rollback.
 
-Report the branch/commit, tests run, Preview and Production deployment results, live URLs checked, R2 sync result when applicable, and rollback posture. Never claim zero regressions without evidence from the relevant checks.
+## Completion
+
+State what changed and which checks passed or could not run. Include branch/commit and Preview, Production, or R2 results only when those steps occurred. For publication, identify the verified live route and unresolved issues. Local validation does not prove live deployment success.
+
+Instruction design follows the [official GPT-6 Astra guidance](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra) and [skill authoring guidance](https://learn.chatgpt.com/docs/build-skills), reviewed 2026-09-07. The checked-in scripts and `DEPLOYMENT.md` supply project mechanics.

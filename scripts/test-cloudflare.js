@@ -11,6 +11,7 @@ const {
     collectRuntimeFiles,
     discoverPresentationDirs,
     expectedDistFiles,
+    extractReferenceValues,
     loadGalleryData
 } = require('./dist-config');
 const {
@@ -140,6 +141,27 @@ const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-pages-med
 const distDir = path.join(temporaryRoot, 'dist');
 
 try {
+    const siteDir = 'presentation/site_feasibility';
+    const siteFiles = collectGenericPresentationRuntimeFiles(rootDir, siteDir);
+    for (const file of ['index.rsc', '_next/static/chunks/index-6WA9XbZN.js',
+        '_next/static/css/page.Ceravn7Y.css', 'development/index.html',
+        'development/vendor/three.module.js', 'development/model-manifest.json']) {
+        assert.ok(siteFiles.includes(file), `Site feasibility runtime is missing ${file}.`);
+    }
+    const modelManifest = JSON.parse(fs.readFileSync(path.join(rootDir, siteDir, 'development/model-manifest.json'), 'utf8'));
+    let modelBytes = 0;
+    for (const part of modelManifest.parts) {
+        assert.ok(siteFiles.includes(`development/${part}`), `Missing model part: ${part}`);
+        const bytes = fs.statSync(path.join(rootDir, siteDir, 'development', part)).size;
+        assert.ok(bytes <= 25 * 1024 * 1024, `${part} exceeds the Pages size limit.`);
+        modelBytes += bytes;
+    }
+    assert.strictEqual(modelBytes, modelManifest.bytes);
+    assert.ok(!siteFiles.some(file => file.startsWith('.vite/')));
+    assert.deepStrictEqual(extractReferenceValues('new URL(e,`http://localhost`);new URL(`/source`,import.meta.url)'), []);
+    assert.ok(extractReferenceValues('background:url("./assets/photo (1).jpg")').includes('./assets/photo (1).jpg'));
+    assert.ok(extractReferenceValues(String.raw`src=\"./assets/photo.jpg\"`).includes('./assets/photo.jpg'));
+    console.log('[OK] Site feasibility runtime, model parts, and reference extraction checks passed.');
     assertPresentationDiscovery();
     assertForestvillePresentationInventory();
     assertHyattPresentationInventory();
