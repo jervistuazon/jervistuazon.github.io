@@ -268,6 +268,7 @@
     <script type="module">import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { stabilizeGroundSurfaces } from './ground-surfaces.js';
         import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
         const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":-0.00006,"normalBias":0.048,"shadowOpacity":0.5,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":0.9,"saturation":0.85,"camPos":{"x":-0.02761031585858388,"y":1.5992401053292151,"z":1.1309653325247},"camTarget":{"x":-0.02164205701923224,"y":0.1499999999999999,"z":0.22645704926443633},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.48503658731782856,"y":-0.002885054703472718,"z":-0.0016002022563487259,"w":0.8744876355759246},"camUp":{"x":0,"y":1,"z":0},"camNear":0.005,"camFar":2000,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.1,"hsOpacity":0.8,"hsPopupScale":75,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788704475213};
@@ -1139,6 +1140,7 @@
                     }
                 }
             });
+            stabilizeGroundSurfaces(modelObject);
             scene.add(modelObject);
             
             // Init Hotspots
