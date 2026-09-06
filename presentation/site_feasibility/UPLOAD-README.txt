@@ -1,0 +1,1 @@
+Upload all files and folders beside index.html to your hosting folder. Open the folder URL with a trailing slash, or index.html. No build step or server application required. Map tiles require an internet connection. For local testing serve this folder over HTTP; file:// cannot run browser modules reliably.

@@ -86,11 +86,15 @@ function withoutUrlSuffix(value) {
 }
 
 function extractReferenceValues(text) {
+    // Exported HTML can contain serialized markup with escaped attribute quotes.
+    text = text.replace(/\\"/g, '"');
     const references = [];
     const patterns = [
         /\b(?:src|href|data-src|poster|content)\s*=\s*["']([^"']+)["']/gi,
         /["'](?:src|href|data-src|poster)["']\s*:\s*["']([^"']+)["']/gi,
-        /\burl\(\s*["']?([^"')]+)["']?\s*\)/gi,
+        /\burl\(\s*"([^"\r\n]+)"\s*\)/gi,
+        /\burl\(\s*'([^'\r\n]+)'\s*\)/gi,
+        /\burl\(\s*([^"'`(),\s]+)\s*\)/gi,
         /["'`]((?:\.\.\/|\.\/)?(?:assets|presentation|projects)\/[^"'`]+)["'`]/gi
     ];
 
@@ -254,11 +258,26 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
     }
 
     const runtimeFiles = [];
+    // This static export uses framework chunks and a nested 3D viewer at runtime.
+    // Keep the exception scoped so other presentations' authoring folders stay private.
+    const isSiteFeasibility = presentationDir === 'presentation/site_feasibility';
+    const runtimeExtensions = isSiteFeasibility
+        ? new Set([...PRESENTATION_RUNTIME_EXTENSIONS, '.rsc', '.bin'])
+        : PRESENTATION_RUNTIME_EXTENSIONS;
     for (const entry of fs.readdirSync(presentationRoot, { withFileTypes: true })) {
         if (entry.isFile()) {
             const extension = path.extname(entry.name).toLowerCase();
-            if (entry.name.toLowerCase() !== 'project.manifest.json' && PRESENTATION_RUNTIME_EXTENSIONS.has(extension)) {
+            if (entry.name.toLowerCase() !== 'project.manifest.json' && runtimeExtensions.has(extension)) {
                 runtimeFiles.push(entry.name);
+            }
+            continue;
+        }
+
+        if (isSiteFeasibility && entry.isDirectory() && ['_next', 'development'].includes(entry.name)) {
+            for (const relative of walkFiles(path.join(presentationRoot, entry.name))) {
+                if (runtimeExtensions.has(path.extname(relative).toLowerCase())) {
+                    runtimeFiles.push(toPosix(path.join(entry.name, relative)));
+                }
             }
             continue;
         }

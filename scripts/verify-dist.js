@@ -108,7 +108,11 @@ function verifyReferences() {
     );
 
     for (const relativeFile of files) {
-        const source = fs.readFileSync(distPath(relativeFile), 'utf8');
+        const rawSource = fs.readFileSync(distPath(relativeFile), 'utf8');
+        // JSDoc examples describe sample assets; they are not runtime requests.
+        const source = /\.(?:m?js)$/.test(relativeFile)
+            ? rawSource.replace(/\/\*\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+            : rawSource;
         for (const rawReference of extractReferenceValues(source)) {
             const resolved = resolveReference(relativeFile, rawReference);
             if (resolved && !actualFiles.has(resolved)) {
