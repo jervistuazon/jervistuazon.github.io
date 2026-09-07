@@ -2,6 +2,7 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
+const { applySiteFeasibilityTheme } = require('./scripts/apply-site-feasibility-theme');
 
 console.log('==========================================');
 console.log('       BUILD SYSTEM (Minification)        ');
@@ -36,6 +37,12 @@ async function build() {
     }
     const version = requestedVersion || Date.now().toString();
     let buildFailed = false;
+
+    // Keep the imported feasibility exports on the maintained graphite theme.
+    // Fail before other build mutations if either export is malformed.
+    console.log('[INFO] Applying site feasibility interface theme...');
+    const themedExports = applySiteFeasibilityTheme(__dirname);
+    console.log(`[OK] Site feasibility theme: ${themedExports.length} export(s) updated.`);
 
     // 2. Update cache-busted public URLs before minifying
     console.log('[INFO] Updating cache-busted public URLs...');
