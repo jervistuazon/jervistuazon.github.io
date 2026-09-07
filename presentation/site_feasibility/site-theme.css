@@ -1,0 +1,297 @@
+/* Site Feasibility — graphite UI.
+ * Loaded after the untouched export; keep layout, state and model code intact.
+ * Screen-only tokens preserve the existing white, ink-friendly print brief.
+ */
+@media screen {
+  :root, .dark {
+    --sf-bg: #101419;
+    --sf-surface: #171d24;
+    --sf-raised: #202832;
+    --sf-hover: #293441;
+    --sf-line: #35414f;
+    --sf-text: #edf1f5;
+    --sf-muted: #a4b0bd;
+    --sf-accent: #b5cce2;
+    --sf-accent-ink: #101b26;
+    --sf-selected: #263a4d;
+    --sf-warning: #e5bf80;
+    --sf-warning-bg: #30291f;
+    --background: var(--sf-bg);
+    --foreground: var(--sf-text);
+    --card: var(--sf-surface);
+    --card-foreground: var(--sf-text);
+    --popover: var(--sf-surface);
+    --popover-foreground: var(--sf-text);
+    --primary: var(--sf-accent);
+    --primary-foreground: var(--sf-accent-ink);
+    --secondary: var(--sf-raised);
+    --secondary-foreground: var(--sf-text);
+    --muted: var(--sf-raised);
+    --muted-foreground: var(--sf-muted);
+    --accent: var(--sf-selected);
+    --accent-foreground: var(--sf-text);
+    --border: var(--sf-line);
+    --input: var(--sf-line);
+    --ring: var(--sf-accent);
+    --destructive: #efaaa5;
+    --radius: 0.25rem;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--sf-bg);
+    color: var(--sf-text);
+    font-family: var(--font-geist-sans, 'Geist'), 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font-family: inherit; }
+  ::selection { background: #49647e; color: #fff; }
+  .atlas { min-height: 0; height: 100svh; height: 100dvh; }
+  .masthead {
+    height: 64px;
+    padding-inline: 28px;
+    background: var(--sf-bg);
+    border-color: var(--sf-line);
+  }
+  .edition { color: var(--sf-muted); font-size: 10px; letter-spacing: 0.14em; }
+  .edition i { background: var(--sf-accent); }
+  .identity { letter-spacing: 0.12em; }
+  .brandmark { border-color: var(--sf-line); border-radius: 4px; }
+  .bottom-bar {
+    height: 30px;
+    background: var(--sf-bg);
+    color: var(--sf-muted);
+    border-color: var(--sf-line);
+    letter-spacing: 0.07em;
+  }
+  .workspace, .model-scene, .plan-scene, .scene iframe { background: var(--sf-bg); }
+  .panel {
+    background: var(--sf-surface);
+    color: var(--sf-text);
+    border: 1px solid var(--sf-line);
+    border-radius: 4px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 8px 24px #00000026;
+  }
+  .explorer { padding: 20px 18px; }
+  .eyebrow, .detail-eyebrow { color: var(--sf-muted); letter-spacing: 0.14em; }
+  .panel-title h2, .explorer h2 { letter-spacing: -0.025em; font-weight: 550; }
+  .detail-card h2 { font-weight: 500; letter-spacing: -0.025em; }
+  .project-heading { background: var(--sf-surface); text-shadow: none; border-radius: 4px; }
+  .project-heading h1 span, .project-heading p { color: var(--sf-muted); }
+
+  /* Consistent secondary copy, including the portalled study/scenario sheets. */
+  .explorer p, .mini-stats span, .radius-control > span, .place-row small,
+  .list-foot, .section-label span, .micro-note, .layer-panel p,
+  .detail-card p, .detail-card small, .finding-tags span, .distance-readout span,
+  .site-map-marker small, .model-loading p, .map-error p,
+  .proposal-summary small, .placement-button span, .explorer .placement-note,
+  .check-number, .check-card p, .methodology p, .source-register p,
+  .scenario-presets button, .scenario-results span, .scenario-results small,
+  .program-legend, .range-field output small, .range-field > small,
+  .impact-grid span, .comparison th {
+    color: var(--sf-muted);
+  }
+  .proposal-summary, .insight, .list-foot, .layer-row, .detail-card a,
+  .dock-divider, .map-tools span, .plan-key > div, .check-card,
+  .source-register a, .comparison th, .comparison td {
+    border-color: var(--sf-line);
+  }
+  .count-tag, .proposal-symbol, .finding-tags span {
+    background: var(--sf-raised);
+    color: var(--sf-muted);
+    border-radius: 3px;
+  }
+  .count-tag { border: 1px solid var(--sf-line); padding: 3px 7px; }
+  .proposal-symbol { color: var(--sf-accent); }
+  .finding-tags span { border-color: var(--sf-line); }
+
+  /* Numbers align cleanly without making body copy monospaced. */
+  .count-tag, .mini-stats b, .place-number, .placement-button span,
+  .distance-readout b, .scenario-results strong, .scenario-presets b,
+  .range-field output, .impact-grid b, .comparison td:not(:first-child) {
+    font-family: var(--font-geist-mono, 'Geist Mono'), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.035em;
+  }
+
+  .quiet, .placement-button, .tower-grid button, .scenario-presets button,
+  .model-loading button, .map-error button {
+    background: var(--sf-raised);
+    color: var(--sf-text);
+    border: 1px solid var(--sf-line);
+    border-radius: 3px;
+  }
+  .quiet, .primary-button { font-weight: 500; }
+  .primary-button {
+    background: var(--sf-accent);
+    color: var(--sf-accent-ink);
+    border-color: var(--sf-accent);
+    border-radius: 3px;
+    box-shadow: none;
+  }
+  .primary-button:hover { background: #c7dbed; border-color: #c7dbed; }
+  .text-action, .detail-card a, .check-card a, .source-register a,
+  .next-step, .plan-key b, .range-field output { color: var(--sf-accent); }
+  .plan-key > div > span { color: var(--sf-muted); }
+  .icon-button, .dock-icon, .map-tools button { color: var(--sf-muted); border-radius: 3px; }
+  .icon-button.active, .dock-icon.active {
+    color: var(--sf-text);
+    background: var(--sf-selected);
+    box-shadow: inset 0 0 0 1px #7793ad;
+  }
+  .scene-caption, .map-method {
+    background: var(--sf-surface);
+    color: var(--sf-muted);
+    border: 1px solid var(--sf-line);
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Base UI uses data-active; also support ARIA/Radix state conventions. */
+  .category-tabs { background: var(--sf-bg); border-color: var(--sf-line); border-radius: 3px; }
+  .category-tabs [data-slot=tabs-trigger] {
+    color: var(--sf-muted);
+    border-radius: 2px !important;
+    box-shadow: none;
+    font-weight: 500;
+  }
+  .category-tabs :is([data-active], [data-state=active], [aria-selected=true]) {
+    color: var(--sf-text) !important;
+    background: var(--sf-selected) !important;
+    box-shadow: inset 0 -2px var(--sf-accent);
+  }
+  .radius-control button { color: var(--sf-muted); border-radius: 2px; }
+  .radius-control button.active {
+    background: var(--sf-selected);
+    color: var(--sf-text);
+    box-shadow: inset 0 -1px var(--sf-accent);
+  }
+  .place-row { border-radius: 3px; }
+  .place-row.selected {
+    background: var(--sf-selected);
+    box-shadow: inset 2px 0 var(--sf-accent);
+  }
+  /* Category hues intentionally match the map's existing data layers. */
+  .place-number { background: #20382e; color: #b2d5c1; border-radius: 3px; }
+  .place-number.commercial { background: var(--sf-warning-bg); color: var(--sf-warning); }
+  .place-number.landmark { background: #26354a; color: #bed0e9; }
+  .tower-grid button.selected, .scenario-presets button.selected {
+    background: var(--sf-selected);
+    color: var(--sf-text);
+    border-color: #7793ad;
+    box-shadow: inset 0 -2px var(--sf-accent);
+  }
+  .scenario-presets button b { color: var(--sf-text); }
+  .view-dock { padding: 5px; }
+  .view-dock [data-slot=tabs-trigger] {
+    color: var(--sf-muted);
+    border-radius: 3px;
+    font-weight: 500;
+    box-shadow: none;
+  }
+  .view-dock :is([data-active], [data-state=active], [aria-selected=true]) {
+    background: var(--sf-accent) !important;
+    color: var(--sf-accent-ink) !important;
+    box-shadow: none;
+  }
+
+  /* Do not square map pins, location circles or loading indicators. */
+  .site-map-marker { background: var(--sf-surface); color: var(--sf-text); border-radius: 4px; }
+  .poi-marker.selected { outline-color: var(--sf-accent); }
+  .loading-dot { border-color: var(--sf-line); border-top-color: var(--sf-accent); }
+  .status-pill, .decision-banner, .scenario-caveat {
+    background: var(--sf-warning-bg);
+    color: var(--sf-warning);
+    border-radius: 3px;
+    border: 1px solid #66553b;
+  }
+  .check-status, .decision-banner p, .scenario-caveat p { color: var(--sf-warning); }
+
+  /* Sheets mount outside .atlas; use their own stable class/slot hooks. */
+  .study-sheet {
+    background: var(--sf-surface) !important;
+    color: var(--sf-text) !important;
+    border-color: var(--sf-line);
+    border-radius: 0;
+    box-shadow: -12px 0 40px #00000033;
+  }
+  .study-sheet [data-slot=sheet-header] { border-color: var(--sf-line); }
+  .study-sheet [data-slot=sheet-title] { color: var(--sf-text); letter-spacing: -0.035em; }
+  .study-sheet [data-slot=sheet-description] { color: var(--sf-muted); }
+  .sheet-footer { background: var(--sf-bg); border-color: var(--sf-line); }
+  [data-slot=sheet-overlay] { background: #05080cb3; }
+  .impact-grid { background: var(--sf-line); border-color: var(--sf-line); border-radius: 3px; }
+  .impact-grid > div { background: var(--sf-raised); }
+  .comparison thead { background: var(--sf-raised); }
+  .comparison th { font-weight: 500; }
+  .program-bar { border-radius: 2px; }
+  .program-bar span:first-child { background: #8cb69c; }
+  .program-bar span:last-child { background: var(--sf-warning); }
+  .range-field [data-slot=slider-track] { background: #435262; border-radius: 2px; }
+  .range-field [data-slot=slider-range] { background: var(--sf-accent); }
+  .range-field [data-slot=slider-thumb] { background: var(--sf-text); border-color: var(--sf-accent); }
+  [data-slot=switch] { background: #435262; }
+  [data-slot=switch]:is([data-checked], [data-state=checked], [aria-checked=true]) { background: var(--sf-accent); }
+  [data-slot=switch-thumb] { background: var(--sf-text); }
+  [data-slot=switch]:is([data-checked], [data-state=checked], [aria-checked=true]) [data-slot=switch-thumb] { background: var(--sf-accent-ink); }
+
+  .explorer, .place-list, .sheet-scroll { scrollbar-width: thin; scrollbar-color: #596b7d var(--sf-surface); }
+  :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: 3px;
+  }
+  button:disabled { cursor: not-allowed; }
+
+  /* UI only: canvas, imagery, model materials and attribution remain intact. */
+  .atlas .maplibregl-map { font-family: inherit; }
+  .atlas .maplibregl-ctrl-group, .atlas .maplibregl-popup-content {
+    background: var(--sf-surface);
+    color: var(--sf-text);
+    border: 1px solid var(--sf-line);
+    border-radius: 3px;
+  }
+  .atlas .maplibregl-ctrl-group button + button { border-color: var(--sf-line); }
+  .atlas .maplibregl-ctrl-icon { filter: invert(1) grayscale(1); }
+  .atlas .maplibregl-popup-close-button { color: var(--sf-text); }
+  .atlas [class*=maplibregl-popup-anchor-top] .maplibregl-popup-tip { border-bottom-color: var(--sf-surface); }
+  .atlas [class*=maplibregl-popup-anchor-bottom] .maplibregl-popup-tip { border-top-color: var(--sf-surface); }
+  .atlas .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--sf-surface); }
+  .atlas .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--sf-surface); }
+
+  @media (hover: hover) {
+    .quiet:hover, .placement-button:hover, .tower-grid button:not(.selected):hover,
+    .scenario-presets button:not(.selected):hover, .model-loading button:hover,
+    .map-error button:hover, .map-tools button:hover, .dock-icon:not(.active):hover,
+    .place-row:not(.selected):hover {
+      background: var(--sf-hover);
+      color: var(--sf-text);
+      border-color: #7793ad;
+    }
+    .text-action:hover, .detail-card a:hover, .check-card a:hover, .source-register a:hover {
+      color: #d9e7f4;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .quiet, .primary-button, .placement-button, .place-row,
+    .dock-icon, .map-tools button, .scenario-presets button {
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+  }
+  @media (max-width: 900px) { .masthead { padding-inline: 20px; } }
+  @media (max-width: 600px) {
+    .masthead { height: 58px; padding-inline: 12px; }
+    .explorer { padding: 14px; }
+    .view-dock { padding: 4px; }
+    .sheet-footer { flex-wrap: wrap; }
+  }
+  @media (forced-colors: active) {
+    :is(button, a, input, [tabindex]):focus-visible { outline-color: Highlight; }
+    .panel, .quiet, .primary-button, .placement-button { border-color: ButtonText; }
+    .place-row.selected, .category-tabs [data-active], .view-dock [data-active] { outline: 1px solid Highlight; }
+    .atlas .maplibregl-ctrl-icon { filter: none; }
+  }
+}
