@@ -1,0 +1,182 @@
+/* Maintained presentation theme. Loaded after the exported framework styles. */
+@font-face {
+  font-family: 'Atlas Geist';
+  src: url('./_next/static/_vinext_fonts/geist-8ac0455e797f/geist-98bbbccb.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root, .dark {
+  color-scheme: dark;
+  --background: #111417;
+  --foreground: #edf0f2;
+  --card: #1b2025;
+  --card-foreground: #edf0f2;
+  --popover: #20262c;
+  --popover-foreground: #edf0f2;
+  --primary: #a9c3d5;
+  --primary-foreground: #121a20;
+  --secondary: #272f37;
+  --secondary-foreground: #edf0f2;
+  --muted: #272f37;
+  --muted-foreground: #aab4bc;
+  --accent: #30414e;
+  --accent-foreground: #edf0f2;
+  --border: #39434d;
+  --input: #485460;
+  --ring: #bdd9ec;
+  --radius: 0.25rem;
+  --atlas-warning: #dfc18a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Atlas Geist', 'Geist', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font-family: inherit; }
+::selection { background: #486378; color: #fff; }
+:is(button, a, input, [role='slider']):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.atlas, .study-sheet { scrollbar-color: #56636f #1b2025; scrollbar-width: thin; }
+.masthead, .bottom-bar {
+  background: #14181c;
+  border-color: var(--border);
+}
+.masthead { height: 72px; }
+.identity { letter-spacing: 2px; font-weight: 600; }
+.identity small, .edition, .bottom-bar { color: var(--muted-foreground); }
+.brandmark { border-radius: 3px; border-color: #52616d; }
+.workspace, .model-scene, .scene iframe, .plan-scene { background: #20262c; }
+.panel {
+  background: #1b2025f5;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 8px 28px #00000026;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.explorer h2, .detail-card h2, .check-card h3 {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+.eyebrow, .detail-eyebrow, .section-label, .section-label span,
+.explorer p, .mini-stats span, .place-row small, .list-foot,
+.micro-note, .layer-panel p, .detail-card p, .detail-card small,
+.distance-readout span, .proposal-summary small, .explorer .placement-note,
+.radius-control > span, .model-loading p, .map-error p,
+.check-number, .check-card p, .methodology p, .source-register p,
+.scenario-results span, .scenario-results small, .program-legend,
+.range-field output small, .range-field > small, .impact-grid span,
+.comparison th { color: var(--muted-foreground); }
+.eyebrow { font-weight: 500; letter-spacing: 0.14em; }
+.quiet, .primary-button, .icon-button, .dock-icon, .count-tag,
+.place-number, .place-row, .tower-grid button, .status-pill,
+.finding-tags span, .site-map-marker, .decision-banner,
+.scenario-caveat, .scenario-presets button, .impact-grid,
+.proposal-symbol, .placement-button, .scene-caption {
+  border-radius: 3px;
+}
+.quiet { border-color: var(--border); }
+.primary-button {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+}
+.primary-button:hover { background: #c2d7e5; border-color: #c2d7e5; }
+.quiet:hover, .dock-icon:hover, .map-tools button:hover { background: var(--secondary); }
+.text-action, .detail-card a, .next-step, .check-card a,
+.source-register a, .range-field output, .placement-button span,
+.icon-button, .dock-icon, .map-tools button { color: var(--primary); }
+.insight, .list-foot, .proposal-summary, .detail-card a, .finding-tags span,
+.layer-row, .map-tools span, .plan-key > div, .check-card,
+.source-register a, .comparison th, .comparison td, .dock-divider {
+  border-color: var(--border);
+}
+.category-tabs, .count-tag, .place-number, .proposal-symbol,
+.placement-button, .tower-grid button, .scenario-presets button,
+.model-loading button, .map-error button {
+  color: #c6d5df;
+  background: var(--secondary);
+  border-color: var(--border);
+}
+.category-tabs { border-radius: 3px; padding: 3px; gap: 3px; }
+.category-tabs [data-slot='tabs-trigger'] { color: var(--muted-foreground); border-radius: 2px !important; }
+.category-tabs [data-active] { color: var(--foreground); background: #3a4955 !important; box-shadow: none; }
+.view-dock [data-slot='tabs-trigger'] { color: var(--muted-foreground); border-radius: 2px; font-weight: 500; }
+.view-dock [data-active] { color: #121a20 !important; background: var(--primary) !important; box-shadow: none; }
+.radius-control button { color: var(--muted-foreground); border-radius: 2px; }
+.place-row { border-left: 2px solid transparent; }
+.place-row:hover { background: #252d34; }
+.place-row.selected { background: #2b3944; border-left-color: var(--primary); }
+.radius-control button.active, .dock-icon.active,
+.icon-button.active, .tower-grid button.selected {
+  color: #edf0f2;
+  background: #3a4e5d;
+  border-color: #7896ab;
+}
+.place-number.commercial { color: #dfc18a; background: #3d3529; }
+.place-number.landmark { color: #c1c9e2; background: #30374a; }
+.scene-caption, .map-method, .site-map-marker {
+  color: #d7e0e6;
+  background: #1b2025ed;
+  border: 1px solid var(--border);
+}
+.site-map-marker small, .plan-key > div > span { color: var(--muted-foreground); }
+.plan-key b { color: #d7e0e6; }
+.project-heading { background: #1b2025ed; text-shadow: none; border-radius: 3px; }
+.project-heading h1 span, .project-heading p { color: var(--muted-foreground); }
+.status-pill, .decision-banner, .scenario-caveat {
+  color: var(--atlas-warning);
+  background: #322d23;
+  border-color: #5e5038;
+}
+.decision-banner p, .scenario-caveat p, .check-status { color: var(--atlas-warning); }
+.finding-tags span { color: #b6c3cc; }
+.study-sheet { color: var(--foreground) !important; background: var(--card) !important; }
+.study-sheet [data-slot='sheet-header'], .sheet-footer { border-color: var(--border); }
+.study-sheet [data-slot='sheet-title'] { color: var(--foreground); letter-spacing: -0.04em; }
+.study-sheet [data-slot='sheet-description'] { color: var(--muted-foreground); }
+.sheet-footer { background: #171c20; }
+.scenario-presets button b { color: #dbe5eb; }
+.scenario-presets button.selected { background: #30414e; border-color: #8caabd; }
+.scenario-results strong, .mini-stats b, .distance-readout b,
+.impact-grid b, .comparison td, .range-field output { font-variant-numeric: tabular-nums; }
+.program-bar span:first-child { background: #90afc4; }
+.program-bar span:last-child { background: #c2ab7d; }
+.range-field [data-slot='slider-track'] { background: #3c4853; }
+.range-field [data-slot='slider-range'] { background: var(--primary); }
+.range-field [data-slot='slider-thumb'] { background: #edf0f2; border-color: var(--primary); }
+.impact-grid { background: var(--border); border-color: var(--border); }
+.impact-grid > div { background: #222a31; }
+.loading-dot { border-color: #465460; border-top-color: var(--primary); }
+
+/* The embedded development viewer shares the UI theme, not model lighting. */
+#view-controls, #branding-overlay, .hotspot-card, #nav-speed-toast {
+  font-family: 'Atlas Geist', 'Geist', 'Segoe UI', sans-serif;
+}
+#view-toggle, #view-reset, .view-item button, #view-panel,
+#nav-speed-toast, #panorama-close, .fullscreen-media-close,
+.fullscreen-media-content, .fullscreen-media-content img,
+.fullscreen-media-content video, .fullscreen-media-hint { border-radius: 3px; }
+#view-toggle, #view-reset, .view-item button, #view-panel, #nav-speed-toast {
+  background: #1b2025f5;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+#view-toggle:hover, #view-reset:hover, .view-item button:hover { background: #30414e; }
+
+@media (max-width: 600px) {
+  .masthead { height: 62px; }
+  .explorer { border-radius: 4px; }
+  .view-dock { border-radius: 4px; }
+}
+@media print {
+  :root { color-scheme: light; }
+  body { color: #203b2d; background: #fff !important; }
+}
