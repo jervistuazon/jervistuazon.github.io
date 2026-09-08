@@ -1,0 +1,45 @@
+name: Verify white model deployment
+on:
+  push:
+    branches: [codex/fix-white-model-deployment]
+    paths: ['.github/workflows/verify-white-model.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Inspect route and model inputs
+        run: |
+          python3 - <<'PY'
+          import pathlib, json, struct, urllib.request, urllib.error
+          root=pathlib.Path('.')
+          for p in root.rglob('AGENTS*.md'):
+              if p.parent in [root, root/'presentation', root/'presentation/white_model', root/'scripts', root/'.github', root/'.github/workflows']:
+                  print('\nINSTRUCTIONS', p, '\n', p.read_text())
+          p=root/'presentation/white_model/index.html'
+          for n,line in enumerate(p.read_text().splitlines(),1):
+              if any(s in line for s in ['model.glb','vendor/','GLTFLoader','DRACOLoader','favicon','loader.load','loader.parse']):
+                  print('HTML', n, line[:2500])
+          b=(p.parent/'model.glb').read_bytes()
+          magic,version,total=struct.unpack_from('<III',b)
+          length,kind=struct.unpack_from('<II',b,12)
+          doc=json.loads(b[20:20+length])
+          print('GLB', len(b), magic, version, total)
+          print('GLTF buffers', doc.get('buffers'))
+          print('GLTF extensions',doc.get('extensionsUsed'),doc.get('extensionsRequired'))
+          print('GLTF views',len(doc.get('bufferViews',[])), 'largest', max((x['byteLength'] for x in doc.get('bufferViews',[])),default=0))
+          for p in (root/'presentation/white_model/vendor').rglob('*'):
+              if p.is_file(): print('VENDOR',p,p.stat().st_size)
+          for url in ['https://www.jervistuazon.com/presentation/white_model','https://www.jervistuazon.com/presentation/white_model/','https://www.jervistuazon.com/assets/favicon.png']:
+              try:
+                  with urllib.request.urlopen(url,timeout=30) as r: print('HTTP',url,r.status,r.url,r.headers.get('Content-Type'))
+              except Exception as e: print('HTTP',url,str(e))
+          PY
+      - run: npm ci
+      - run: npm run check:update
