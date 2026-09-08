@@ -3,9 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
+import { createHash } from 'node:crypto';
+import sharp from 'sharp';
 import { test } from 'node:test';
 import { parse } from 'acorn';
-import { loadSplitModel, createFrameLoop, createMaterialConverter, isObjectVisible } from '../presentation/site_feasibility/development/viewer-runtime.mjs';
+import { loadSplitModel, decodeModelDownload, createFrameLoop, createMaterialConverter, isObjectVisible } from '../presentation/site_feasibility/development/viewer-runtime.mjs';
+import { readGlb, sha256 } from './optimize-feasibility-model.mjs';
+import { MeshoptDecoder } from '../presentation/site_feasibility/development/vendor/meshopt_decoder.mjs';
 import * as THREE from '../presentation/site_feasibility/development/vendor/three.module.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -37,7 +42,7 @@ function downloadFixture({ truncated = false, failed = false } = {}) {
         get peak() { return peak; }, signals,
         async fetcher(url, { signal }) {
             signals.push(signal);
-            if (url.endsWith('.json')) return { ok: true, json: async () => ({ bytes: 6, parts: chunks.map((_, i) => `model.part-0${i}.bin`) }) };
+            if (url.includes('.json')) return { ok: true, json: async () => ({ bytes: 6, parts: chunks.map((_, i) => `model.part-0${i}.bin`) }) };
             const index = Number(url.match(/(\d+)\.bin$/)[1]);
             if (failed && index === 1) return { ok: false, status: 503 };
             return { ok: true, async arrayBuffer() {
@@ -209,13 +214,82 @@ test('layers changed during download and after retry are replayed; errors reset 
     assert.equal(app.messages.findLast(message => message.command === 'layer' && message.value.name === 'landscape').value.visible, false);
 });
 
-test('production model parts match declared bytes and GLB header', () => {
+test('gzip decoder supports native streams and fallback; rejects corrupt or truncated data', async () => {
+    const original = new Uint8Array([1, 2, 3, 4, 5, 6]);
+    const compressed = gzipSync(original), manifest = { compression: 'gzip', decodedBytes: original.length };
+    for (const Stream of [globalThis.DecompressionStream, null]) {
+        assert.deepEqual(new Uint8Array(await decodeModelDownload(compressed, manifest, Stream)), original);
+        await assert.rejects(decodeModelDownload(compressed, { ...manifest, decodedBytes: 50 }, Stream), /incomplete/);
+        await assert.rejects(decodeModelDownload(compressed.subarray(0, 8), manifest, Stream));
+    }
+});
+
+test('production model downloads, decodes and preserves original geometry and texture fingerprints', async () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(site, 'development/model-manifest.json')));
-    const lengths = manifest.parts.map(name => fs.statSync(path.join(site, 'development', name)).size);
-    const header = fs.readFileSync(path.join(site, 'development', manifest.parts[0]));
-    assert.equal(lengths.reduce((a, b) => a + b, 0), manifest.bytes);
-    assert.equal(header.subarray(0, 4).toString(), 'glTF');
-    assert.equal(header.readUInt32LE(8), manifest.bytes);
+    const transport = Buffer.concat(manifest.parts.map(name => fs.readFileSync(path.join(site, 'development', name))));
+    assert.equal(transport.length, manifest.bytes);
+    assert.equal(sha256(transport), manifest.sha256);
+    const model = await loadSplitModel({ fetcher: async url => new Response(fs.readFileSync(path.join(site, 'development', url.split('?')[0]))) });
+    assert.equal(model.byteLength, manifest.decodedBytes);
+    assert.equal(sha256(new Uint8Array(model)), manifest.verification.optimizedSha256);
+    const { json, binary } = readGlb(model);
+    const geometryHash = createHash('sha256'), pixelHash = createHash('sha256');
+    const imageViews = new Set(json.images.map(image => image.bufferView));
+    await MeshoptDecoder.ready;
+    for (const [index, view] of json.bufferViews.entries()) {
+        if (imageViews.has(index)) {
+            pixelHash.update(await sharp(binary.subarray(view.byteOffset, view.byteOffset + view.byteLength)).ensureAlpha().raw().toBuffer());
+        } else {
+            const ext = view.extensions.EXT_meshopt_compression;
+            const decoded = new Uint8Array(view.byteLength);
+            MeshoptDecoder.decodeGltfBuffer(decoded, ext.count, ext.byteStride, binary.subarray(ext.byteOffset, ext.byteOffset + ext.byteLength), ext.mode, ext.filter);
+            geometryHash.update(decoded);
+        }
+    }
+    assert.equal(geometryHash.digest('hex'), manifest.verification.geometrySha256);
+    assert.equal(pixelHash.digest('hex'), manifest.verification.pixelSha256);
+    assert.equal(json.nodes.length, manifest.verification.nodes);
+    assert.equal(json.meshes.length, manifest.verification.meshes);
+    assert.equal(json.materials.length, manifest.verification.materials);
+});
+
+test('the shipped Three.js loader parses compressed geometry, named towers and materials', async () => {
+    // Resolve the browser import map for Node without modifying the shipped loader.
+    const vendor = new URL('../presentation/site_feasibility/development/vendor/', import.meta.url);
+    const moduleUrl = source => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
+    const resolveThree = source => source.replace("from 'three'", `from '${new URL('three.module.js', vendor).href}'`);
+    const utils = moduleUrl(resolveThree(fs.readFileSync(new URL('examples/jsm/utils/BufferGeometryUtils.js', vendor), 'utf8')));
+    const loaderSource = resolveThree(fs.readFileSync(new URL('examples/jsm/loaders/GLTFLoader.js', vendor), 'utf8'))
+        .replace("from '../utils/BufferGeometryUtils.js'", `from '${utils}'`);
+    const { GLTFLoader } = await import(moduleUrl(loaderSource));
+    const model = await loadSplitModel({ fetcher: async url => new Response(fs.readFileSync(path.join(site, 'development', url.split('?')[0]))) });
+    const oldSelf = globalThis.self, oldBitmap = globalThis.createImageBitmap;
+    // Decode image dimensions with Sharp in this GPU-free integration test.
+    globalThis.self = globalThis;
+    globalThis.createImageBitmap = async blob => {
+        const { width, height } = await sharp(Buffer.from(await blob.arrayBuffer())).metadata();
+        return { width, height, close() {} };
+    };
+    try {
+        const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(model, '');
+        const names = [], materials = new Set();
+        gltf.scene.traverse(object => {
+            names.push(object.name);
+            if (object.isMesh) {
+                assert.ok(object.geometry.attributes.position.count > 0);
+                const list = Array.isArray(object.material) ? object.material : [object.material];
+                for (const material of list) materials.add(material.name);
+            }
+        });
+        for (const side of ['W', 'E']) for (let i = 1; i <= 6; i++) {
+            assert.ok(names.some(name => name.startsWith(`R_${side}${String(i).padStart(2, '0')}_`)));
+        }
+        assert.ok(materials.has('M_Grass')); assert.ok(materials.has('M_Grass_Light'));
+        assert.ok(!new THREE.Box3().setFromObject(gltf.scene).isEmpty());
+    } finally {
+        if (oldSelf === undefined) delete globalThis.self; else globalThis.self = oldSelf;
+        if (oldBitmap === undefined) delete globalThis.createImageBitmap; else globalThis.createImageBitmap = oldBitmap;
+    }
 });
 
 test('bridge retains pre-ready activity and invalidates shadows when layers change', () => {

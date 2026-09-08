@@ -1,4 +1,19 @@
 // Small, independently testable helpers for the exported development viewer.
+export async function decodeModelDownload(bytes, manifest, Stream = globalThis.DecompressionStream) {
+    if (manifest.compression !== 'gzip') return bytes.buffer;
+    let decoded;
+    if (Stream) {
+        const stream = new Blob([bytes]).stream().pipeThrough(new Stream('gzip'));
+        decoded = await new Response(stream).arrayBuffer();
+    } else {
+        // Older browsers can still open the model without native gzip streams.
+        const { gunzipSync } = await import('./vendor/fflate.module.js');
+        decoded = gunzipSync(bytes).buffer;
+    }
+    if (decoded.byteLength !== manifest.decodedBytes) throw new Error('The decoded model is incomplete. Please retry.');
+    return decoded;
+}
+
 export async function loadSplitModel({ fetcher = fetch, onProgress = () => {}, timeoutMs = 120000 } = {}) {
     const controller = new AbortController();
     async function request(path, consume) {
@@ -12,10 +27,12 @@ export async function loadSplitModel({ fetcher = fetch, onProgress = () => {}, t
         }
     }
     try {
-        const manifest = await request('./model-manifest.json', response => response.json());
+        const manifest = await request('./model-manifest.json?v=20260908c', response => response.json());
         if (!Number.isSafeInteger(manifest.bytes) || manifest.bytes <= 0 || !Array.isArray(manifest.parts) ||
             !manifest.parts.length || new Set(manifest.parts).size !== manifest.parts.length ||
-            !manifest.parts.every(name => typeof name === 'string' && /^model\.part-\d+\.bin$/.test(name))) {
+            !manifest.parts.every(name => typeof name === 'string' && /^model(?:\.[a-f0-9]{12})?\.part-\d+\.bin$/.test(name)) ||
+            (manifest.compression !== undefined && manifest.compression !== 'gzip') ||
+            (manifest.compression === 'gzip' && (!Number.isSafeInteger(manifest.decodedBytes) || manifest.decodedBytes <= 0))) {
             throw new Error('Invalid model manifest. Please reload the presentation.');
         }
         let next = 0, loaded = 0;
@@ -38,8 +55,9 @@ export async function loadSplitModel({ fetcher = fetch, onProgress = () => {}, t
             offset += parts[index].byteLength;
             parts[index] = null;
         }
+        const decoded = await decodeModelDownload(model, manifest);
         onProgress(100);
-        return model.buffer;
+        return decoded;
     } catch (error) {
         controller.abort(error);
         throw error;

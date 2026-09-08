@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "dev": "vite --config scripts/feasibility-preview.config.mjs",
     "build:dist": "node scripts/build-dist.js",
     "verify:dist": "node scripts/verify-dist.js",
     "build:cloudflare": "npm run build:dist && node scripts/fix-forestville-dist.js && npm run verify:dist",
@@ -13,5 +14,11 @@
     "clean-css": "^5.3.3",
     "sharp": "^0.34.5",
     "terser": "^5.48.0"
+  },
+  "devDependencies": {
+    "fflate": "0.8.2",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "meshoptimizer": "1.2.0",
+    "vite": "8.2.2"
   }
 }
