@@ -826,6 +826,24 @@ class OrbitControls extends EventDispatcher {
 
 		}
 
+		function getTouchRotateSpeed() {
+
+			return Math.min( 1.8, Math.max( 0.75, scope.rotateSpeed * 3 ) );
+
+		}
+
+		function getTouchPanSpeed() {
+
+			return Math.min( 1.5, Math.max( 0.6, scope.panSpeed * 2.5 ) );
+
+		}
+
+		function getTouchZoomSpeed() {
+
+			return Math.min( 1.5, Math.max( 0.5, scope.zoomSpeed * 2 ) );
+
+		}
+
 		function handleTouchStartRotate( event ) {
 
 			if ( pointers.length === 1 ) {
@@ -910,7 +928,7 @@ class OrbitControls extends EventDispatcher {
 
 			}
 
-			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( getTouchRotateSpeed() );
 
 			const element = scope.domElement;
 
@@ -939,7 +957,7 @@ class OrbitControls extends EventDispatcher {
 
 			}
 
-			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( getTouchPanSpeed() );
 
 			pan( panDelta.x, panDelta.y );
 
@@ -958,7 +976,7 @@ class OrbitControls extends EventDispatcher {
 
 			dollyEnd.set( 0, distance );
 
-			dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
+			dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, getTouchZoomSpeed() ) );
 
 			dollyOut( dollyDelta.y );
 
