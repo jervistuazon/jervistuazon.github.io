@@ -1,0 +1,72 @@
+name: Apply white model mobile navigation patch
+
+on:
+  push:
+    branches:
+      - 'codex/mobile-white-model-navigation'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/mobile-white-model-navigation
+
+      - name: Improve touch navigation response
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('presentation/white_model/vendor/examples/jsm/controls/OrbitControls.js')
+          text = path.read_text(encoding='utf-8')
+
+          anchor = "\t\tfunction handleTouchStartRotate( event ) {"
+          helpers = """\t\tfunction getTouchRotateSpeed() {\n\n\t\t\treturn Math.min( 1.8, Math.max( 0.75, scope.rotateSpeed * 3 ) );\n\n\t\t}\n\n\t\tfunction getTouchPanSpeed() {\n\n\t\t\treturn Math.min( 1.5, Math.max( 0.6, scope.panSpeed * 2.5 ) );\n\n\t\t}\n\n\t\tfunction getTouchZoomSpeed() {\n\n\t\t\treturn Math.min( 1.5, Math.max( 0.5, scope.zoomSpeed * 2 ) );\n\n\t\t}\n\n"""
+          if anchor not in text:
+              raise SystemExit('Touch handler anchor not found')
+          text = text.replace(anchor, helpers + anchor, 1)
+
+          touch_rotate = text.index('\t\tfunction handleTouchMoveRotate( event ) {')
+          before = "\t\t\trotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );"
+          after = "\t\t\trotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( getTouchRotateSpeed() );"
+          suffix = text[touch_rotate:]
+          if before not in suffix:
+              raise SystemExit('Touch rotate expression not found')
+          suffix = suffix.replace(before, after, 1)
+          text = text[:touch_rotate] + suffix
+
+          touch_pan = text.index('\t\tfunction handleTouchMovePan( event ) {')
+          before = "\t\t\tpanDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );"
+          after = "\t\t\tpanDelta.subVectors( panEnd, panStart ).multiplyScalar( getTouchPanSpeed() );"
+          suffix = text[touch_pan:]
+          if before not in suffix:
+              raise SystemExit('Touch pan expression not found')
+          suffix = suffix.replace(before, after, 1)
+          text = text[:touch_pan] + suffix
+
+          before = "\t\t\tdollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );"
+          after = "\t\t\tdollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, getTouchZoomSpeed() ) );"
+          if before not in text:
+              raise SystemExit('Touch zoom expression not found')
+          text = text.replace(before, after, 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate JavaScript
+        run: node --check presentation/white_model/vendor/examples/jsm/controls/OrbitControls.js
+
+      - name: Commit patched viewer
+        run: |
+          rm .github/workflows/white-model-mobile-nav.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add presentation/white_model/vendor/examples/jsm/controls/OrbitControls.js .github/workflows/white-model-mobile-nav.yml
+          git diff --cached --check
+          git commit -m "Improve white model mobile navigation"
+          git push origin HEAD:codex/mobile-white-model-navigation
