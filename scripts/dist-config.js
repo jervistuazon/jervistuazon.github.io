@@ -283,7 +283,9 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
             continue;
         }
 
-        if (isSiteFeasibility && entry.isDirectory() && ['_next', 'development'].includes(entry.name)) {
+        // The white-model viewer imports its bundled libraries from vendor/.
+        const isWhiteModelVendor = presentationDir === 'presentation/white_model' && entry.name === 'vendor';
+        if (entry.isDirectory() && (isWhiteModelVendor || (isSiteFeasibility && ['_next', 'development'].includes(entry.name)))) {
             for (const relative of walkFiles(path.join(presentationRoot, entry.name))) {
                 if (runtimeExtensions.has(path.extname(relative).toLowerCase())) {
                     runtimeFiles.push(toPosix(path.join(entry.name, relative)));

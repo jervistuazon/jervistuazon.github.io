@@ -72,6 +72,18 @@ function assertPresentationDiscovery() {
         fs.writeFileSync(path.join(publishable, 'project.manifest.json'), '{}');
         fs.mkdirSync(path.join(publishable, 'Tools'), { recursive: true });
         fs.writeFileSync(path.join(publishable, 'Tools', 'editor.html'), 'authoring tool');
+        fs.mkdirSync(path.join(publishable, 'vendor'), { recursive: true });
+        fs.writeFileSync(path.join(publishable, 'vendor', 'editor.js'), 'authoring library');
+
+        const whiteModel = path.join(presentationRoot, 'white_model');
+        fs.mkdirSync(path.join(whiteModel, 'vendor', 'examples', 'jsm'), { recursive: true });
+        fs.writeFileSync(path.join(whiteModel, 'index.html'), '<script src="./vendor/three.module.js"></script>');
+        fs.writeFileSync(path.join(whiteModel, 'vendor', 'three.module.js'), 'runtime');
+        fs.writeFileSync(path.join(whiteModel, 'vendor', 'examples', 'jsm', 'loader.js'), 'runtime');
+        fs.writeFileSync(path.join(whiteModel, 'vendor', 'authoring.psd'), 'not runtime');
+        assert.deepStrictEqual(collectGenericPresentationRuntimeFiles(fixtureRoot, 'presentation/white_model'), [
+            'index.html', 'vendor/examples/jsm/loader.js', 'vendor/three.module.js'
+        ]);
 
         const duplicate = path.join(presentationRoot, 'Interactive Web Presentation');
         fs.mkdirSync(duplicate, { recursive: true });
@@ -86,7 +98,7 @@ function assertPresentationDiscovery() {
         fs.mkdirSync(incomplete, { recursive: true });
         fs.writeFileSync(path.join(incomplete, 'app.js'), 'console.log("not publishable");');
 
-        assert.deepStrictEqual(discoverPresentationDirs(fixtureRoot), ['presentation/new_presentation']);
+        assert.deepStrictEqual(discoverPresentationDirs(fixtureRoot), ['presentation/new_presentation', 'presentation/white_model']);
         assert.deepStrictEqual(
             collectGenericPresentationRuntimeFiles(fixtureRoot, 'presentation/new_presentation'),
             ['app.js', 'assets/image.webp', 'index.html']
