@@ -109,13 +109,19 @@ jobs:
                   assert(await page.locator('#canvas-container canvas').count()>0,'3D canvas missing');
                   assert(modelResponses.some(([u,s,m])=>u.endsWith('model.gltf') && s===200 && m==='GET' && completed.has(u)),'glTF GET not completed');
                   assert(modelResponses.filter(([u,s])=>u.endsWith('.bin') && s===200 && completed.has(u)).length>=2,'Split buffers not fully loaded');
-                  await page.locator('#view-toggle').click();
-                  assert(await page.locator('#view-panel').isVisible(),'View controls did not open');
-                  await page.locator('#view-reset').click();
+                  // Exports with no saved bookmarks intentionally hide Views.
+                  if(await page.locator('#view-toggle').isVisible()) {
+                      await page.locator('#view-toggle').click();
+                      assert(await page.locator('#view-panel').isVisible(),'View controls did not open');
+                      if(await page.locator('#view-reset').isEnabled()) await page.locator('#view-reset').click();
+                  }
+                  await page.evaluate(()=>window.resetOrFitView());
                   await page.mouse.move(viewport.width/2,viewport.height/2);
+                  await page.mouse.down();
+                  await page.mouse.move(viewport.width/2+40,viewport.height/2+20,{steps:5});
+                  await page.mouse.up();
                   await page.mouse.wheel(0,80);
-                  // The export probes availability with HEAD (or cancels a GET body).
-                  // Accept only that probe's abort after the actual model GET completed.
+                  // Accept an availability-probe abort only after the actual GET completed.
                   for (const request of failed) {
                       if(request.error==='net::ERR_ABORTED' && request.url.endsWith('/model.gltf') && completed.has(request.url)) {
                           console.log('Completed model load superseded availability probe',request.method,request.url);
