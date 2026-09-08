@@ -1,0 +1,66 @@
+# GitHub Pages currently builds this repository with Jekyll from the main branch.
+# Keep source/authoring files in Git while excluding them from the published artifact.
+# This prevents the Pages artifact from exceeding GitHub's 1 GB published-site limit.
+
+exclude:
+  # Jekyll 3 replaces its default exclusion list when `exclude` is configured,
+  # so retain the standard exclusions explicitly.
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle
+  - vendor/cache
+  - vendor/gems
+  - vendor/ruby
+
+  # Repository tooling, docs, agent metadata and local build helpers.
+  - .agent
+  - .codex
+  - .github
+  - .gitignore
+  - .node-version
+  - AGENTS.md
+  - CLOUDFLARE_PAGES_PREVIEW_TRIGGER.md
+  - DEPLOYMENT.md
+  - build.js
+  - convert_to_webp.js
+  - deploy.bat
+  - gallery-manager.html
+  - generate-project-pages.js
+  - optimize_images.bat
+  - package.json
+  - package-lock.json
+  - scripts
+  - skills
+  - startapp.bat
+  - styles.css
+  - script.js
+  - update_gallery.ps1
+
+  # Authoring/duplicate presentation sources that are not runtime dependencies.
+  - "presentation/Interactive Web Presentation"
+  - presentation/cinematic_web_presentation/Tools
+  - presentation/cinematic_web_presentation/scripts
+  - presentation/cinematic_web_presentation/scroll-animated-presentation
+  - presentation/cinematic_web_presentation/single-file-exporter.html
+  - presentation/cinematic_web_presentation/serve-local.bat
+
+  # The portfolio runtime references optimized WebP versions. Keep the WebP files
+  # and the small root favicon PNG, but do not publish redundant source renders.
+  - "assets/Commercial/**/*.png"
+  - "assets/Commercial/**/*.jpg"
+  - "assets/Commercial/**/*.jpeg"
+  - "assets/Hospitality/**/*.png"
+  - "assets/Hospitality/**/*.jpg"
+  - "assets/Hospitality/**/*.jpeg"
+  - "assets/Institutional/**/*.png"
+  - "assets/Institutional/**/*.jpg"
+  - "assets/Institutional/**/*.jpeg"
+  - "assets/Residential/**/*.png"
+  - "assets/Residential/**/*.jpg"
+  - "assets/Residential/**/*.jpeg"
+  - "assets/HERO SHOT/**/*.png"
+  - "assets/HERO SHOT/**/*.jpg"
+  - "assets/HERO SHOT/**/*.jpeg"
+  - assets/profile.png
+  - assets/social-preview.png
