@@ -5,10 +5,76 @@ let requestedActive=parent===window;
 function initialize(){
  const v=window.__VIEWER__;if(viewer||!v?.ready)return;
  viewer=v;home={position:v.camera.position.clone(),target:v.controls.target.clone(),up:v.camera.up.clone(),near:v.camera.near};
- softenGrass(v);v.setActive(requestedActive);post('atlas-ready');
+ applySiteContextTerrain(v);softenGrass(v);v.setActive(requestedActive);post('atlas-ready');
 }
 window.addEventListener('atlas-viewer-ready',initialize);
 initialize();
+
+function applySiteContextTerrain(v){
+ if(!v?.scene||!v?.THREE)return;
+ let mapTexture=null;
+ if(typeof document!=='undefined'){
+  const loader=new v.THREE.TextureLoader();
+  mapTexture=loader.load('./assets/google_map_surface.jpg',()=>{
+   terrainMaterial.needsUpdate=true;
+   v.invalidateScene();
+  });
+  if(v.THREE.SRGBColorSpace)mapTexture.colorSpace=v.THREE.SRGBColorSpace;
+  mapTexture.wrapS=v.THREE.ClampToEdgeWrapping;
+  mapTexture.wrapT=v.THREE.ClampToEdgeWrapping;
+ }
+
+ const terrainMaterial=new v.THREE.MeshStandardMaterial({
+  color:0xffffff,
+  map:mapTexture,
+  roughness:0.85,
+  metalness:0.02,
+  name:'M_Satellite_Terrain'
+ });
+
+ terrainMaterial.onBeforeCompile=shader=>{
+  shader.fragmentShader=shader.fragmentShader.replace(
+   '#include <color_fragment>',
+   `#include <color_fragment>
+   #ifdef USE_MAP
+   vec2 edgeDist=min(vMapUv,vec2(1.0)-vMapUv);
+   float edgeFactor=clamp(min(edgeDist.x,edgeDist.y)/0.04,0.0,1.0);
+   vec3 edgeTone=vec3(0.15,0.18,0.16);
+   diffuseColor.rgb=mix(edgeTone,diffuseColor.rgb,edgeFactor);
+   #endif`
+  );
+ };
+ terrainMaterial.customProgramCacheKey=()=> 'atlas-satellite-terrain-v1';
+
+ const S=2310.50;
+ function updateTerrainUV(geometry){
+  if(!geometry||!geometry.attributes?.position)return;
+  const pos=geometry.attributes.position;
+  let uv=geometry.attributes.uv;
+  if(!uv||uv.count!==pos.count){
+   uv=new v.THREE.BufferAttribute(new Float32Array(pos.count*2),2);
+   geometry.setAttribute('uv',uv);
+  }
+  for(let i=0;i<pos.count;i++){
+   const x=pos.getX(i);
+   const z=pos.getZ(i);
+   const east=0.9396926*x+0.3420201*z;
+   const north=0.3420201*x-0.9396926*z;
+   uv.setXY(i,0.5+east/S,0.5+north/S);
+  }
+  uv.needsUpdate=true;
+ }
+
+ v.scene.traverse(o=>{
+  if(!o.isMesh)return;
+  if(o.name==='Broad_Terrain'||o.name==='PD_Extended_Landscape_Context'){
+   updateTerrainUV(o.geometry);
+   o.material=terrainMaterial;
+  }else if(o.name==='PL_Continuous_Curving_River'||o.name==='PL_Smooth_Stone_Riverbanks'){
+   o.visible=false;
+  }
+ });
+}
 
 function softenGrass(v){
  const materials=new Map();
