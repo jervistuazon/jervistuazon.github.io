@@ -4,5 +4,11 @@
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+/presentation/white_model/
+  Cache-Control: no-cache, must-revalidate
+
+/presentation/white_model/index.html
+  Cache-Control: no-cache, must-revalidate
+
 /presentation/forestville_test/*
   Cache-Control: no-cache, must-revalidate
