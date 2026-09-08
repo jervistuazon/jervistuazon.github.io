@@ -39,14 +39,28 @@ jobs:
           patch('scripts/verify-dist.js',
               "    if (candidate.endsWith('/')) return `${candidate}index.html`;",
               "    // path.normalize('/') becomes '.' after removing the site-root slash.\n    if (candidate === '.') return 'index.html';\n    if (candidate.endsWith('/')) return `${candidate}index.html`;")
+          patch('presentation/white_model/index.html',
+              "        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';",
+              "        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';\n        import { createMaterialConverter } from './materials.js';")
+          patch('presentation/white_model/index.html',
+              "            modelObject.traverse(n => {",
+              "            const convertMaterial = createMaterialConverter(THREE, config);\n            modelObject.traverse(n => {")
+          p=Path('presentation/white_model/index.html')
+          text=p.read_text()
+          start=text.find('                    if(!(n.material instanceof THREE.MeshPhysicalMaterial)) {')
+          if start>=0:
+              end=text.index('                    if(config.edgeVisible) {', start)
+              text=text[:start]+'                    n.material = convertMaterial(n.material);\n'+text[end:]
+              p.write_text(text)
+          assert 'n.material = convertMaterial(n.material);' in p.read_text()
           p=Path('package.json')
           data=json.loads(p.read_text())
           data['scripts']['prepare:white-model']='node scripts/prepare-white-model.js'
-          data['scripts']['test:white-model']='node --test scripts/test-white-model.js'
+          data['scripts']['test:white-model']='node --test scripts/test-white-model.js scripts/test-white-model-materials.mjs'
           data['scripts']['test:cloudflare']='node scripts/test-cloudflare.js && npm run test:white-model'
           p.write_text(json.dumps(data,indent=2)+'\n')
           patch('DEPLOYMENT.md', '## Routine portfolio update',
-              "`presentation/white_model/` publishes its local `vendor/` runtime dependencies and `model.gltf` with buffers below 20 MiB. The original `model.glb` remains in Git as an authoring source and is excluded from `dist/`. After replacing that source, run `npm run prepare:white-model` and commit the regenerated `model.gltf`, `model-part-*.bin`, and viewer URL alongside the source. Packaging preserves every buffer-view byte and all scene properties; `npm run check:update` includes the model preservation, Khronos validation, and runtime-inventory regression tests.\n\n## Routine portfolio update")
+              "`presentation/white_model/` publishes its local `vendor/` runtime dependencies and `model.gltf` with buffers below 20 MiB. The original `model.glb` remains in Git as an authoring source and is excluded from `dist/`. After replacing that source, run `npm run prepare:white-model` and commit the regenerated `model.gltf`, `model-part-*.bin`, and viewer URL alongside the source. Packaging preserves every buffer-view byte and all scene properties; `npm run check:update` includes model preservation, Khronos validation, material conversion, and runtime-inventory regression tests.\n\n## Routine portfolio update")
           PY
           node scripts/prepare-white-model.js
       - run: npm ci
@@ -69,16 +83,19 @@ jobs:
           const browser = await chromium.launch({args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
           try {
               for (const [name, viewport, suffix] of [['desktop',{width:1440,height:900},''], ['mobile',{width:390,height:844},'/']]) {
-                  const context = await browser.newContext({viewport,deviceScaleFactor:1});
+                  const context = await browser.newContext({viewport,deviceScaleFactor:1,hasTouch:name==='mobile',isMobile:name==='mobile'});
                   const page = await context.newPage();
                   const errors=[];
+                  const failed=[];
+                  const completed=new Set();
                   const modelResponses=[];
                   page.on('pageerror',e=>errors.push(e.message));
                   page.on('console',m=>{if(m.type()==='error') errors.push(m.text());});
-                  page.on('requestfailed',r=>errors.push(`${r.url()}: ${r.failure()?.errorText}`));
+                  page.on('requestfailed',r=>failed.push({url:r.url(),method:r.method(),error:r.failure()?.errorText}));
+                  page.on('requestfinished',r=>{if(r.method()==='GET') completed.add(r.url());});
                   page.on('response',r=>{
                       if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`);
-                      if(/model(?:\.gltf|-part-\d+\.bin)(?:\?|$)/.test(r.url())) modelResponses.push([r.url(),r.status()]);
+                      if(/model(?:\.gltf|-part-\d+\.bin)(?:\?|$)/.test(r.url())) modelResponses.push([r.url(),r.status(),r.request().method()]);
                   });
                   const response=await page.goto(`http://127.0.0.1:4173/presentation/white_model${suffix}`,{waitUntil:'domcontentloaded'});
                   assert.equal(response.status(),200);
@@ -87,12 +104,27 @@ jobs:
                       return !e || getComputedStyle(e).display==='none' || Number(getComputedStyle(e).opacity)===0;
                   },null,{timeout:60000});
                   await page.waitForLoadState('networkidle');
-                  assert(await page.locator('#canvas-container canvas').count()>0,'3D canvas missing');
-                  assert(modelResponses.some(([u,s])=>u.endsWith('model.gltf') && s===200),'glTF not loaded');
-                  assert(modelResponses.filter(([u,s])=>u.endsWith('.bin') && s===200).length>=2,'Split buffers not loaded');
-                  await page.evaluate(()=>window.resetOrFitView());
                   await page.screenshot({path:`/tmp/white-model-verification/${name}.png`});
+                  assert.equal(await page.locator('#boot-error').isVisible(),false,await page.locator('#boot-error').innerText());
+                  assert(await page.locator('#canvas-container canvas').count()>0,'3D canvas missing');
+                  assert(modelResponses.some(([u,s,m])=>u.endsWith('model.gltf') && s===200 && m==='GET' && completed.has(u)),'glTF GET not completed');
+                  assert(modelResponses.filter(([u,s])=>u.endsWith('.bin') && s===200 && completed.has(u)).length>=2,'Split buffers not fully loaded');
+                  await page.locator('#view-toggle').click();
+                  assert(await page.locator('#view-panel').isVisible(),'View controls did not open');
+                  await page.locator('#view-reset').click();
+                  await page.mouse.move(viewport.width/2,viewport.height/2);
+                  await page.mouse.wheel(0,80);
+                  // The export probes availability with HEAD (or cancels a GET body).
+                  // Accept only that probe's abort after the actual model GET completed.
+                  for (const request of failed) {
+                      if(request.error==='net::ERR_ABORTED' && request.url.endsWith('/model.gltf') && completed.has(request.url)) {
+                          console.log('Completed model load superseded availability probe',request.method,request.url);
+                      } else errors.push(JSON.stringify(request));
+                  }
                   assert.deepEqual(errors,[],`${name} console/network errors`);
+                  const icon=await context.request.get('http://127.0.0.1:4173/assets/favicon.png');
+                  assert.equal(icon.status(),200);
+                  assert.equal(await page.locator('#boot-error').isVisible(),false);
                   console.log('BROWSER PASS',name,page.url(),JSON.stringify(modelResponses));
                   await context.close();
               }
@@ -102,6 +134,7 @@ jobs:
         run: |
           test "$GITHUB_REF_NAME" = codex/fix-white-model-deployment
           git diff --stat
+          git diff -- scripts/dist-config.js scripts/verify-dist.js package.json DEPLOYMENT.md presentation/white_model/index.html
           git add -- scripts/dist-config.js scripts/verify-dist.js package.json DEPLOYMENT.md presentation/white_model/index.html presentation/white_model/model.gltf presentation/white_model/model-part-*.bin
           git add -- index.html gallery-data.js script.js script.min.js styles.min.css presentation/cinematic_web_presentation/index.html presentation/forestville_test/index.html sitemap.xml robots.txt projects/
           git diff --cached --check
