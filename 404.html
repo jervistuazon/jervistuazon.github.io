@@ -5,10 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 | Page Not Found</title>
+    <script>
+        (() => {
+            // GitHub Pages does not reliably normalize extensionless directory
+            // requests on the custom domain. Redirect known presentation roots
+            // to their canonical trailing-slash URL before rendering the 404 UI.
+            const presentationDirectoryRoutes = new Set([
+                '/presentation/white_model',
+                '/presentation/site_feasibility',
+                '/presentation/interactive_presentation_demo',
+                '/presentation/cinematic_web_presentation',
+                '/presentation/forestville_test',
+                '/presentation/hyatt_web_presentation'
+            ]);
+
+            if (presentationDirectoryRoutes.has(window.location.pathname)) {
+                window.location.replace(
+                    `${window.location.pathname}/${window.location.search}${window.location.hash}`
+                );
+            }
+        })();
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Raleway:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
     <style>
         body {
             background-color: #0a0a0a;
@@ -86,7 +107,7 @@
             transform: translate(-50%, -50%);
             width: 80vw;
             height: 80vw;
-            background-image: url('assets/favicon.png');
+            background-image: url('/assets/favicon.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -103,7 +124,7 @@
         <h1>404</h1>
         <h2>Page Not Found</h2>
         <p>The project or page you are looking for has been moved or does not exist.</p>
-        <a href="index.html" class="home-btn">Return Home</a>
+        <a href="/" class="home-btn">Return Home</a>
     </div>
 </body>
 
