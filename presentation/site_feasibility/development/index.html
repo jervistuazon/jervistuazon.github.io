@@ -269,25 +269,19 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+        import { MeshoptDecoder } from './vendor/meshopt_decoder.mjs';
+        import { loadSplitModel, createFrameLoop, createMaterialConverter, isObjectVisible } from './viewer-runtime.mjs?v=20260908c';
 
         const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":-0.00006,"normalBias":0.048,"shadowOpacity":0.5,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":0.9,"saturation":0.85,"camPos":{"x":-0.02761031585858388,"y":1.5992401053292151,"z":1.1309653325247},"camTarget":{"x":-0.02164205701923224,"y":0.1499999999999999,"z":0.22645704926443633},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.48503658731782856,"y":-0.002885054703472718,"z":-0.0016002022563487259,"w":0.8744876355759246},"camUp":{"x":0,"y":1,"z":0},"camNear":0.005,"camFar":2000,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.1,"hsOpacity":0.8,"hsPopupScale":75,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788704475213};
-        const modelData = await (async () => {
- try {
- const response = await fetch('./model-manifest.json');
- if (!response.ok) throw new Error('Model manifest unavailable');
- const manifest = await response.json();
- let loaded = 0;
- const parts = await Promise.all(manifest.parts.map(async name => {
-   const r = await fetch('./' + name); if (!r.ok) throw new Error('Model part unavailable: ' + name);
-   const data = await r.arrayBuffer(); loaded += data.byteLength;
-   parent.postMessage({type:'atlas-progress',value:Math.round(loaded / manifest.bytes * 100)}, location.origin);
-   return data;
- }));
- const url = URL.createObjectURL(new Blob(parts, {type:'model/gltf-binary'}));
- window.addEventListener('pagehide', () => URL.revokeObjectURL(url), {once:true});
- return url;
- } catch(error) { parent.postMessage({type:'atlas-error',message:error.message}, location.origin); throw error; }
-})();
+        let modelData;
+        try {
+            modelData = await loadSplitModel({
+                onProgress: value => parent.postMessage({ type: 'atlas-progress', value }, location.origin)
+            });
+        } catch (error) {
+            showBootError('Failed to download model', error.message || String(error));
+            throw error;
+        }
         const hdriData = null;
         const hotspotsData = [{"id":"hs_1788624170095_87nte3c4c","position":{"x":-0.2627412959340015,"y":0.051698008806755145,"z":0.5406898299415241},"content":"<img alt=\"commercial_05 (1).jpg\" data-src-relative=\"./assets/commercial_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624174150_70otwtilw","position":{"x":0.4325800993475136,"y":0.04500521178608223,"z":0.4503888697859005},"content":"<img alt=\"aerial_view_09 (1).jpg\" data-src-relative=\"./assets/aerial_view_09 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624216056_mwvnmtxbh","position":{"x":-0.005342745432400518,"y":0.5616091461124716,"z":-0.03298961537538575},"content":"<img alt=\"masterplan_05 (1).jpg\" data-src-relative=\"./assets/masterplan_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624218434_0r8jz9620","position":{"x":-0.009207524696656127,"y":0.10613020909171167,"z":-0.3072532363093175},"content":"<img alt=\"WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\" data-src-relative=\"./assets/WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\">","isPanoramic":false,"type":"hotspot"}];
         const transform = {"position":{"x":0,"y":0.0016646754741668768,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":0.0016666666666666668,"y":0.0016666666666666668,"z":0.0016666666666666668}};
@@ -315,7 +309,6 @@
         let hotspots = [];
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
-        const clock = new THREE.Clock();
         let anchoredOrbit = null;
         let smoothZoom = null;
         let cameraController = null;
@@ -880,6 +873,10 @@
         const maxPixelRatio = 2;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
         renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.autoUpdate = false;
+        renderer.domElement.addEventListener('webglcontextrestored', () => {
+            renderer.shadowMap.needsUpdate = true;
+        });
         renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = config.exposure;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
@@ -930,7 +927,28 @@
             noCollision: Boolean(config.noCollision)
         });
         setNavigationSpeed(config.navSpeedLevel, false);
-        window.__VIEWER__ = { THREE, renderer, scene, camera, controls, smoothZoom, cameraController, anchoredOrbit };
+        window.__VIEWER__ = {
+            THREE, renderer, scene, camera, controls, smoothZoom, cameraController, anchoredOrbit,
+            ready: false,
+            setAutoRotate(enabled) {
+                clearTimeout(rotationTimeout);
+                config.autoRotate = Boolean(enabled);
+                controls.autoRotate = config.autoRotate;
+            },
+            setActive(active) {
+                if (!active) cameraController._onBlur();
+                frameLoop.setActive(active);
+            },
+            clearHotspots() {
+                closeHotspotPopup();
+                markerAnimationState.hoveredHotspotId = null;
+                markerAnimationState.clickedHotspotId = null;
+            },
+            invalidateScene() {
+                renderer.shadowMap.needsUpdate = true;
+                pendingOcclusionChecks = hotspots.length;
+            }
+        };
 
         controls.addEventListener('start', () => { clearTimeout(rotationTimeout); controls.autoRotate = false; });
         controls.addEventListener('end', () => { if (config.autoRotate) { clearTimeout(rotationTimeout); rotationTimeout = setTimeout(() => { controls.autoRotate = true; }, config.autoRotateDelay * 1000); } });
@@ -1120,17 +1138,11 @@
                 if (transform.scale) modelObject.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
             }
 
+            const convertMaterial = createMaterialConverter(THREE, config);
             modelObject.traverse(n => {
                 if(n.isMesh) {
                     n.castShadow = true; n.receiveShadow = true;
-                    if(!(n.material instanceof THREE.MeshPhysicalMaterial)) {
-                        const newMat = new THREE.MeshPhysicalMaterial();
-                        THREE.MeshStandardMaterial.prototype.copy.call(newMat, n.material);
-                        n.material = newMat;
-                    }
-                    n.material.shadowSide = THREE.DoubleSide;
-                    if(config.disableReflections) { n.material.roughness = 1.0; n.material.metalness = 0.0; n.material.specularIntensity = 0.0; }
-                    else { n.material.roughness = config.roughness; n.material.metalness = config.metalness; n.material.envMapIntensity = config.envMapIntensity; n.material.specularIntensity = config.specularIntensity; }
+                    n.material = convertMaterial(n.material);
                     if(config.edgeVisible) {
                         const edgesGeom = new THREE.EdgesGeometry(n.geometry, parseFloat(config.edgeThreshold));
                         const edgesMat = new THREE.LineBasicMaterial({ color: config.edgeColor, transparent: true, opacity: config.edgeOpacity });
@@ -1187,6 +1199,9 @@
             const maxSize = 10; controls.maxDistance = maxSize * 20; camera.near = initialNear; camera.far = initialFar; camera.updateProjectionMatrix();
             document.getElementById('loading-overlay').style.opacity = '0';
             setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 800);
+            window.__VIEWER__.invalidateScene();
+            window.__VIEWER__.ready = true;
+            window.dispatchEvent(new Event('atlas-viewer-ready'));
         }
 
         function updateHotspotPos(hotspotOverride = null) {
@@ -1322,7 +1337,7 @@
             pointer.x = ((event.clientX - rect.left) / (rect.width || 1)) * 2 - 1;
             pointer.y = -((event.clientY - rect.top) / (rect.height || 1)) * 2 + 1;
             raycaster.setFromCamera(pointer, camera);
-            const sprites = hotspots.map(h => h.spriteRef);
+            const sprites = hotspots.map(h => h.spriteRef).filter(isObjectVisible);
             const intersects = raycaster.intersectObjects(sprites, false);
             if (intersects.length > 0) {
                 const id = intersects[0].object.userData.id;
@@ -1403,7 +1418,7 @@
             hoverPointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1,
                 -((event.clientY - rect.top) / rect.height) * 2 + 1);
             hoverRaycaster.setFromCamera(hoverPointer, camera);
-            const hits = hoverRaycaster.intersectObjects(hotspots.map(h => h.spriteRef).filter(Boolean), false);
+            const hits = hoverRaycaster.intersectObjects(hotspots.map(h => h.spriteRef).filter(isObjectVisible), false);
             markerAnimationState.hoveredHotspotId = hits[0]?.object.userData.id ?? null;
         });
         renderer.domElement.addEventListener('pointerleave', () => { markerAnimationState.hoveredHotspotId = null; });
@@ -1417,6 +1432,8 @@
         let lastCardTop = -9999;
 
         function showBootError(title, detail = '') {
+            window.__VIEWER__?.setActive(false);
+            parent.postMessage({ type: 'atlas-error', message: [title, detail].filter(Boolean).join(': ') }, location.origin);
             const overlay = document.getElementById('boot-error');
             if (!overlay) {
                 console.error('[BootError]', title, detail);
@@ -1813,15 +1830,12 @@
         (async function bootModel() {
             if (modelData) {
                 try {
-                    await assertAssetAvailable(modelData, 'model asset');
-                   new GLTFLoader().load(
-                       modelData,
-                       (gltf) => { setupScene(gltf); },
-                       undefined,
-                       (error) => { showBootError('Failed to load model', (error && error.message) ? error.message : String(error)); }
-                   ); 
+                    const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(modelData, new URL('./', location.href).href);
+                    setupScene(gltf);
                 } catch (error) {
                     showBootError('Viewer failed to initialize', error.message || String(error));
+                } finally {
+                    modelData = null;
                 }
             } else {
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -1962,7 +1976,7 @@
                     if (meshes) {
                         for (let m = 0; m < meshes.length; m++) {
                             const mesh = meshes[m];
-                            if (!mesh.visible) continue;
+                            if (!isObjectVisible(mesh)) continue;
                             raycastHits.length = 0;
                             mesh.raycast(raycaster, raycastHits);
                             if (raycastHits.length > 0 && raycastHits[0].distance <= maxObstacleDist) {
@@ -2003,9 +2017,7 @@
             }
         }
 
-        function animate() { 
-            requestAnimationFrame(animate); 
-            const dt = Math.min(clock.getDelta(), 0.1);
+        function animate(dt) {
             if (anchoredOrbit) anchoredOrbit.update(dt);
             else {
                 if (cameraController) {
@@ -2023,4 +2035,13 @@
 
             renderer.render(scene, camera); 
         }
-        animate();</script><script src="./atlas-bridge.js"></script></body></html>
+        const frameLoop = createFrameLoop(animate);
+        frameLoop.setVisible(!document.hidden);
+        frameLoop.setActive(parent === window);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) cameraController._onBlur();
+            frameLoop.setVisible(!document.hidden);
+        });
+        window.addEventListener('pagehide', () => frameLoop.setVisible(false));
+        window.addEventListener('pageshow', () => frameLoop.setVisible(!document.hidden));
+        </script><script src="./atlas-bridge.js?v=20260908c"></script></body></html>

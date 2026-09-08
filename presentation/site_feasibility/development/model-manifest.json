@@ -1,1 +1,26 @@
-{"bytes":69533364,"parts":["model.part-00.bin","model.part-01.bin","model.part-02.bin","model.part-03.bin","model.part-04.bin","model.part-05.bin","model.part-06.bin","model.part-07.bin","model.part-08.bin"]}
+{
+  "bytes": 22949705,
+  "decodedBytes": 36248180,
+  "compression": "gzip",
+  "sha256": "99266755f80bb0ccbcd64f0006f1067cd111fe89bfcaea9a4c3cfded84effb21",
+  "parts": [
+    "model.99266755f80b.part-00.bin",
+    "model.99266755f80b.part-01.bin",
+    "model.99266755f80b.part-02.bin"
+  ],
+  "verification": {
+    "originalBytes": 69533364,
+    "optimizedBytes": 36248180,
+    "originalSha256": "77518c605a9c74a239e0a5aa29eb81c3baaa0245d9cf5c797a751c3ef482d0ce",
+    "optimizedSha256": "1839b1fd9dbe08ad4887cf89e255e9719771db313521fc1723a93ec720878954",
+    "originalImageBytes": 15813680,
+    "storedImageBytes": 5632783,
+    "geometryViews": 1269,
+    "images": 33,
+    "geometrySha256": "4cc238b8b49da1a02e1afe3e17f1be1f1f755ac6d461fda7f7bd1da00b0258e4",
+    "pixelSha256": "5619fd4b99348b17da0a9f4ac6aea4a3b7f82caf5ba068b1b264948722b3f38e",
+    "nodes": 669,
+    "meshes": 349,
+    "materials": 75
+  }
+}

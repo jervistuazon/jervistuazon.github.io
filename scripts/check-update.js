@@ -30,6 +30,7 @@ try {
     console.log(`[UPDATE] validating with PORTFOLIO_MEDIA_ORIGIN=${mediaOrigin}`);
     run('build:cloudflare');
     run('test:cloudflare');
+    run('test:feasibility');
     console.log('[UPDATE] portfolio update checks passed.');
 } catch (error) {
     console.error(`[UPDATE] ${error.message}`);

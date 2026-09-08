@@ -1,12 +1,14 @@
 (() => {
 let viewer,home,originals=new Map();
 const post=(type,data={})=>parent.postMessage({type,...data},location.origin);
-const timer=setInterval(()=>{
- const v=window.__VIEWER__;if(!v)return;
- // Towers are represented by many named parts, not one R_W01 group.
- let hasTower=false;v.scene.traverse(o=>{if(o.name.startsWith('R_W01_'))hasTower=true});if(!hasTower)return;
- viewer=v;home={position:v.camera.position.clone(),target:v.controls.target.clone(),up:v.camera.up.clone(),near:v.camera.near};clearInterval(timer);softenGrass(v);post('atlas-ready');
-},300);
+let requestedActive=parent===window;
+function initialize(){
+ const v=window.__VIEWER__;if(viewer||!v?.ready)return;
+ viewer=v;home={position:v.camera.position.clone(),target:v.controls.target.clone(),up:v.camera.up.clone(),near:v.camera.near};
+ softenGrass(v);v.setActive(requestedActive);post('atlas-ready');
+}
+window.addEventListener('atlas-viewer-ready',initialize);
+initialize();
 
 function softenGrass(v){
  const materials=new Map();
@@ -28,20 +30,24 @@ function softenGrass(v){
  v.scene.traverse(o=>{if(o.isMesh)o.material=Array.isArray(o.material)?o.material.map(finish):finish(o.material)});
 }
 
-function restore(){for(const [mesh,material] of originals){mesh.material.dispose();mesh.material=material}originals.clear()}
+function restore(){for(const [mesh,material] of originals){(Array.isArray(mesh.material)?mesh.material:[mesh.material]).forEach(m=>m.dispose());mesh.material=material}originals.clear()}
 function choose(name){if(!viewer)return;restore();const objects=[];viewer.scene.traverse(o=>{if(o.name.startsWith(name+'_'))objects.push(o)});if(!objects.length)return;
  const b=new viewer.THREE.Box3();
- for(const object of objects){b.expandByObject(object);object.traverse(m=>{if(!m.isMesh||Array.isArray(m.material)||originals.has(m))return;originals.set(m,m.material);m.material=m.material.clone();if(m.material.emissive){m.material.emissive.set('#429784');m.material.emissiveIntensity=.3;}})}
+ for(const object of objects){b.expandByObject(object);object.traverse(m=>{if(!m.isMesh||originals.has(m))return;originals.set(m,m.material);const highlight=material=>{const copy=material.clone();if(copy.emissive){copy.emissive.set('#429784');copy.emissiveIntensity=.3;}return copy;};m.material=Array.isArray(m.material)?m.material.map(highlight):highlight(m.material);})}
  const center=b.getCenter(new viewer.THREE.Vector3()),size=b.getSize(new viewer.THREE.Vector3()).length();const direction=viewer.camera.position.clone().sub(viewer.controls.target).normalize();viewer.camera.up.set(0,1,0);viewer.controls.target.copy(center);viewer.camera.position.copy(center).addScaledVector(direction,Math.max(size*2,.2));viewer.camera.near=.005;viewer.camera.updateProjectionMatrix();viewer.controls.update();viewer.smoothZoom?.sync();post('atlas-selected',{name});
 }
 window.addEventListener('message',event=>{
- if(event.source!==parent||event.origin!==location.origin||!viewer)return;const {command,value}=event.data||{};const v=viewer;
- if(command==='tower')choose(value);
- if(command==='home'){restore();v.camera.position.copy(home.position);v.camera.up.copy(home.up);v.camera.near=home.near;v.camera.updateProjectionMatrix();v.controls.target.copy(home.target);v.controls.autoRotate=false;v.controls.update();v.smoothZoom?.sync();}
+ if(event.source!==parent||event.origin!==location.origin)return;const {command,value}=event.data||{};
+ if(command==='active'){requestedActive=Boolean(value);viewer?.setActive(requestedActive);return;}
+ if(!viewer)return;const v=viewer;
+ if(command==='tower'&&typeof value==='string')choose(value);
+ if(command==='home'){restore();v.camera.position.copy(home.position);v.camera.up.copy(home.up);v.camera.near=home.near;v.camera.updateProjectionMatrix();v.controls.target.copy(home.target);v.setAutoRotate(false);v.controls.update();v.smoothZoom?.sync();}
  if(command==='top'){v.camera.position.copy(home.target).add(new v.THREE.Vector3(0,1.7,.001));v.camera.up.set(0,0,-1);v.controls.target.copy(home.target);v.controls.update();v.smoothZoom?.sync();}
- if(command==='orbit'){v.controls.autoRotate=Boolean(value);v.controls.autoRotateSpeed=.5;}
- if(command==='zoom'){const offset=v.camera.position.clone().sub(v.controls.target);v.camera.position.copy(v.controls.target).add(offset.multiplyScalar(value));v.controls.update();v.smoothZoom?.sync();}
- if(command==='layer'){const patterns={roads:/Campus_Roads|Outer_Road/,landscape:/Tree|Grass|Plant|Shrub/i};v.scene.traverse(o=>{if(value.name==='hotspots'&&o.isSprite)o.visible=value.visible;else if(patterns[value.name]?.test(o.name))o.visible=value.visible;});}
+ if(command==='orbit'){v.setAutoRotate(Boolean(value));v.controls.autoRotateSpeed=.5;}
+ if(command==='zoom'&&Number.isFinite(value)&&value>0){const offset=v.camera.position.clone().sub(v.controls.target);v.camera.position.copy(v.controls.target).add(offset.multiplyScalar(value));v.controls.update();v.smoothZoom?.sync();}
+ if(command==='layer'&&value&&typeof value.visible==='boolean'){const patterns={roads:/Campus_Roads|Outer_Road/,landscape:/Tree|Grass|Plant|Shrub/i};v.scene.traverse(o=>{if(value.name==='hotspots'&&o.isSprite)o.visible=value.visible;else if(patterns[value.name]?.test(o.name))o.visible=value.visible;});if(value.name==='hotspots'&&!value.visible)v.clearHotspots();v.invalidateScene();}
 });
-window.addEventListener('error',event=>post('atlas-error',{message:event.message}));
+function reportError(message){viewer?.setActive(false);post('atlas-error',{message});}
+window.addEventListener('error',event=>reportError(event.message));
+window.addEventListener('unhandledrejection',event=>reportError(event.reason?.message||String(event.reason)));
 })();
