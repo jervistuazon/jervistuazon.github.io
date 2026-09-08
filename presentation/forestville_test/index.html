@@ -5488,101 +5488,42 @@ and effortless poolside living.</span></div></div>
 
 <!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_START -->
 <style>
-  #rotateDeviceFallback {
-    --mobile-ui-scale: 1;
-    transform: translateX(-50%) scale(var(--mobile-ui-scale)) !important;
-    transform-origin: 50% 100%;
-  }
-
+  /* Stable touch target: label changes must never resize the mobile control. */
   #requestLandscapeButton {
-    box-sizing: border-box;
     width: 168px;
     min-width: 168px;
-    max-width: 168px;
-    height: 42px;
-    min-height: 42px;
-    max-height: 42px;
-    flex: 0 0 168px;
     justify-content: center;
-    gap: 8px;
-    padding: 9px 14px 9px 11px;
-    font-size: 11.2px;
-    line-height: 1;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-
-  #requestLandscapeButton .rotate-device-icon {
-    width: 20px;
-    min-width: 20px;
-    max-width: 20px;
-    height: 20px;
-    min-height: 20px;
-    max-height: 20px;
-    flex: 0 0 20px;
   }
 </style>
 <script>
   (() => {
-    const cacheVersion = '92081879c62c';
-    const currentUrl = new URL(window.location.href);
-    if (currentUrl.searchParams.get('v') !== cacheVersion) {
-      currentUrl.searchParams.set('v', cacheVersion);
-      window.location.replace(currentUrl.toString());
-      return;
-    }
-
-    const overlay = document.getElementById('rotateDeviceFallback');
     const button = document.getElementById('requestLandscapeButton');
     const label = button?.querySelector('span');
-    if (!overlay || !button || !label) return;
+    if (!button || !label) return;
 
-    let settleTimers = [];
-
-    const isPortrait = () =>
-      window.matchMedia('(orientation: portrait)').matches;
-
-    const syncLandscapeControl = () => {
-      if (!isPortrait()) return;
-
+    const resetLandscapeButton = () => {
+      if (!window.matchMedia('(orientation: portrait)').matches) return;
       label.textContent = 'VIEW LANDSCAPE';
       button.setAttribute('aria-label', 'View landscape fullscreen');
       button.disabled = false;
-
-      // Fullscreen/orientation transitions can return to portrait with
-      // visualViewport.scale still changed. Counter-scale this fixed UI
-      // only, preserving the same physical size as the initial render.
-      const visualScale = Number(window.visualViewport?.scale) || 1;
-      const compensation = Math.min(2, Math.max(0.5, 1 / visualScale));
-      overlay.style.setProperty('--mobile-ui-scale', String(compensation));
     };
 
-    const scheduleSync = () => {
-      settleTimers.forEach(window.clearTimeout);
-      settleTimers = [];
-
-      syncLandscapeControl();
-      window.requestAnimationFrame(syncLandscapeControl);
-
-      // Mobile browsers settle fullscreen, orientation, browser chrome
-      // and visualViewport in separate passes, so re-check each phase.
-      [50, 150, 300, 600].forEach((delay) => {
-        settleTimers.push(window.setTimeout(syncLandscapeControl, delay));
+    // Returning from landscape can happen through a physical rotation,
+    // fullscreen exit, browser UI gesture, or an orientation-lock release.
+    // Cover both authoritative browser state transitions and defer one frame so
+    // matchMedia/visualViewport have settled before restoring the control.
+    const scheduleReset = () => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(resetLandscapeButton, 0);
       });
     };
 
-    window.addEventListener('resize', scheduleSync, { passive: true });
-    window.addEventListener('orientationchange', scheduleSync, { passive: true });
-    document.addEventListener('fullscreenchange', scheduleSync);
-    window.visualViewport?.addEventListener('resize', scheduleSync, { passive: true });
-    window.visualViewport?.addEventListener('scroll', scheduleSync, { passive: true });
-
+    window.addEventListener('orientationchange', scheduleReset, { passive: true });
+    document.addEventListener('fullscreenchange', scheduleReset);
     if (screen.orientation && typeof screen.orientation.addEventListener === 'function') {
-      screen.orientation.addEventListener('change', scheduleSync);
+      screen.orientation.addEventListener('change', scheduleReset);
     }
-
-    window.addEventListener('pageshow', scheduleSync, { passive: true });
-    scheduleSync();
+    window.addEventListener('pageshow', scheduleReset, { passive: true });
   })();
 </script>
 <!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_END -->

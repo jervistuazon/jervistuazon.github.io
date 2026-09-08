@@ -272,7 +272,7 @@
         import { MeshoptDecoder } from './vendor/meshopt_decoder.mjs';
         import { loadSplitModel, createFrameLoop, createMaterialConverter, isObjectVisible } from './viewer-runtime.mjs?v=20260908c';
 
-        const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":-0.00006,"normalBias":0.048,"shadowOpacity":0.5,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":0.9,"saturation":0.85,"camPos":{"x":-0.02761031585858388,"y":1.5992401053292151,"z":1.1309653325247},"camTarget":{"x":-0.02164205701923224,"y":0.1499999999999999,"z":0.22645704926443633},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.48503658731782856,"y":-0.002885054703472718,"z":-0.0016002022563487259,"w":0.8744876355759246},"camUp":{"x":0,"y":1,"z":0},"camNear":0.005,"camFar":2000,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.1,"hsOpacity":0.8,"hsPopupScale":75,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788704475213};
+        const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":0.00005,"normalBias":0.048,"shadowOpacity":0.5,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":0.9,"saturation":0.85,"camPos":{"x":-0.02761031585858388,"y":1.5992401053292151,"z":1.1309653325247},"camTarget":{"x":-0.02164205701923224,"y":0.1499999999999999,"z":0.22645704926443633},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.48503658731782856,"y":-0.002885054703472718,"z":-0.0016002022563487259,"w":0.8744876355759246},"camUp":{"x":0,"y":1,"z":0},"camNear":0.05,"camFar":400,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.1,"hsOpacity":0.8,"hsPopupScale":75,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788704475213};
         let modelData;
         try {
             modelData = await loadSplitModel({
@@ -296,8 +296,8 @@
         const initialTarget = initialView?.target || initialBookmark?.target || config.camTarget || fallbackTarget;
         const initialFov = Number.isFinite(initialView?.fov) ? initialView.fov : (Number.isFinite(initialBookmark?.fov) ? initialBookmark.fov : (Number.isFinite(config.camFov) ? config.camFov : 45));
         const initialZoom = Number.isFinite(initialView?.zoom) ? initialView.zoom : (Number.isFinite(initialBookmark?.zoom) ? initialBookmark.zoom : (Number.isFinite(config.camZoom) ? config.camZoom : 1));
-        const initialNear = Number.isFinite(initialView?.near) ? initialView.near : (Number.isFinite(config.camNear) ? config.camNear : 0.01);
-        const initialFar = Number.isFinite(initialView?.far) ? initialView.far : (Number.isFinite(config.camFar) ? config.camFar : 2000);
+        const initialNear = Number.isFinite(initialView?.near) ? initialView.near : (Number.isFinite(config.camNear) ? config.camNear : 0.05);
+        const initialFar = Number.isFinite(initialView?.far) ? initialView.far : (Number.isFinite(config.camFar) ? config.camFar : 400);
         const initialUp = initialView?.up || initialBookmark?.up || config.camUp || { x: 0, y: 1, z: 0 };
         const initialQuaternion = initialView?.quaternion || config.camQuaternion || null;
         const hasInitialQuaternion = !!(initialQuaternion && Number.isFinite(initialQuaternion.x) && Number.isFinite(initialQuaternion.y) && Number.isFinite(initialQuaternion.z) && Number.isFinite(initialQuaternion.w));
@@ -868,7 +868,7 @@
         }
         
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         const maxPixelRatio = 2;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
@@ -1019,9 +1019,6 @@
         sunLight.position.set(r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.cos(theta));
         scene.add(sunLight);
 
-        const plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: config.shadowOpacity }));
-        plane.rotation.x = -Math.PI / 2; plane.position.y = -0.01; plane.receiveShadow = true; plane.visible = !!config.sunCastShadow; scene.add(plane);
-
         setupViewControls();
 
         if (hdriData) {
@@ -1139,9 +1136,13 @@
             }
 
             const convertMaterial = createMaterialConverter(THREE, config);
+            const isTree = name => /tree|foliage|canopy|woodland|groves|specimen|trunk/i.test(name);
+            const isGround = name => !isTree(name) && /terrain|ground|garden_base|road|marking|path|parking|river|water|context|pavement|flat|surface|earth|pitch/i.test(name);
             modelObject.traverse(n => {
                 if(n.isMesh) {
-                    n.castShadow = true; n.receiveShadow = true;
+                    const ground = isGround(n.name || '');
+                    n.castShadow = !ground;
+                    n.receiveShadow = true;
                     n.material = convertMaterial(n.material);
                     if(config.edgeVisible) {
                         const edgesGeom = new THREE.EdgesGeometry(n.geometry, parseFloat(config.edgeThreshold));
@@ -1184,7 +1185,6 @@
             const shadowMaxDim = Math.max(shadowSize.x, shadowSize.y, shadowSize.z) || 10;
             sunLight.target.position.copy(shadowCenter);
             scene.add(sunLight.target);
-            if (plane) { plane.position.x = shadowCenter.x; plane.position.z = shadowCenter.z; }
             const sunDist = Math.max(30, shadowMaxDim * 2.5);
             sunLight.position.set(
                 shadowCenter.x + sunDist * Math.sin(phi) * Math.sin(theta),
