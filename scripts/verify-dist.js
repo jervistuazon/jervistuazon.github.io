@@ -88,6 +88,7 @@ function resolveReference(sourceFile, rawReference) {
         return null;
     }
 
+    if (candidate === '.') return 'index.html';
     if (candidate.endsWith('/')) return `${candidate}index.html`;
     return candidate;
 }
