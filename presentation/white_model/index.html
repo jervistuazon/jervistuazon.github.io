@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Untitled Project</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="stylesheet" href="./vendor/pannellum.css"/>
     <script type="text/javascript" src="./vendor/pannellum.js"></script>
     <script src="./vendor/purify.min.js"></script>
@@ -269,9 +270,10 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+        import { createMaterialConverter } from './materials.js';
 
         const config = {"bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":2.7,"sunColor":"#ffffff","sunAzimuth":298,"sunElevation":42,"ambIntensity":0.95,"ambColor":"#ffffff","shadowBias":-0.00006,"normalBias":0.048,"shadowOpacity":0.45,"shadowSoftness":2.4,"aoIntensity":1,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":0.7,"contrast":1,"saturation":1,"camPos":{"x":3.805249288017298,"y":7.65959091889583,"z":7.361597869840176},"camTarget":{"x":0.6789010342474521,"y":2.384578315001255,"z":3.0354254323535983},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.3615108749862633,"y":0.28472156142242977,"z":0.11695335022125183,"w":0.8800939913440298},"camUp":{"x":0,"y":1,"z":0},"camNear":0.23128814125877398,"camFar":2000,"camAspect":2.126679462571977,"navSpeedLevel":1,"cameraBookmarks":[],"defaultCameraBookmarkId":null,"noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":true,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.5,"hsOpacity":0.8,"hsPopupScale":90,"hsShowOutline":true,"hsIconType":"pin","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1788850859944};
-        const modelData = "./model.glb";
+        const modelData = "./model.gltf";
         const hdriData = null;
         const hotspotsData = [{"id":"hs_1788624170095_87nte3c4c","position":{"x":-1.6250396842658166,"y":0.6033431368983151,"z":4.869709414554565},"content":"<img alt=\"commercial_05 (1).jpg\" data-src-relative=\"./assets/commercial_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624174150_70otwtilw","position":{"x":2.302213688480128,"y":3.399018317422992,"z":4.1727054793984415},"content":"<img alt=\"aerial_view_09 (1).jpg\" data-src-relative=\"./assets/aerial_view_09 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624216056_mwvnmtxbh","position":{"x":-0.005342745432400518,"y":3.3836700544373834,"z":0.7004986210241979},"content":"<img alt=\"masterplan_05 (1).jpg\" data-src-relative=\"./assets/masterplan_05 (1).jpg\">","isPanoramic":false,"type":"hotspot"},{"id":"hs_1788624218434_0r8jz9620","position":{"x":-0.009207524696656127,"y":0.9388553277274923,"z":-1.9674856967500323},"content":"<img alt=\"WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\" data-src-relative=\"./assets/WhatsApp Image 2026-09-01 at 4.54.32 PM (1).jpeg\">","isPanoramic":false,"type":"hotspot"}];
         const transform = {"position":{"x":0,"y":-1.0068352818137782e-8,"z":0.6756757105067335},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1.3513514210134672,"y":1.3513514210134672,"z":1.3513514210134672}};
@@ -1104,17 +1106,11 @@
                 if (transform.scale) modelObject.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
             }
 
+            const convertMaterial = createMaterialConverter(THREE, config);
             modelObject.traverse(n => {
                 if(n.isMesh) {
                     n.castShadow = true; n.receiveShadow = true;
-                    if(!(n.material instanceof THREE.MeshPhysicalMaterial)) {
-                        const newMat = new THREE.MeshPhysicalMaterial();
-                        THREE.MeshStandardMaterial.prototype.copy.call(newMat, n.material);
-                        n.material = newMat;
-                    }
-                    n.material.shadowSide = THREE.DoubleSide;
-                    if(config.disableReflections) { n.material.roughness = 1.0; n.material.metalness = 0.0; n.material.specularIntensity = 0.0; }
-                    else { n.material.roughness = config.roughness; n.material.metalness = config.metalness; n.material.envMapIntensity = config.envMapIntensity; n.material.specularIntensity = config.specularIntensity; }
+                    n.material = convertMaterial(n.material);
                     if(config.edgeVisible) {
                         const edgesGeom = new THREE.EdgesGeometry(n.geometry, parseFloat(config.edgeThreshold));
                         const edgesMat = new THREE.LineBasicMaterial({ color: config.edgeColor, transparent: true, opacity: config.edgeOpacity });

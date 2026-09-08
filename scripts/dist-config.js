@@ -271,11 +271,14 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
     // This static export uses framework chunks and a nested 3D viewer at runtime.
     // Keep the exception scoped so other presentations' authoring folders stay private.
     const isSiteFeasibility = presentationDir === 'presentation/site_feasibility';
+    const isWhiteModel = presentationDir === 'presentation/white_model';
     const runtimeExtensions = isSiteFeasibility
         ? new Set([...PRESENTATION_RUNTIME_EXTENSIONS, '.rsc', '.bin'])
         : PRESENTATION_RUNTIME_EXTENSIONS;
     for (const entry of fs.readdirSync(presentationRoot, { withFileTypes: true })) {
         if (entry.isFile()) {
+            // Retain the original GLB in Git; publish its lossless split glTF instead.
+            if (isWhiteModel && entry.name === 'model.glb') continue;
             const extension = path.extname(entry.name).toLowerCase();
             if (entry.name.toLowerCase() !== 'project.manifest.json' && runtimeExtensions.has(extension)) {
                 runtimeFiles.push(entry.name);
@@ -283,7 +286,10 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
             continue;
         }
 
-        if (isSiteFeasibility && entry.isDirectory() && ['_next', 'development'].includes(entry.name)) {
+        if (entry.isDirectory() && (
+            (isSiteFeasibility && ['_next', 'development'].includes(entry.name))
+            || (isWhiteModel && entry.name === 'vendor')
+        )) {
             for (const relative of walkFiles(path.join(presentationRoot, entry.name))) {
                 if (runtimeExtensions.has(path.extname(relative).toLowerCase())) {
                     runtimeFiles.push(toPosix(path.join(entry.name, relative)));

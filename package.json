@@ -4,11 +4,13 @@
     "build:dist": "node scripts/build-dist.js",
     "verify:dist": "node scripts/verify-dist.js",
     "build:cloudflare": "npm run build:dist && node scripts/fix-forestville-dist.js && npm run verify:dist",
-    "test:cloudflare": "node scripts/test-cloudflare.js",
+    "test:cloudflare": "node scripts/test-cloudflare.js && npm run test:white-model",
     "test:feasibility": "node --test scripts/test-feasibility.mjs",
     "check:update": "node scripts/check-update.js",
     "media:sync": "node scripts/sync-r2-media.js --all",
-    "media:sync:dry": "node scripts/sync-r2-media.js --all --dry-run"
+    "media:sync:dry": "node scripts/sync-r2-media.js --all --dry-run",
+    "prepare:white-model": "node scripts/prepare-white-model.js",
+    "test:white-model": "node --test scripts/test-white-model.js scripts/test-white-model-materials.mjs"
   },
   "dependencies": {
     "clean-css": "^5.3.3",

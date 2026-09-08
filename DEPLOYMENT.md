@@ -43,6 +43,8 @@ The Cloudflare build discovers and publishes the folder automatically. Use a `.n
 
 `presentation/site_feasibility/` has a scoped runtime exception: its `_next/` framework assets, `development/` viewer (including the split `.bin` model), and root `.rsc` payload are published. Its `.vite/` build metadata is excluded. Preserve folder-relative asset URLs when replacing this export and run `npm run check:update` before pushing.
 
+`presentation/white_model/` publishes its local `vendor/` runtime dependencies and `model.gltf` with buffers below 20 MiB. The original `model.glb` remains in Git as an authoring source and is excluded from `dist/`. After replacing that source, run `npm run prepare:white-model` and commit the regenerated `model.gltf`, `model-part-*.bin`, and viewer URL alongside the source. Packaging preserves every buffer-view byte and all scene properties; `npm run check:update` includes model preservation, Khronos validation, material conversion, and runtime-inventory regression tests.
+
 ## Routine portfolio update
 
 Before editing a clean `main` checkout:

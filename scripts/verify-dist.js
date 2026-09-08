@@ -88,6 +88,8 @@ function resolveReference(sourceFile, rawReference) {
         return null;
     }
 
+    // path.normalize('/') becomes '.' after removing the site-root slash.
+    if (candidate === '.') return 'index.html';
     if (candidate.endsWith('/')) return `${candidate}index.html`;
     return candidate;
 }
