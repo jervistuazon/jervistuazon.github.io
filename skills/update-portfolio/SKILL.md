@@ -14,7 +14,7 @@ Read the root `AGENTS.md` and instructions governing the target files. Commands 
 | Instruction/documentation only | Edit requested documents and use documentation checks; skip dependency installation, generators, and deployment unless requested |
 | Portfolio content, styling, interaction, presentation, or build change | Read [DEPLOYMENT.md](../../DEPLOYMENT.md), make the change, run production-equivalent checks, and inspect affected browser behavior |
 | Publish, push, merge, deploy, or make live | Complete relevant local checks, then use existing publication authority and verify deployment |
-| New or replacement oversized video | Use the two-stage R2 sequence before publishing any reference |
+| New or replacement oversized runtime media | Use the automatic R2 sync and Pages readiness gate; prepare new preview media before preview validation |
 | Rollback | Restore intended prior behavior through a Git revert and normal publication checks |
 
 An edit request authorizes local work and necessary validation. It does not automatically authorize remote publication. Honor publication authority already given; do not ask again. If authority is missing for a required remote action, finish independent preparation before asking. An edit-only task is complete with verified local changes.
@@ -63,7 +63,7 @@ git diff --check
 
 Use `npm` instead of `npm.cmd` outside Windows. `check:update` sets the production R2 origin for child processes and runs `build:cloudflare` plus `test:cloudflare`. This includes SEO generation, `build.js` cache busting/minification, clean artifact assembly, the Forestville dist fix, and artifact verification. Do not repeat generators separately after a successful full check without a reason.
 
-Review `git diff` for expected generated pages, versioned URLs, and minified counterparts. Confirm the artifact excludes oversized active videos and references the R2 origin. Serve `dist/` over local HTTP and inspect the changed route in a real browser:
+Review `git diff` for expected generated pages, versioned URLs, and minified counterparts. Confirm the artifact excludes oversized active media and references the R2 origin. Serve `dist/` over local HTTP and inspect the changed route in a real browser:
 
 - Layout: relevant desktop/mobile widths, media sizing, metadata, and CTA focus/hover states.
 - Gallery: filtering, appended items, staggered loading, scroll bounds, and linked project pages.
@@ -72,19 +72,19 @@ Review `git diff` for expected generated pages, versioned URLs, and minified cou
 
 Check console/network errors for the affected flow. Report unavailable browser verification. Add regression tests for meaningful behavioral failures; avoid tests that restate implementation or repeated broad audits after checks pass.
 
-## Oversized video: publish media before references
+## Oversized runtime media: automatic sync and readiness
 
-Apply this sequence to `.mp4`, `.webm`, `.mov`, `.mkv`, and `.avi` above 25 MiB under `assets/` or `presentation/`.
+Supported published runtime media above 25 MiB is externalized during the build. This includes 3D models and binary assets as well as videos. The uploader uses the shared inventory, correct content types, and immutable content-hashed keys for nonvideo files; existing video URLs remain compatible. Continue to give replacement videos a new path because their existing keys use immutable caching.
 
-1. Give each new/replacement object a new filename or path. Published R2 objects use immutable caching; replacing the same path can leave stale content.
-2. With publication authorized, commit only the video addition first. Bring that media-only change to `main` through a branch/merge, or a direct push only if explicitly requested. Do not add its runtime reference yet.
-3. Wait for `Sync oversized portfolio media to R2` in `.github/workflows/sync-r2-media.yml` to succeed for that update.
-4. Verify the public URL under `https://media.jervistuazon.com/`, encoding each path segment and preserving slashes. Check the expected video content type and a byte-range request returning `206` with a valid `Content-Range`.
-5. Only then add the gallery/presentation reference in a second change, validate it, and publish it.
+1. Keep local paths in presentation/gallery source. Run `npm.cmd run media:sync:dry` to inspect which files and keys will upload, and `npm.cmd run check:update` for local validation.
+2. With existing publication authority, use the normal branch/merge workflow. A relevant push to `main` triggers the R2 reconciliation Action automatically, including when the upload scripts change. Media and references may be in the same update.
+3. The Pages build waits for its expected R2 objects to pass public URL checks before deploying. If the Action or readiness gate fails, diagnose and fix the cause; do not bypass the gate or claim a successful deployment.
+4. New large media on a preview branch needs an authorized dispatch of the R2 sync workflow for that trusted branch before preview verification. Do not expose secrets to untrusted pull requests. Verify the resulting public media URL and then retry the preview if it failed while media was absent. Preview origins must also be permitted by R2 CORS; do not bypass a preview readiness failure or change bucket policy without the required authority.
+5. Verify the live route and model loading or video playback/seeking after the corresponding deployment succeeds.
 
-For an edit-only media task, prepare the media addition and report the pending sequence; do not introduce a reference to an unverified object. If sync or URL verification fails, fix the identified cause within scope or report it; keep the reference unpublished.
+For an edit-only task, finish the code and local checks and report pending publication. Local network-free checks do not prove that R2 contains the objects. Use `media:verify` with the production media origin for credential-free live checks. Use local `media:sync` only when that upload is explicitly requested, following [DEPLOYMENT.md](../../DEPLOYMENT.md).
 
-The Action uploads changed oversized videos and retains old objects. Normal publishing does not require manual R2 uploads. If GitHub rejects the file size, request a concrete alternative after preparing what is possible; do not introduce Git LFS or expose credentials ad hoc. Use local `media:sync` only when that upload is explicitly requested, following `DEPLOYMENT.md`.
+The automation does not bypass GitHub's own file-size limits. If GitHub rejects a source file, prepare a concrete alternative within scope; do not introduce Git LFS or expose credentials ad hoc. The Action retains old objects for rollback. Do not modify DNS, secrets, or R2 CORS for routine publishing.
 
 ## Publish and verify
 

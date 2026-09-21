@@ -17,7 +17,12 @@ const {
 const {
     buildPortfolioMediaUrl,
     externalizeOversizedMedia,
+    getMediaContentType,
     getPortfolioMediaOrigin,
+    isExternalizableMediaPath,
+    listOversizedMediaFiles,
+    PAGE_ASSET_LIMIT_BYTES,
+    replaceMediaReferences,
     verifyExternalizedMedia
 } = require('./dist-media');
 
@@ -148,6 +153,171 @@ function assertHyattPresentationInventory() {
     console.log(`[OK] Hyatt presentation inventory regression checks passed (${runtimeAssets.length} runtime assets).`);
 }
 
+function assertOrchardRuntimeInventory() {
+    const orchardDir = 'presentation/orchard_architectural_maquette';
+    const runtimeFiles = collectGenericPresentationRuntimeFiles(rootDir, orchardDir);
+    for (const file of [
+        'index.html',
+        'environment.jpg',
+        'model.glb',
+        'vendor/three.module.js',
+        'vendor/examples/jsm/loaders/GLTFLoader.js',
+        'vendor/examples/jsm/libs/draco/gltf/draco_decoder.wasm'
+    ]) {
+        assert.ok(runtimeFiles.includes(file), `Orchard runtime inventory is missing ${file}.`);
+    }
+
+    const expected = expectedDistFiles(rootDir, loadGalleryData(rootDir));
+    for (const file of runtimeFiles) {
+        assert.ok(expected.has(`${orchardDir}/${file}`), `Expected dist inventory is missing ${orchardDir}/${file}.`);
+    }
+    console.log(`[OK] Orchard runtime/vendor inventory regression checks passed (${runtimeFiles.length} runtime files).`);
+}
+
+function assertOversizedRuntimeMediaContract() {
+    const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-runtime-media-'));
+    const distFixture = path.join(fixtureRoot, 'dist');
+    const modelRelative = 'presentation/orchard_architectural_maquette/model.glb';
+    const modelAbsolute = path.join(fixtureRoot, modelRelative);
+    const exactRelative = 'presentation/orchard_architectural_maquette/exact.bin';
+    const exactAbsolute = path.join(fixtureRoot, exactRelative);
+    const previousOrigin = process.env.PORTFOLIO_MEDIA_ORIGIN;
+    process.env.PORTFOLIO_MEDIA_ORIGIN = 'https://media.example';
+    try {
+        for (const extension of ['.avi', '.mkv', '.mov', '.mp4', '.webm']) {
+            assert.ok(isExternalizableMediaPath(`assets/movie${extension}`), `${extension} videos must remain externalizable.`);
+        }
+        fs.mkdirSync(path.dirname(modelAbsolute), { recursive: true });
+        fs.mkdirSync(path.dirname(exactAbsolute), { recursive: true });
+        fs.writeFileSync(modelAbsolute, Buffer.from('fixture-model'));
+        fs.writeFileSync(exactAbsolute, Buffer.alloc(PAGE_ASSET_LIMIT_BYTES));
+        fs.mkdirSync(path.dirname(path.join(distFixture, modelRelative)), { recursive: true });
+        fs.copyFileSync(modelAbsolute, path.join(distFixture, modelRelative));
+        fs.writeFileSync(
+            path.join(distFixture, 'presentation/orchard_architectural_maquette/index.html'),
+            '<script>const modelData = "./model.glb?rev=1#mesh";</script>'
+        );
+
+        const exactInventory = listOversizedMediaFiles(fixtureRoot, new Set([exactRelative]));
+        assert.deepStrictEqual(exactInventory, [], 'A file exactly at 25 MiB must remain eligible for Pages.');
+
+        fs.truncateSync(modelAbsolute, PAGE_ASSET_LIMIT_BYTES + 1);
+        fs.copyFileSync(modelAbsolute, path.join(distFixture, modelRelative));
+        const inventory = listOversizedMediaFiles(fixtureRoot, new Set([modelRelative]));
+        assert.strictEqual(inventory.length, 1);
+        assert.strictEqual(inventory[0].contentType, 'model/gltf-binary');
+        assert.match(inventory[0].objectKey, /^presentation\/orchard_architectural_maquette\/model\.[0-9a-f]{16}\.glb$/);
+        assert.strictEqual(getMediaContentType('presentation/orchard/model.glb'), 'model/gltf-binary');
+
+        const hash = require('crypto').createHash('sha256').update(fs.readFileSync(modelAbsolute)).digest('hex').slice(0, 16);
+        assert.ok(inventory[0].objectKey.endsWith(`model.${hash}.glb`));
+
+        const rewritten = replaceMediaReferences(
+            '"./model.glb?rev=1#mesh" "/presentation/orchard_architectural_maquette/model.glb" "./model.glb.backup" "./model.glb2" "https://host/?file=./model.glb" "https://cdn.example/model.glb"',
+            modelRelative,
+            'presentation/orchard_architectural_maquette/index.html',
+            buildPortfolioMediaUrl('https://media.example', inventory[0].objectKey)
+        );
+        assert.strictEqual(rewritten.replacements, 2);
+        assert.match(rewritten.text, /https:\/\/media\.example\/presentation\/orchard_architectural_maquette\/model\.[0-9a-f]{16}\.glb\?rev=1#mesh/);
+        assert.match(rewritten.text, /https:\/\/media\.example\/presentation\/orchard_architectural_maquette\/model\.[0-9a-f]{16}\.glb/);
+        assert.match(rewritten.text, /\.\/model\.glb\.backup/);
+        assert.match(rewritten.text, /\.\/model\.glb2/);
+        assert.match(rewritten.text, /https:\/\/host\/\?file=\.\/model\.glb/);
+        assert.match(rewritten.text, /https:\/\/cdn\.example\/model\.glb/);
+
+        const nestedRelative = replaceMediaReferences(
+            '"../model.glb?camera=1#frame"',
+            modelRelative,
+            'presentation/orchard_architectural_maquette/nested/view.js',
+            buildPortfolioMediaUrl('https://media.example', inventory[0].objectKey)
+        );
+        assert.strictEqual(nestedRelative.replacements, 1);
+        assert.match(nestedRelative.text, /https:\/\/media\.example\/presentation\/orchard_architectural_maquette\/model\.[0-9a-f]{16}\.glb\?camera=1#frame/);
+
+        const encodedRelative = replaceMediaReferences(
+            '"/presentation/orchard_architectural_maquette/model%20file.glb?variant=2#encoded"',
+            'presentation/orchard_architectural_maquette/model file.glb',
+            'presentation/orchard_architectural_maquette/index.html',
+            'https://media.example/presentation/orchard_architectural_maquette/model-file-hash.glb'
+        );
+        assert.strictEqual(encodedRelative.replacements, 1);
+        assert.match(encodedRelative.text, /model-file-hash\.glb\?variant=2#encoded/);
+
+        const externalized = externalizeOversizedMedia({
+            distDir: distFixture,
+            expectedFiles: new Set([modelRelative])
+        });
+        assert.strictEqual(externalized[0].objectKey, inventory[0].objectKey);
+        assert.ok(!fs.existsSync(path.join(distFixture, modelRelative)));
+        const externalizedIndex = fs.readFileSync(path.join(distFixture, 'presentation/orchard_architectural_maquette/index.html'), 'utf8');
+        assert.match(externalizedIndex, new RegExp(`https://media\\.example`, 'i'));
+        assert.deepStrictEqual(
+            verifyExternalizedMedia({
+                distDir: distFixture,
+                rootDir: fixtureRoot,
+                expectedFiles: new Set([modelRelative])
+            }).errors,
+            []
+        );
+    } finally {
+        if (previousOrigin === undefined) delete process.env.PORTFOLIO_MEDIA_ORIGIN;
+        else process.env.PORTFOLIO_MEDIA_ORIGIN = previousOrigin;
+        fs.rmSync(fixtureRoot, { recursive: true, force: true });
+    }
+    console.log('[OK] Oversized runtime-asset limit, hashing, MIME, and rewrite checks passed.');
+}
+
+function assertGltfDependencyGuard() {
+    const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-gltf-guard-'));
+    const relativePath = 'presentation/gltf_viewer/model.gltf';
+    const absolutePath = path.join(fixtureRoot, relativePath);
+    try {
+        fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+        fs.writeFileSync(
+            absolutePath,
+            JSON.stringify({ buffers: [{ uri: 'model.bin' }], extras: 'x'.repeat(PAGE_ASSET_LIMIT_BYTES + 1) })
+        );
+        assert.throws(
+            () => listOversizedMediaFiles(fixtureRoot, new Set([relativePath])),
+            /Cannot externalize oversized glTF .*local buffer\/image resources/
+        );
+    } finally {
+        fs.rmSync(fixtureRoot, { recursive: true, force: true });
+    }
+    console.log('[OK] Oversized glTF external-dependency guard passed.');
+}
+
+function assertPublishedMediaInventoryScope() {
+    const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-media-inventory-'));
+    const createOversizedSparseFile = relativePath => {
+        const absolutePath = path.join(fixtureRoot, relativePath);
+        fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+        fs.writeFileSync(absolutePath, Buffer.from('runtime fixture'));
+        fs.truncateSync(absolutePath, PAGE_ASSET_LIMIT_BYTES + 1);
+    };
+    try {
+        fs.writeFileSync(path.join(fixtureRoot, 'gallery-data.js'), 'window.galleryData = {};');
+        fs.mkdirSync(path.join(fixtureRoot, 'presentation', 'published'), { recursive: true });
+        fs.writeFileSync(path.join(fixtureRoot, 'presentation', 'published', 'index.html'), '<script>load("./model.glb")</script>');
+        createOversizedSparseFile('presentation/published/model.glb');
+
+        fs.mkdirSync(path.join(fixtureRoot, 'presentation', 'draft'), { recursive: true });
+        fs.writeFileSync(path.join(fixtureRoot, 'presentation', 'draft', '.no-publish'), '');
+        createOversizedSparseFile('presentation/draft/model.glb');
+        createOversizedSparseFile('presentation/published/notes.pdf');
+        createOversizedSparseFile('presentation/published/node_modules/hidden.glb');
+        createOversizedSparseFile('dist/hidden.glb');
+        createOversizedSparseFile('assets/drafts/hidden.mp4');
+
+        const inventory = listOversizedMediaFiles(fixtureRoot);
+        assert.deepStrictEqual(inventory.map(file => file.relativePath), ['presentation/published/model.glb']);
+    } finally {
+        fs.rmSync(fixtureRoot, { recursive: true, force: true });
+    }
+    console.log('[OK] Published runtime media inventory excludes drafts, tools, docs, and dist files.');
+}
+
 const previousOrigin = process.env.PORTFOLIO_MEDIA_ORIGIN;
 const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-pages-media-'));
 const distDir = path.join(temporaryRoot, 'dist');
@@ -177,6 +347,10 @@ try {
     assertPresentationDiscovery();
     assertForestvillePresentationInventory();
     assertHyattPresentationInventory();
+    assertOrchardRuntimeInventory();
+    assertOversizedRuntimeMediaContract();
+    assertGltfDependencyGuard();
+    assertPublishedMediaInventoryScope();
 
     process.env.PORTFOLIO_MEDIA_ORIGIN = origin;
     assert.strictEqual(getPortfolioMediaOrigin(), origin);
