@@ -22,7 +22,7 @@ This is a static portfolio with animated galleries and standalone presentations,
 | Project pages | `generate-project-pages.js` generates `projects/`, `sitemap.xml`, and `robots.txt` |
 | Presentations | `presentation/<name>/index.html` and supported runtime assets |
 | Production artifact | `scripts/build-dist.js`, `scripts/dist-config.js`, `scripts/dist-media.js`, `scripts/verify-dist.js` |
-| Publishing | GitHub to Cloudflare Pages; oversized videos to R2; configuration in `DEPLOYMENT.md` |
+| Publishing | GitHub to Cloudflare Pages; oversized runtime media to R2; configuration in `DEPLOYMENT.md` |
 
 ## Workflow routing
 
@@ -59,14 +59,14 @@ Keep repository skills under `skills/<name>/SKILL.md`, reachable through these l
 ### Presentation publishing contract
 
 - An immediate child of `presentation/` with a regular `index.html` is discovered automatically. Add `.no-publish` inside a draft folder to exclude it.
-- Generic presentations ship supported root runtime files and supported files under `assets/`. Authoring/tool subdirectories are excluded; consult `scripts/dist-config.js` for exact extensions and special presentation handling.
+- Generic presentations ship supported root runtime files, supported files under `assets/`, and referenced `vendor/` runtime trees. Authoring/tool subdirectories are excluded; consult `scripts/dist-config.js` for exact extensions and special presentation handling.
 - `project.manifest.json` is excluded unless a shipped runtime file references it.
 - `presentation/Interactive Web Presentation/` and `presentation/animated_webpage/` remain excluded legacy authoring copies.
 - A published route does not create a homepage card; edit `gallery-data.js` when gallery visibility is requested.
 
 ## Publication boundaries
 
-An update to `main` automatically deploys through Cloudflare Pages. Never run legacy `deploy.bat`. New oversized video references must wait for a separate media-only update to reach `main`, the R2 sync Action to succeed, and the public media URL to pass verification. Follow the update skill for sequencing, production checks, and rollback.
+An update to `main` automatically deploys through Cloudflare Pages. Never run legacy `deploy.bat`. Oversized runtime media is reconciled by the R2 sync Action, and the Pages build waits for public-media readiness before deployment. Media and references can ship in one authorized update. New preview media must be uploaded through the trusted-branch sync workflow before preview validation. Follow the update skill for sequencing, production checks, and rollback.
 
 ## Verification scope
 

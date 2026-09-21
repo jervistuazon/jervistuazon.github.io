@@ -14,7 +14,7 @@ const {
 const {
     PAGE_ASSET_LIMIT_BYTES,
     getPortfolioMediaOrigin,
-    listOversizedVideoFiles,
+    listOversizedMediaFiles,
     verifyExternalizedMedia
 } = require('./dist-media');
 
@@ -228,7 +228,7 @@ async function main() {
             const expected = expectedDistFiles(rootDir, galleryData);
             expectedBeforeExternalMedia = new Set(expected);
             if (mediaOrigin) {
-                for (const { relativePath } of listOversizedVideoFiles(rootDir, expected)) {
+                for (const { relativePath } of listOversizedMediaFiles(rootDir, expected)) {
                     expected.delete(relativePath);
                 }
             }

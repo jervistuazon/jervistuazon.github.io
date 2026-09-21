@@ -1,6 +1,6 @@
 # Cloudflare Pages and R2 deployment
 
-GitHub is the source of truth. Cloudflare Pages builds and deploys the portfolio automatically from GitHub; R2 serves production videos that exceed the Pages asset-size limit.
+GitHub is the source of truth. Cloudflare Pages builds and deploys the portfolio automatically from GitHub; R2 serves published media, including 3D models, that exceed the Pages asset-size limit.
 
 ## Live configuration
 
@@ -26,8 +26,9 @@ Preview deployments are enabled for non-production branches and pull requests. T
 2. Run cache busting and CSS/JavaScript minification.
 3. Recreate `dist/` from scratch.
 4. Copy only production runtime files.
-5. Rewrite active videos larger than 25 MiB to the configured R2 origin and omit them from `dist/`.
+5. Rewrite supported runtime media larger than 25 MiB to the configured R2 origin and omit it from `dist/`.
 6. Verify the finished deployment artifact.
+7. On Cloudflare Pages, wait for the expected R2 objects to be publicly readable before allowing deployment. Local builds skip this network gate; use `npm run media:verify` to run it explicitly.
 
 The build uses a content-derived cache version, so unchanged sources produce the same `dist/` output. Do not edit or publish `dist/` manually.
 
@@ -38,6 +39,7 @@ For a standard exported presentation, add a new immediate child folder such as `
 - `index.html`
 - optional root runtime files such as CSS or JavaScript
 - optional runtime media and data under `assets/`
+- bundled `vendor/` libraries and decoders referenced by shipped runtime files
 
 The Cloudflare build discovers and publishes the folder automatically. Use a `.no-publish` file inside a draft folder to exclude it. Authoring subdirectories and an unreferenced `project.manifest.json` are not shipped. Add or edit `gallery-data.js` only when the presentation should also appear as a portfolio gallery card.
 
@@ -64,27 +66,33 @@ Review `git diff`, commit only the intended files, and push a branch for Preview
 
 Do not run `deploy.bat`; it is the legacy GitHub Pages publisher.
 
-## Oversized-video publishing
+## Automatic oversized-media publishing
 
-`.github/workflows/sync-r2-media.yml` runs on pushes to `main` that change videos under `assets/` or `presentation/`. It uploads changed source videos above 25 MiB to the `portfolio-media-production` R2 bucket and never deletes old objects.
+The build and R2 uploader share a media inventory. Supported runtime assets above **25 MiB** (including GLB models, binary buffers, textures, and videos) are served from R2 instead of copied into the Pages upload. Draft presentations marked `.no-publish`, authoring files, build output, and dependencies are excluded. Existing video URLs remain compatible.
 
-For a new or replacement oversized video:
+New nonvideo objects use a content hash in their filename. Replacing `model.glb` therefore produces a new R2 URL automatically, without stale immutable-cache responses. Keep using ordinary local asset references in source HTML/JavaScript; the build generates the production URLs. Models with external relative dependencies need those dependencies to remain resolvable; use a self-contained GLB when possible.
 
-1. Give it a new filename/path; do not overwrite an immutable-cached published object in place.
-2. Push the video file by itself without adding a gallery or presentation reference.
-3. Wait for the GitHub Action named `Sync oversized portfolio media to R2` to pass.
-4. Verify the encoded `https://media.jervistuazon.com/...` URL, including a byte-range request.
-5. Add the gallery/presentation reference, run the build/tests, and publish the second change.
+`.github/workflows/sync-r2-media.yml` runs on relevant pushes to `main`, including changes to the upload/build automation. It reconciles oversized assets with the `portfolio-media-production` bucket, uploads missing objects with the correct content type, and retains old objects. Reconciliation also backfills an existing file missed by an older workflow, such as Orchard's model.
 
-For an explicit local sync, configure the same R2 environment variables and use `npm run media:sync`. Use `npm run media:sync:dry` to list oversized source media without uploading. Local upload requires the AWS CLI. Never expose R2 credentials in code, logs, commits, or documentation.
+The existing Pages build command now runs a public-media readiness gate. It checks object availability, size, content type, browser access, and range support and waits a bounded time for the concurrent R2 Action. If media is missing or unusable, the build fails instead of publishing broken references. No R2 credentials are needed in Pages: they remain in the existing GitHub Action.
 
-The GitHub Actions workflow uses these repository secrets:
+For normal publishing, validate with `npm run check:update` and publish through the authorized branch/merge workflow. Media and references can be included together; separate media-only and reference commits are no longer required. GitHub's own file-size restrictions still apply: this automation solves the Pages 25 MiB asset limit and does not bypass GitHub's limits.
+
+A preview that introduces new large media requires that media to be uploaded first. With publication authority, dispatch the R2 sync workflow for that trusted branch, verify the URLs, then retry its preview build. Do not run privileged upload jobs for untrusted pull requests. Production uploads remain automatic on `main`. A preview also needs its origin allowed by the existing R2 CORS policy; the preview gate checks that origin and reports a missing permission rather than publishing a broken viewer. Production checks the canonical site origin.
+
+Useful commands:
+
+- `npm run media:sync:dry`: inspect the upload inventory and object keys without uploading.
+- `npm run media:sync`: explicitly upload/reconcile using local AWS CLI and the R2 environment variables.
+- `npm run media:verify`: verify public R2 availability without credentials (set `PORTFOLIO_MEDIA_ORIGIN=https://media.jervistuazon.com`).
+
+The GitHub Actions workflow uses these existing repository secrets:
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
 
-Routine content updates must not modify these secrets, Cloudflare DNS, Pages environment variables, or R2 CORS.
+Never expose credentials in code, logs, commits, or documentation. Routine publishing does not require changes to these secrets, DNS, Pages environment variables, or R2 CORS.
 
 ## Production verification
 

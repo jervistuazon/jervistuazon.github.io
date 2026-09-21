@@ -260,6 +260,17 @@ function collectReferencedProjectManifests(presentationRoot, runtimeFiles) {
     return referenced;
 }
 
+function runtimeSourcesReferenceDirectory(presentationRoot, runtimeFiles, directoryName) {
+    const textExtensions = new Set(['.css', '.html', '.js', '.mjs', '.rsc', '.txt', '.xml']);
+    const marker = `${directoryName}/`;
+
+    return runtimeFiles.some(relativeFile => {
+        if (!textExtensions.has(path.posix.extname(relativeFile).toLowerCase())) return false;
+        const absoluteFile = path.join(presentationRoot, relativeFile.replaceAll('/', path.sep));
+        return fs.readFileSync(absoluteFile, 'utf8').includes(marker);
+    });
+}
+
 function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
     const presentationsRoot = path.resolve(rootDir, 'presentation');
     const presentationRoot = path.resolve(rootDir, presentationDir.replaceAll('/', path.sep));
@@ -267,14 +278,27 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
         throw new Error(`Presentation must be an immediate child of presentation/: ${presentationDir}`);
     }
 
-    const runtimeFiles = [];
     // This static export uses framework chunks and a nested 3D viewer at runtime.
     // Keep the exception scoped so other presentations' authoring folders stay private.
     const isSiteFeasibility = presentationDir === 'presentation/site_feasibility';
     const runtimeExtensions = isSiteFeasibility
         ? new Set([...PRESENTATION_RUNTIME_EXTENSIONS, '.rsc', '.bin'])
         : PRESENTATION_RUNTIME_EXTENSIONS;
-    for (const entry of fs.readdirSync(presentationRoot, { withFileTypes: true })) {
+
+    const entries = fs.readdirSync(presentationRoot, { withFileTypes: true });
+    const referenceFiles = entries
+        .filter(entry => entry.isFile())
+        .filter(entry => runtimeExtensions.has(path.extname(entry.name).toLowerCase()))
+        .map(entry => entry.name);
+    const assetsEntry = entries.find(entry => entry.isDirectory() && entry.name.toLowerCase() === 'assets');
+    if (assetsEntry) {
+        for (const relative of collectRuntimeFiles(path.join(presentationRoot, assetsEntry.name))) {
+            referenceFiles.push(toPosix(path.join(assetsEntry.name, relative)));
+        }
+    }
+
+    const runtimeFiles = [];
+    for (const entry of entries) {
         if (entry.isFile()) {
             const extension = path.extname(entry.name).toLowerCase();
             if (entry.name.toLowerCase() !== 'project.manifest.json' && runtimeExtensions.has(extension)) {
@@ -283,9 +307,13 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
             continue;
         }
 
-        // The white-model viewer imports its bundled libraries from vendor/.
+        // Keep a vendor tree only when the shipped runtime uses it. This lets
+        // exported viewers bring their local libraries and codecs along while
+        // leaving unreferenced authoring dependencies out of the deployment.
         const isWhiteModelVendor = presentationDir === 'presentation/white_model' && entry.name === 'vendor';
-        if (entry.isDirectory() && (isWhiteModelVendor || (isSiteFeasibility && ['_next', 'development'].includes(entry.name)))) {
+        const isReferencedVendor = entry.name === 'vendor'
+            && runtimeSourcesReferenceDirectory(presentationRoot, referenceFiles, entry.name);
+        if (entry.isDirectory() && (isWhiteModelVendor || isReferencedVendor || (isSiteFeasibility && ['_next', 'development'].includes(entry.name)))) {
             for (const relative of walkFiles(path.join(presentationRoot, entry.name))) {
                 if (runtimeExtensions.has(path.extname(relative).toLowerCase())) {
                     runtimeFiles.push(toPosix(path.join(entry.name, relative)));
@@ -403,7 +431,9 @@ module.exports = {
     FORESTVILLE_PRESENTATION_DIR,
     INTERACTIVE_PRESENTATION_DIR,
     PROJECT_PAGE_CATEGORIES,
+    PRESENTATION_RUNTIME_EXTENSIONS,
     ROOT_RUNTIME_FILES,
+    RUNTIME_ASSET_EXTENSIONS,
     collectCinematicRuntimeAssets,
     collectGenericPresentationRuntimeFiles,
     collectGalleryAssetReferences,
