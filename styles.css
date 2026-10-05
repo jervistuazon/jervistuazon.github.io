@@ -442,8 +442,8 @@ body::after {
 /* Category Filter Bar */
 .filter-bar {
     display: flex;
-    gap: clamp(0.8rem, 1.3vw, 1.35rem);
-    flex-wrap: wrap;
+    gap: clamp(0.6rem, 0.8vw, 0.85rem);
+    flex-wrap: nowrap;
     justify-content: flex-end;
     white-space: nowrap;
 }
@@ -452,7 +452,7 @@ body::after {
     font-size: clamp(0.66rem, 0.72vw, 0.75rem);
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     color: var(--text-secondary);
     padding: 0.5rem 0;
     position: relative;
@@ -1624,6 +1624,18 @@ video.lightbox-content {
 /* ==========================================================================
    RESPONSIVE DESIGN (BREAKPOINTS)
    ========================================================================== */
+@media (max-width: 1400px) {
+    .work-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-bar {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
 @media (max-width: 1024px) {
     :root {
         --desktop-padding: 4vw;
@@ -1653,7 +1665,13 @@ video.lightbox-content {
 
     .filter-bar {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-end;
+        gap: clamp(0.35rem, 0.8vw, 0.6rem);
+    }
+
+    .filter-btn {
+        font-size: clamp(0.58rem, 1.1vw, 0.66rem);
+        letter-spacing: 0.1em;
     }
 }
 
