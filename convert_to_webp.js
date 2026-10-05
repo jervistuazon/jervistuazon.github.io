@@ -15,6 +15,13 @@ const FILES_TO_UPDATE = [
 ];
 
 const QUALITY = 80;
+// Scope a project conversion without rewriting unrelated images or references.
+// Usage: node convert_to_webp.js --dir "assets/Mixed-Use/Three Sixty"
+const directoryArgIndex = process.argv.indexOf('--dir');
+const targetDirectory = directoryArgIndex === -1 ? null : process.argv[directoryArgIndex + 1];
+if (directoryArgIndex !== -1 && (!targetDirectory || !fs.existsSync(path.resolve(__dirname, targetDirectory)))) {
+    throw new Error('--dir requires an existing image directory');
+}
 
 console.log('==========================================');
 console.log('   IMAGE OPTIMIZER (WebP Converter)       ');
@@ -56,11 +63,11 @@ function getAllFiles(dirPath, arrayOfFiles) {
 }
 
 async function convertImages() {
-    console.log(`[INFO] Scanning directories: ${ASSETS_DIR} and ${PRESENTATION_DIR}`);
-    const files = [
-        ...getAllFiles(ASSETS_DIR),
-        ...getAllFiles(PRESENTATION_DIR)
-    ];
+    const directories = targetDirectory
+        ? [path.resolve(__dirname, targetDirectory)]
+        : [ASSETS_DIR, PRESENTATION_DIR];
+    console.log(`[INFO] Scanning directories: ${directories.join(' and ')}`);
+    const files = directories.flatMap(directory => getAllFiles(directory));
     console.log(`[INFO] Found ${files.length} images to optimize.`);
 
     let converted = 0;
@@ -101,8 +108,10 @@ async function convertImages() {
     console.log(`[INFO] Total space saved: ${(savedSpace / 1024 / 1024).toFixed(2)} MB`);
 
     // Update Code References
-    console.log('\n[INFO] Updating code references from .png/.jpg to .webp...');
-    updateCodeReferences();
+    if (!targetDirectory) {
+        console.log('\n[INFO] Updating code references from .png/.jpg to .webp...');
+        updateCodeReferences();
+    }
 
     console.log('==========================================');
 }

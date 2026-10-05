@@ -116,6 +116,7 @@ const categories = [
     'Commercial',
     'Hospitality',
     'Institutional',
+    'Mixed-Use',
     'Mix Used Development',
     'Residential',
     'Residential Development'

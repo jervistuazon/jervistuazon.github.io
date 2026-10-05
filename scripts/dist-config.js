@@ -8,6 +8,7 @@ const PROJECT_PAGE_CATEGORIES = [
     'Commercial',
     'Hospitality',
     'Institutional',
+    'Mixed-Use',
     'Mix Used Development',
     'Residential',
     'Residential Development'

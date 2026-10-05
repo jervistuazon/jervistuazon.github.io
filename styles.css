@@ -443,7 +443,8 @@ body::after {
 .filter-bar {
     display: flex;
     gap: clamp(0.8rem, 1.3vw, 1.35rem);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     white-space: nowrap;
 }
 

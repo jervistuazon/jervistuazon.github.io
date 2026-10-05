@@ -392,7 +392,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1259876716525';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=1095046393716';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -658,6 +658,7 @@ function renderGalleryGrid() {
         'Commercial',
         'Hospitality',
         'Institutional',
+        'Mixed-Use',
         'Residential',
         'Interactive Presentation'
     ];

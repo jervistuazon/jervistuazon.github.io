@@ -101,6 +101,17 @@
             "School Thailand.webp"
         ]
     },
+    "Mixed-Use": {
+        "Three Sixty": [
+            "Overall View.webp",
+            "Retail.webp",
+            "Townclub Game Room.webp",
+            "Townclub Squash Area.webp",
+            "Experience Gallery.webp",
+            "Experience Gallery Material Display.webp",
+            "Experience Gallery Refreshment Bar.webp"
+        ]
+    },
     "Residential": {
         "1953 - Singapore - 2022 - F": [
             "1. Corner View.webp",
@@ -259,13 +270,13 @@
             {
                 "src": "presentation/interactive_presentation_demo/assets/thumbnail/thumbnail.webp",
                 "label": "Interactive Presentation Demo",
-                "href": "presentation/interactive_presentation_demo/?v=1259876716525",
+                "href": "presentation/interactive_presentation_demo/?v=1095046393716",
                 "featured": true
             },
             {
                 "src": "presentation/cinematic_web_presentation/Video/cinematic_web_presentation.mp4",
                 "label": "Cinematic Web Presentation",
-                "href": "presentation/cinematic_web_presentation/?v=1259876716525",
+                "href": "presentation/cinematic_web_presentation/?v=1095046393716",
                 "featured": true
             },
             "Interactive Presentation Apartment Interior.mp4",
@@ -282,6 +293,7 @@ window.galleryCategories = [
     "Commercial",
     "Hospitality",
     "Institutional",
+    "Mixed-Use",
     "Residential",
     "Interactive Presentation"
 ];
