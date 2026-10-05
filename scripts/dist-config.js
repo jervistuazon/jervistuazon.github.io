@@ -301,6 +301,9 @@ function collectGenericPresentationRuntimeFiles(rootDir, presentationDir) {
     const runtimeFiles = [];
     for (const entry of entries) {
         if (entry.isFile()) {
+            // Blender import copy produced by Orchard's decompressor; the viewer uses model.glb.
+            if (presentationDir === 'presentation/orchard_architectural_maquette'
+                && entry.name === 'model_decompressed.glb') continue;
             const extension = path.extname(entry.name).toLowerCase();
             if (entry.name.toLowerCase() !== 'project.manifest.json' && runtimeExtensions.has(extension)) {
                 runtimeFiles.push(entry.name);

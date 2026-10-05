@@ -156,6 +156,7 @@ function assertHyattPresentationInventory() {
 function assertOrchardRuntimeInventory() {
     const orchardDir = 'presentation/orchard_architectural_maquette';
     const runtimeFiles = collectGenericPresentationRuntimeFiles(rootDir, orchardDir);
+    assert.ok(!runtimeFiles.includes('model_decompressed.glb'), 'Orchard Blender import copy must not be published.');
     for (const file of [
         'index.html',
         'environment.jpg',
@@ -168,6 +169,7 @@ function assertOrchardRuntimeInventory() {
     }
 
     const expected = expectedDistFiles(rootDir, loadGalleryData(rootDir));
+    assert.ok(!expected.has(`${orchardDir}/model_decompressed.glb`), 'Orchard Blender import copy must not enter dist inventory.');
     for (const file of runtimeFiles) {
         assert.ok(expected.has(`${orchardDir}/${file}`), `Expected dist inventory is missing ${orchardDir}/${file}.`);
     }
@@ -302,6 +304,12 @@ function assertPublishedMediaInventoryScope() {
         fs.writeFileSync(path.join(fixtureRoot, 'presentation', 'published', 'index.html'), '<script>load("./model.glb")</script>');
         createOversizedSparseFile('presentation/published/model.glb');
 
+        const orchardDir = 'presentation/orchard_architectural_maquette';
+        fs.mkdirSync(path.join(fixtureRoot, orchardDir), { recursive: true });
+        fs.writeFileSync(path.join(fixtureRoot, orchardDir, 'index.html'), '<script>load("./model.glb")</script>');
+        createOversizedSparseFile(`${orchardDir}/model.glb`);
+        createOversizedSparseFile(`${orchardDir}/model_decompressed.glb`);
+
         fs.mkdirSync(path.join(fixtureRoot, 'presentation', 'draft'), { recursive: true });
         fs.writeFileSync(path.join(fixtureRoot, 'presentation', 'draft', '.no-publish'), '');
         createOversizedSparseFile('presentation/draft/model.glb');
@@ -311,7 +319,11 @@ function assertPublishedMediaInventoryScope() {
         createOversizedSparseFile('assets/drafts/hidden.mp4');
 
         const inventory = listOversizedMediaFiles(fixtureRoot);
-        assert.deepStrictEqual(inventory.map(file => file.relativePath), ['presentation/published/model.glb']);
+        assert.deepStrictEqual(inventory.map(file => file.relativePath), [
+            `${orchardDir}/model.glb`,
+            'presentation/published/model.glb'
+        ]);
+        assert.ok(fs.existsSync(path.join(fixtureRoot, orchardDir, 'model_decompressed.glb')), 'Inventory exclusion must preserve the local Blender import copy.');
     } finally {
         fs.rmSync(fixtureRoot, { recursive: true, force: true });
     }
