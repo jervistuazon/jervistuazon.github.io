@@ -59,7 +59,7 @@ function restoreDialogFocus(element) {
 // Load More / Pagination Globals
 const ITEMS_PER_PAGE = 24;
 let visibleLimit = ITEMS_PER_PAGE;
-let currentFilter = 'all';
+let currentFilter = 'featured';
 let allGalleryItems = [];
 let galleryRevealObserver = null;
 let refreshSectionBounds = () => {};
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const optionButtons = document.querySelectorAll('.option-item');
     optionButtons.forEach(button => {
-        const isDefault = button.dataset.filter === 'all';
+        const isDefault = button.dataset.filter === currentFilter;
         button.classList.toggle('selected', isDefault);
         button.setAttribute('aria-selected', isDefault.toString());
         button.addEventListener('click', (event) => {
@@ -392,7 +392,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=6079124680977';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=6149419192112';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -758,7 +758,7 @@ function renderGalleryGrid() {
     allGalleryItems = sortedProjects;
 
     // Initialize view with limit. Items beyond the first page are not built until needed.
-    filterGallery('all');
+    filterGallery(currentFilter);
 }
 
 function renderGalleryItem(itemData, index) {
