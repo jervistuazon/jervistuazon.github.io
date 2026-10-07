@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title></title>
+    <title>Untitled Project</title>
     <link rel="stylesheet" href="./vendor/pannellum.css"/>
     <script type="text/javascript" src="./vendor/pannellum.js"></script>
     <script src="./vendor/purify.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #292929, #000000); font-family: sans-serif; color: white; }
+        body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #000000, #000000); font-family: sans-serif; color: white; }
 
         #vignette-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%); }
         #branding-overlay { position: absolute; bottom: 20px; left: 20px; z-index: 5; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .hidden { display: none !important; }
-        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; filter: contrast(1.05) saturate(1); opacity: 1; transition: opacity 0.5s ease-out; touch-action: none !important; user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; filter: contrast(1.35) saturate(1); opacity: 1; transition: opacity 0.5s ease-out; touch-action: none !important; user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
         #canvas-container canvas { touch-action: none !important; user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
-        #nav-speed-toast { pointer-events: none; position: fixed; top: max(20px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-10px); z-index: 40; background: rgba(20,20,20,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); color: #e5e5e5; font: 500 12px/1.5 Arial, sans-serif; padding: 6px 14px; border-radius: 9999px; box-shadow: 0 4px 20px rgba(0,0,0,0.35); max-width: calc(100vw - 40px); box-sizing: border-box; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; display: flex; align-items: center; gap: 6px; }
+        #nav-speed-toast { pointer-events: none; position: fixed; top: max(20px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-10px); z-index: 40; background: rgba(20,20,20,0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 0; color: #e5e5e5; font: 500 12px/1.5 Arial, sans-serif; padding: 6px 14px; border-radius: 9999px; box-shadow: 0 4px 20px rgba(0,0,0,0.35); max-width: calc(100vw - 40px); box-sizing: border-box; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; display: flex; align-items: center; gap: 6px; }
         #nav-speed-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
         @media (max-width: 768px) {
             #nav-speed-toast { top: calc(max(20px, env(safe-area-inset-top)) + 56px); right: max(20px, env(safe-area-inset-right)); left: auto; transform: translateY(-10px); }
@@ -27,7 +27,7 @@
         .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes pulse { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
         
-        :root { --card-scale: 40vmin; }
+        :root { --card-scale: 29vmin; --viewer-popover-width: 250px; }
         
 #vignette-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%); }
 #branding-overlay { position: absolute; bottom: 30px; left: 30px; z-index: 5; pointer-events: none; text-shadow: 0 4px 12px rgba(0,0,0,0.8); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
@@ -49,6 +49,16 @@
     opacity: 0; visibility: hidden; pointer-events: none;
     transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1), transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.32s;
     will-change: transform, opacity;
+}
+/* Let image-only cards follow the image's fitted aspect ratio without side space. */
+.hotspot-card:has(#card-content > img:only-child) {
+    width: fit-content;
+    max-width: var(--card-scale);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.hotspot-card:has(#card-content > img:only-child) img {
+    width: auto;
+    max-width: 100%;
 }
 .hotspot-card, .hotspot-card * { box-sizing: border-box; }
 .hotspot-card.visible {
@@ -123,57 +133,193 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
 }
 
 
-        /* Published viewers expose speed in the scene; the editor keeps it in its
-           inspector. Reserve title space for this export-only control. */
-        #viewer-speed-control {
+        /* Keep the published controls together on the right and the title on the left. */
+        #viewer-speed-control, #sun-study-panel {
             position: fixed;
             right: max(20px, env(safe-area-inset-right));
-            bottom: max(20px, env(safe-area-inset-bottom));
-            z-index: 40;
+            width: 42px;
+            height: 42px;
+            z-index: 70;
+        }
+        .viewer-icon-control { user-select: none; -webkit-user-select: none; }
+        #viewer-speed-control { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 50px); }
+        #sun-study-panel { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 100px); }
+        .viewer-icon-button {
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
             box-sizing: border-box;
-            max-width: calc(100vw - 40px);
-            min-height: 44px;
-            padding: 6px 10px 6px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border: 0;
             border-radius: 9999px;
             background: rgba(20, 20, 20, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
             color: #e5e5e5;
             font: 500 12px/1.5 Arial, sans-serif;
-            white-space: nowrap;
-        }
-        #viewer-flight-speed {
-            min-height: 30px;
-            padding: 4px 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 9999px;
-            background: #262626;
-            color: inherit;
-            color-scheme: dark;
-            font: inherit;
             cursor: pointer;
-            touch-action: manipulation;
+            transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        #viewer-flight-speed:hover { border-color: rgba(255, 255, 255, 0.35); }
-        #viewer-flight-speed:focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
-        #branding-overlay {
-            left: max(30px, env(safe-area-inset-left));
-            bottom: max(30px, env(safe-area-inset-bottom));
-            max-width: calc(100vw - 260px - env(safe-area-inset-left) - env(safe-area-inset-right));
-            overflow-wrap: anywhere;
+        .viewer-icon-button:hover {
+            background: rgba(30, 30, 30, 0.85);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+        }
+        .viewer-icon-button[aria-expanded="true"] {
+            background: rgba(91, 62, 38, 0.82);
+            color: #ffd08a;
+        }
+        .viewer-icon-button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 208, 138, 0.65), 0 4px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        #viewer-ui-toggle {
+            position: fixed;
+            right: max(20px, env(safe-area-inset-right));
+            bottom: max(20px, env(safe-area-inset-bottom));
+            z-index: 80;
+            width: 42px;
+            height: 42px;
+            box-sizing: border-box;
+            padding: 0;
+            border: 0;
+            border-radius: 9999px;
+            background: rgba(20, 20, 20, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            color: #e5e5e5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font: 500 12px/1.5 Arial, sans-serif;
+        }
+        #viewer-ui-toggle:hover {
+            background: rgba(30, 30, 30, 0.85);
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+        #viewer-ui-toggle:active { transform: scale(0.95); }
+        #viewer-ui-toggle:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 208, 138, 0.65), 0 4px 20px rgba(0, 0, 0, 0.35); }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        body.viewer-ui-hidden #branding-overlay,
+        body.viewer-ui-hidden #view-controls,
+        body.viewer-ui-hidden #gyro-toggle,
+        body.viewer-ui-hidden #viewer-speed-control,
+        body.viewer-ui-hidden #nav-speed-toast,
+        body.viewer-ui-hidden #sun-study-panel,
+        body.viewer-ui-hidden #hotspot-card { display: none !important; }
+
+        /* Slider cards sit beside their icon, so each control stays one compact row. */
+        .viewer-setting-popover {
+            position: absolute;
+            right: calc(100% + 10px);
+            top: 50%;
+            transform: translate(8px, -50%) scale(0.96);
+            transform-origin: right center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: 75;
+            width: var(--viewer-popover-width);
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border: 0;
+            border-radius: 18px;
+            background: rgba(20, 20, 22, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+            color: #f5f2ed;
+            font: 500 12px/1.45 Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.22s;
+        }
+        .viewer-setting-popover[hidden] { display: none; }
+        .viewer-setting-popover.is-open {
+            transform: translate(0, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition-delay: 0s;
+        }
+        .viewer-setting-popover:focus-within { box-shadow: 0 0 0 1px rgba(255, 208, 138, 0.35), 0 12px 36px rgba(0, 0, 0, 0.45); }
+        .sun-study-day-rail, .viewer-setting-rail {
+            display: grid;
+            grid-template-columns: 22px minmax(0, 1fr) 22px;
+            align-items: center;
+            gap: 8px;
+        }
+        .sun-study-endpoint, .viewer-setting-endpoint {
+            display: grid;
+            place-items: center;
+            color: rgba(255, 204, 143, 0.85);
+        }
+        .sun-study-endpoint svg, .viewer-setting-endpoint svg { width: 18px; height: 18px; }
+        .viewer-setting-range {
+            --range-fill: 50%;
+            display: block; width: 100%; height: 18px; margin: 0; padding: 0;
+            border: 0; border-radius: 999px; outline: 0; appearance: none; -webkit-appearance: none;
+            background: linear-gradient(90deg, #d98f54 0%, #ffe0ae var(--range-fill), rgba(255, 255, 255, 0.14) var(--range-fill), rgba(255, 255, 255, 0.14) 100%);
+            cursor: pointer; touch-action: pan-x;
+        }
+        .viewer-setting-range::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: transparent; }
+        .viewer-setting-range::-moz-range-track { height: 4px; border-radius: 999px; background: transparent; }
+        .viewer-setting-range::-webkit-slider-thumb {
+            width: 14px; height: 14px; margin-top: -5px; border: none; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff9ec, #ffc578 68%, #e99455);
+            box-shadow: 0 0 6px rgba(248, 177, 105, 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+            appearance: none; -webkit-appearance: none;
+        }
+        .viewer-setting-range::-moz-range-thumb {
+            width: 14px; height: 14px; border: none; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff9ec, #ffc578 68%, #e99455);
+            box-shadow: 0 0 6px rgba(248, 177, 105, 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        .viewer-setting-range:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 208, 138, 0.65); }
+        @media (prefers-reduced-motion: reduce) {
+            .viewer-setting-popover, .viewer-setting-popover.is-open, body #branding-overlay { transition: none; }
         }
         @media (max-width: 600px) {
-            #branding-overlay {
-                left: max(20px, env(safe-area-inset-left));
-                right: max(20px, env(safe-area-inset-right));
-                bottom: calc(max(20px, env(safe-area-inset-bottom)) + 60px);
-                max-width: none;
+            :root { --viewer-popover-width: clamp(150px, 46vw, 250px); }
+            body #branding-overlay { max-width: calc(100vw - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right)) - 70px); }
+            body.viewer-setting-open #branding-overlay { opacity: 0; }
+            #branding-overlay h1 {
+                font-size: 18px;
+                line-height: 24px;
             }
+        }
+
+        #branding-overlay {
+            left: max(20px, env(safe-area-inset-left));
+            right: auto;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            max-width: calc(100vw - var(--viewer-popover-width) - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right)) - 60px);
+            overflow-wrap: anywhere;
+            transition: opacity 0.18s ease;
         }
 
         #panorama-overlay { 
@@ -197,6 +343,10 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         #fullscreen-media-overlay.visible {
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             opacity: 1; pointer-events: auto;
+        }
+        #fullscreen-media-overlay.visible:has(.fullscreen-media-content > img) {
+            background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .fullscreen-media-content {
             --origin-x: 50%; --origin-y: 50%;
@@ -252,10 +402,10 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
             align-items: center;
             gap: 6px;
             padding: 8px 14px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             background: rgba(20, 20, 20, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 0;
             border-radius: 9999px;
             color: #e5e5e5;
             font-size: 12px;
@@ -269,7 +419,6 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         }
         #gyro-toggle:hover, .mobile-gyro-toggle:hover {
             background: rgba(30, 30, 30, 0.85);
-            border-color: rgba(255, 255, 255, 0.25);
             color: #ffffff;
         }
         #gyro-toggle:active, .mobile-gyro-toggle:active {
@@ -277,7 +426,6 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         }
         #gyro-toggle.active, .mobile-gyro-toggle.active {
             background: rgba(6, 78, 59, 0.8);
-            border-color: rgba(52, 211, 153, 0.7);
             color: #34d399;
             box-shadow: 0 0 15px rgba(52, 211, 153, 0.4), 0 4px 20px rgba(0, 0, 0, 0.4);
         }
@@ -299,30 +447,30 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         #view-toggle {
             background: rgba(20, 20, 20, 0.75);
             color: #e5e5e5;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 0;
             border-radius: 9999px;
             padding: 8px 14px;
             min-height: 44px;
             font: 500 12px/1.5 Arial, sans-serif;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            transition: background 0.2s;
         }
-        #view-toggle:hover { background: rgba(30, 30, 30, 0.85); border-color: rgba(255, 255, 255, 0.25); }
-        #view-controls button:focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
+        #view-toggle:hover { background: rgba(30, 30, 30, 0.85); }
+        #view-controls button:focus-visible, #gyro-toggle:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 208, 138, 0.65), 0 4px 20px rgba(0, 0, 0, 0.35); }
         #view-panel {
             display: none;
             background: rgba(20, 20, 20, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 0;
             border-radius: 12px;
             padding: 10px;
             min-width: 160px;
             max-height: 240px;
             overflow: auto;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
         }
         #view-panel.visible { display: block; }
@@ -374,8 +522,8 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
     
     <div id="vignette-overlay"></div>
     <div id="branding-overlay" class="hidden">
-        <h1></h1>
-        <p></p>
+        <h1>Untitled Project</h1>
+        <p>By Author</p>
     </div>
     
     <div id="view-controls">
@@ -424,13 +572,54 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
             <p data-error-detail style="margin:0;color:#c4c4c4;font-size:14px;line-height:1.5;"></p>
         </div>
     </div>
-    <label id="viewer-speed-control" for="viewer-flight-speed">Flight speed
-        <select id="viewer-flight-speed" aria-label="Flight speed">
-            <option value="1">0.25x</option><option value="2">0.5x</option><option value="3">1x</option><option value="4">2x</option><option value="5">8x</option><option value="6">16x</option><option value="7">32x</option><option value="8">64x</option>
-        </select>
-    </label>
+    <div id="viewer-speed-control" class="viewer-icon-control">
+        <button id="viewer-speed-toggle" class="viewer-icon-button" type="button" aria-label="Flight speed" aria-expanded="false" aria-controls="viewer-speed-popover" title="Flight speed">
+            <svg class="speed-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>
+            </svg>
+        </button>
+        <div id="viewer-speed-popover" class="viewer-setting-popover" hidden>
+            <div class="viewer-setting-rail">
+                <span class="viewer-setting-endpoint" aria-hidden="true" title="Slow flight">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 18a8.5 8.5 0 1 1 17 0"/><path d="m12 17-4-4"/><circle cx="12" cy="17" r="1"/></svg>
+                </span>
+                <input id="viewer-flight-speed" class="viewer-setting-range" type="range" min="0" max="100" step="any" value="25" aria-label="Flight speed" aria-valuetext="0.5x">
+                <span class="viewer-setting-endpoint" aria-hidden="true" title="Fast flight">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 18a8.5 8.5 0 1 1 17 0"/><path d="m12 17 4-5"/><circle cx="12" cy="17" r="1"/></svg>
+                </span>
+            </div>
+        </div>
+    </div>
+    <button id="viewer-ui-toggle" type="button" aria-label="Hide UI" title="Hide UI">
+        <svg class="ui-toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span class="sr-only" id="viewer-ui-toggle-text">Hide UI</span>
+    </button>
     <div id="nav-speed-toast"><span style="color:#f59e0b;">⚡</span><span id="nav-speed-toast-text">Speed: 1x (Normal)</span></div>
     <div id="canvas-container"></div>
+    
+    <section id="sun-study-panel" class="viewer-icon-control" aria-label="Time of day control">
+        <button id="sun-study-toggle" class="viewer-icon-button" type="button" aria-label="Time of day" aria-expanded="false" aria-controls="sun-study-controls" title="Time of day">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <div id="sun-study-controls" class="viewer-setting-popover" hidden>
+            <div class="sun-study-day-rail">
+                <span class="sun-study-endpoint" aria-hidden="true" title="Morning">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 19h18"/><path d="M6 19a6 6 0 0 1 12 0"/><path d="M12 3v3m-6 2 2 2m10-2-2 2"/>
+                    </svg>
+                </span>
+                <input id="sun-study-progress" class="viewer-setting-range" type="range" min="0" max="100" step="0.1" value="50" aria-label="Sun position from sunrise to sunset">
+                <span class="sun-study-endpoint" aria-hidden="true" title="Evening">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.8 14.1A8.5 8.5 0 0 1 9.9 3.2 8.5 8.5 0 1 0 20.8 14.1Z"/><path d="M18 3v3m-1.5-1.5h3"/>
+                    </svg>
+                </span>
+            </div>
+        </div>
+    </section>
     
     
     <!-- Local File Access "Launcher" UI -->
@@ -467,32 +656,31 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
         import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-        const config = {"qualityPreset":"balanced","bgTop":"#292929","bgBot":"#000000","sunCastShadow":true,"sunIntensity":4.1,"sunColor":"#ffffff","sunAzimuth":318,"sunElevation":63,"ambIntensity":0.6,"ambColor":"#ffffff","shadowBias":-0.002,"normalBias":0.041,"shadowOpacity":0,"shadowSoftness":1,"aoIntensity":1,"materialOverrides":{"material-18":{"lightness":-1.4},"material-9":{"lightness":-0.1},"material-1":{"lightness":-1.5},"material-2":{"metalness":0.48,"specularIntensity":1,"envMapIntensity":5,"roughness":0,"lightness":-0.7,"saturation":0.99}},"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1,"contrast":1.05,"saturation":1,"camPos":{"x":355.3938088685936,"y":230.9912116802868,"z":-230.76123476165247},"camTarget":{"x":135.83062847108803,"y":32.385431715935205,"z":-353.0911200196311},"camFov":45,"camZoom":1,"camQuaternion":{"x":-0.2829394027087667,"y":0.4785466660816774,"z":0.16625051818309267,"w":0.8144317945541978},"camUp":{"x":0,"y":1,"z":0},"camNear":0.000001,"camFar":46498.422230082724,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[{"id":"cam_1789965896902_kdmirt8ba","name":"Aerial Orbit View","type":"orbit","position":{"x":331.91742809895493,"y":230.9912103667976,"z":-195.8570316452214},"target":{"x":135.83062847108803,"y":32.385431715935205,"z":-353.0911200196311},"fov":45,"zoom":1,"up":{"x":0,"y":1,"z":0}},{"id":"cam_1789973688899_s1sqodcvn","name":"View 1","type":"camera","position":{"x":172.48129128156174,"y":45.619910549163606,"z":-91.35481895218751},"target":{"x":146.0584486117391,"y":45.714951691621756,"z":-251.75625957880425},"fov":45,"zoom":1,"quaternion":{"x":0.00029134715498527436,"y":0.08154098372134067,"z":-0.000023836109137390304,"w":0.9966699466335036},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1789973718321_f20ed5jiq","name":"View 2","type":"camera","position":{"x":360.7896581833537,"y":41.76948295675252,"z":-294.65364399784914},"target":{"x":265.48740897198456,"y":45.783102365547755,"z":-321.6384557932644},"fov":45,"zoom":1,"quaternion":{"x":0.016150743133630015,"y":0.6030184959524483,"z":-0.012212615584216617,"w":0.7974701869387161},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1789973753091_ixiui4iu5","name":"View 3","type":"camera","position":{"x":9.501249968683602,"y":41.17164996452438,"z":-169.0885344089823},"target":{"x":56.87677923859617,"y":45.78310236554783,"z":-251.52535833953095},"fov":45,"zoom":1,"quaternion":{"x":0.023409608348548338,"y":-0.25777810872757473,"z":0.00624752318122893,"w":0.9659003081850125},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1789973786856_hey0qrjuk","name":"View 4","type":"camera","position":{"x":-53.288796469765,"y":36.92862121937962,"z":-558.1039493197821},"target":{"x":55.19329436928295,"y":45.64281502462499,"z":-463.3322464115854},"fov":45,"zoom":1,"quaternion":{"x":-0.012492383537719844,"y":0.9100553431467506,"z":-0.027501650783641696,"w":-0.4133846537642286},"up":{"x":0,"y":1,"z":0}}],"defaultCameraBookmarkId":null,"orbitViewSpeed":0.5,"orbitViewDirection":"counterclockwise","noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"gyroEnabled":false,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"","projectAuthor":"","brandingVisible":false,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":0.5,"hsOpacity":0.8,"hsPopupScale":40,"hsShowOutline":true,"hsIconType":"circle","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1790003940369};
+        const config = {"qualityPreset":"balanced","bgTop":"#000000","bgBot":"#000000","sunCastShadow":true,"sunIntensity":5,"sunColor":"#b0a9a0","sunAzimuth":318,"sunElevation":63,"sunStudyEnabled":true,"sunStudyNorthAzimuth":196,"sunStudyProgress":49.8,"ambIntensity":1,"ambColor":"#bababa","shadowBias":-0.002,"normalBias":0,"shadowOpacity":0.3,"shadowSoftness":0.8,"aoIntensity":1,"materialOverrides":{"material-21":{"lightness":0,"saturation":0.71,"hueShift":0},"material-22":{"hueShift":-10,"saturation":0.74},"material-19":{"saturation":0.76},"material-20":{"saturation":0.76,"lightness":-0.3},"material-3":{"addReflections":true,"disableReflections":false,"roughness":0,"metalness":0.16,"color":"#9eabae"},"material-8":{"lightness":-0.8,"saturation":1.19,"hueShift":20},"material-5":{"lightness":-1.6},"material-0":{"lightness":0.6},"material-24":{"lightness":-0.3},"material-26":{"lightness":-0.4},"material-25":{"lightness":-0.4}},"importedAssetVisibility":{},"glbAssetId":"62d6809f-20e0-4bfb-8239-f4d4192d98d9","plyAssetId":null,"disableReflections":false,"roughness":0.5,"metalness":0.05,"envMapIntensity":1,"specularIntensity":1,"exposure":1.25,"contrast":1.35,"saturation":1,"camPos":{"x":-23.148006854470623,"y":38.46414603415152,"z":-96.43195401674484},"camTarget":{"x":131.54651299866754,"y":50.80299333431206,"z":-346.2145424448201},"camFov":34.9618320610687,"camZoom":1,"camQuaternion":{"x":0.020183081480518165,"y":-0.2736523859468864,"z":0.0057437084043198425,"w":0.9615997216624458},"camUp":{"x":0,"y":1,"z":0},"camNear":0.000001,"camFar":28470.68398830492,"camAspect":2.0317460317460316,"navSpeedLevel":1,"cameraBookmarks":[{"id":"cam_1791336064113_r4lbnlro4","name":"Orbit View","type":"orbit","position":{"x":-122.13756455351529,"y":332.807631391859,"z":326.7550543982409},"target":{"x":136.47108790747933,"y":47.34045561130813,"z":-358.60673099784105},"fov":29.96336996337,"zoom":1,"up":{"x":0,"y":1,"z":0}},{"id":"cam_1791336183671_zi315kxls","name":"View 1","type":"camera","position":{"x":180.72906803994812,"y":48.98970379592175,"z":0.21513213197465575},"target":{"x":126.32382906817398,"y":47.340455611308094,"z":-356.2098762088966},"fov":34.9618320610687,"zoom":1,"quaternion":{"x":-0.002280532878339052,"y":0.07566356495422737,"z":0.00017304976526709445,"w":0.9971307808717905},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1791336264304_6xdnzzoqi","name":"View 2","type":"camera","position":{"x":392.2728519912177,"y":36.466523196675,"z":-295.94553365498854},"target":{"x":131.54651299866754,"y":50.80299333431206,"z":-346.2145424448201},"fov":34.9618320610687,"zoom":1,"quaternion":{"x":0.020795116994498906,"y":0.6364327959756068,"z":-0.017168725606729104,"w":0.7708606191633464},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1791336351657_mri702p7y","name":"View 3","type":"camera","position":{"x":-94.09124778952818,"y":26.139937834832715,"z":-602.0757940254734},"target":{"x":150.5297185177395,"y":50.80299333431203,"z":-366.9600601389632},"fov":34.9618320610687,"zoom":1,"quaternion":{"x":-0.014212397535496947,"y":0.9194381607245202,"z":-0.0333728798734914,"w":-0.39155807646983065},"up":{"x":0,"y":1,"z":0}},{"id":"cam_1791356599273_awhziyjd0","name":"View 6","type":"camera","position":{"x":-23.148006854470736,"y":38.46414603415282,"z":-96.43195401674478},"target":{"x":131.54651299866754,"y":50.80299333431206,"z":-346.2145424448201},"fov":34.9618320610687,"zoom":1,"quaternion":{"x":0.020183081480516032,"y":-0.2736523859468865,"z":0.005743708404319239,"w":0.9615997216624458},"up":{"x":0,"y":1,"z":0}}],"orbitViewSpeed":0.5,"orbitViewDirection":"counterclockwise","noCollision":false,"anchoredOrbitEnabled":false,"anchoredOrbitHorizontalLimit":8,"anchoredOrbitVerticalLimit":4,"anchoredOrbitReturnToCenter":true,"anchoredOrbitReturnSmoothing":8,"anchoredOrbitSensitivity":1,"anchoredOrbitPanStrength":0.035,"anchoredOrbitFollowPointer":true,"gyroEnabled":false,"autoRotate":false,"rotateSpeed":2,"damping":0.05,"autoRotateDelay":2,"projectTitle":"Untitled Project","projectAuthor":"By Author","brandingVisible":false,"edgeVisible":false,"edgeThreshold":15,"edgeColor":"#000000","edgeOpacity":0.5,"hsSize":38.7468,"hsOpacity":0.7,"hsPopupScale":29,"hsShowOutline":false,"hsIconType":"pin","hsFullscreenMedia":false,"hsOcclusion":true,"splatAnimEnabled":true,"splatAnimDuration":1.5,"splatAnimStyle":"fade","lastAutoSave":1791356756739};
         const modelData = "./model.glb";
         const hdriData = "./environment.jpg";
         const hotspotsData = [];
         const transform = {"position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}};
-        const initialView = {"position":{"x":355.3938088685936,"y":230.9912116802868,"z":-230.76123476165247},"fov":45,"zoom":1,"quaternion":{"x":-0.2829394027087667,"y":0.4785466660816774,"z":0.16625051818309267,"w":0.8144317945541978},"up":{"x":0,"y":1,"z":0},"near":0.000001,"far":46498.422230082724,"aspect":2.0317460317460316,"target":{"x":135.83062847108803,"y":32.385431715935205,"z":-353.0911200196311},"orbitView":true,"orbitViewId":"cam_1789965896902_kdmirt8ba"};
+        const initialView = {"position":{"x":-23.148006854470623,"y":38.46414603415152,"z":-96.43195401674484},"fov":34.9618320610687,"zoom":1,"quaternion":{"x":0.020183081480518165,"y":-0.2736523859468864,"z":0.0057437084043198425,"w":0.9615997216624458},"up":{"x":0,"y":1,"z":0},"near":0.000001,"far":28470.68398830492,"aspect":2.0317460317460316,"target":{"x":131.54651299866754,"y":50.80299333431206,"z":-346.2145424448201},"orbitView":false};
         const cameraBookmarks = Array.isArray(config.cameraBookmarks) ? config.cameraBookmarks : [];
-        const defaultBookmarkId = config.defaultCameraBookmarkId || null;
-        const defaultBookmark = cameraBookmarks.find(b => b.id === defaultBookmarkId) || null;
-        const initialBookmark = config.anchoredOrbitEnabled && !(defaultBookmark?.type === 'orbit' || defaultBookmark?.viewType === 'orbit')
-            ? null
-            : defaultBookmark;
-        const initialOrbitView = initialView?.orbitView === true || (!initialView && (defaultBookmark?.type === 'orbit' || defaultBookmark?.viewType === 'orbit'));
-        const initialOrbitBookmark = initialView?.orbitView === true
-            ? { ...(initialView || {}), type: 'orbit', id: initialView?.orbitViewId || null }
-            : defaultBookmark;
+        const firstBookmark = cameraBookmarks[0] || null;
+        const startupView = firstBookmark || initialView;
+        const initialOrbitView = firstBookmark
+            ? (firstBookmark.type === 'orbit' || firstBookmark.viewType === 'orbit')
+            : initialView?.orbitView === true;
+        const initialOrbitBookmark = firstBookmark
+            ? (initialOrbitView ? firstBookmark : null)
+            : (initialOrbitView ? { ...(initialView || {}), type: 'orbit', id: initialView?.orbitViewId || null } : null);
         const fallbackPos = { x: 0, y: 5, z: 15 };
         const fallbackTarget = { x: 0, y: 0, z: 0 };
-        const initialPos = initialView?.position || initialBookmark?.position || config.camPos || fallbackPos;
-        const initialTarget = initialView?.target || initialBookmark?.target || config.camTarget || fallbackTarget;
-        const initialFov = Number.isFinite(initialView?.fov) ? initialView.fov : (Number.isFinite(initialBookmark?.fov) ? initialBookmark.fov : (Number.isFinite(config.camFov) ? config.camFov : 45));
-        const initialZoom = Number.isFinite(initialView?.zoom) ? initialView.zoom : (Number.isFinite(initialBookmark?.zoom) ? initialBookmark.zoom : (Number.isFinite(config.camZoom) ? config.camZoom : 1));
+        const initialPos = startupView?.position || config.camPos || fallbackPos;
+        const initialTarget = startupView?.target || config.camTarget || fallbackTarget;
+        const initialFov = Number.isFinite(startupView?.fov) ? startupView.fov : (Number.isFinite(config.camFov) ? config.camFov : 45);
+        const initialZoom = Number.isFinite(startupView?.zoom) ? startupView.zoom : (Number.isFinite(config.camZoom) ? config.camZoom : 1);
         const initialNear = 0.000001;
-        const initialFar = Number.isFinite(initialView?.far) ? initialView.far : (Number.isFinite(config.camFar) ? config.camFar : 2000);
-        const initialUp = initialView?.up || initialBookmark?.up || config.camUp || { x: 0, y: 1, z: 0 };
-        const initialQuaternion = initialView?.quaternion || config.camQuaternion || null;
+        const initialFar = Number.isFinite(startupView?.far) ? startupView.far : (Number.isFinite(config.camFar) ? config.camFar : 2000);
+        const initialUp = startupView?.up || (!firstBookmark && config.camUp) || { x: 0, y: 1, z: 0 };
+        const initialQuaternion = startupView?.quaternion || (!firstBookmark && config.camQuaternion) || null;
         const hasInitialQuaternion = !!(initialQuaternion && Number.isFinite(initialQuaternion.x) && Number.isFinite(initialQuaternion.y) && Number.isFinite(initialQuaternion.z) && Number.isFinite(initialQuaternion.w));
         const isZipMode = true;
         
@@ -596,6 +784,9 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
     }
 
     function testMesh(mesh, raycaster) {
+        for (let node = mesh; node; node = node.parent) {
+            if (node.visible === false) return false;
+        }
         const geometry = mesh.geometry, position = geometry?.attributes.position;
         if (!position || mesh.isSkinnedMesh || mesh.isInstancedMesh || geometry.morphAttributes.position?.length ||
             mesh.raycast !== THREE.Mesh.prototype.raycast || mesh.getVertexPosition !== THREE.Mesh.prototype.getVertexPosition ||
@@ -1066,6 +1257,18 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
                 this.targetDistance = this.getCurrentDistance();
                 this.isZooming = false;
                 this.lastTime = performance.now();
+            }
+
+            // Preserve an active wheel zoom while keyboard flight changes the orbit radius.
+            followNavigation(previousDistance) {
+                if (!this.isZooming || !Number.isFinite(previousDistance)) {
+                    this.sync();
+                    return;
+                }
+                const minDist = this.controls.minDistance || 0.1;
+                const maxDist = this.controls.maxDistance || Infinity;
+                const travel = this.getCurrentDistance() - previousDistance;
+                this.targetDistance = Math.max(minDist, Math.min(maxDist, this.targetDistance + travel));
             }
 
             onPointerDown() {
@@ -2129,7 +2332,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
 }
         const shadowQuality = getShadowQuality(config.qualityPreset);
         renderer.shadowMap.enabled = shadowQuality.enabled; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.AgXToneMapping;
         renderer.toneMappingExposure = config.exposure;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
         function configureGLTFLoader(THREE, GLTFLoader, DRACOLoader, KTX2Loader, MeshoptDecoder, renderer, assets) {
@@ -2306,7 +2509,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
 
             toggle.onclick = () => panel.classList.toggle('visible');
 
-            const fallbackResetBookmark = defaultBookmark || (cameraBookmarks.length > 0 ? cameraBookmarks[0] : null);
+            const fallbackResetBookmark = firstBookmark;
             if (!fallbackResetBookmark) {
                 resetBtn.onclick = () => window.resetOrFitView({ animate: true });
             } else {
@@ -2321,14 +2524,64 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         sunLight.shadow.bias = config.shadowBias; sunLight.shadow.normalBias = config.normalBias;
         sunLight.shadow.radius = config.shadowSoftness !== undefined ? config.shadowSoftness : 1.0;
         
-        const r = 20;
-        const phi = THREE.MathUtils.degToRad(90 - config.sunElevation);
-        const theta = THREE.MathUtils.degToRad(config.sunAzimuth);
-        sunLight.position.set(r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.cos(theta));
         scene.add(sunLight);
 
         const plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: config.shadowOpacity }));
         plane.rotation.x = -Math.PI / 2; plane.position.y = -0.01; plane.receiveShadow = true; plane.visible = !!config.sunCastShadow && shadowQuality.enabled; scene.add(plane);
+
+        
+        const sunStudyWrapDegrees = value => ((value % 360) + 360) % 360;
+        const sunStudyClamp = (value, min, max) => Math.min(max, Math.max(min, value));
+        const sunStudyState = {
+            enabled: config.sunStudyEnabled === true,
+            northAzimuth: sunStudyWrapDegrees(Number.isFinite(config.sunStudyNorthAzimuth) ? Math.round(config.sunStudyNorthAzimuth) : 0),
+            progress: sunStudyClamp(Number.isFinite(config.sunStudyProgress) ? config.sunStudyProgress : 50, 0, 100)
+        };
+        let sunStudyDistance = 20;
+        function updateSunStudyLight() {
+            const azimuth = sunStudyState.enabled
+                ? sunStudyWrapDegrees(sunStudyState.northAzimuth + 90 + 180 * (sunStudyState.progress / 100))
+                : (Number.isFinite(Number(config.sunAzimuth)) ? Number(config.sunAzimuth) : 0);
+            const elevation = sunStudyState.enabled
+                ? 5 + 65 * Math.sin(Math.PI * sunStudyState.progress / 100)
+                : (Number.isFinite(Number(config.sunElevation)) ? Number(config.sunElevation) : 45);
+            const phi = THREE.MathUtils.degToRad(90 - elevation);
+            const theta = THREE.MathUtils.degToRad(azimuth);
+            const center = sunLight.target.position;
+            const distance = Math.max(20, sunStudyDistance);
+            sunLight.position.set(
+                center.x + distance * Math.sin(phi) * Math.sin(theta),
+                center.y + distance * Math.cos(phi),
+                center.z + distance * Math.sin(phi) * Math.cos(theta)
+            );
+            const shadowsVisible = shadowQuality.enabled && (sunStudyState.enabled || Boolean(config.sunCastShadow));
+            sunLight.castShadow = shadowsVisible;
+            if (plane) plane.visible = shadowsVisible;
+            if (shadowsVisible) sunLight.shadow.needsUpdate = true;
+        }
+        function setupSunStudyControls() {
+            const panel = document.getElementById('sun-study-panel');
+            const progressInput = document.getElementById('sun-study-progress');
+            if (!panel || !progressInput) {
+                updateSunStudyLight();
+                return;
+            }
+            progressInput.value = String(sunStudyState.progress);
+            const updateLabels = () => {
+                const p = sunStudyState.progress;
+                const progressPercent = p + '%';
+                progressInput.style.setProperty('--range-fill', progressPercent);
+                progressInput.setAttribute('aria-valuetext', progressPercent);
+                updateSunStudyLight();
+            };
+            progressInput.addEventListener('input', () => {
+                sunStudyState.progress = sunStudyClamp(Number(progressInput.value) || 0, 0, 100);
+                updateLabels();
+            });
+            updateLabels();
+        }
+        
+        setupSunStudyControls();
 
         setupViewControls();
 
@@ -2465,6 +2718,11 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         }
     }
     const original = metadata.originalProperties;
+    // Also migrate existing material metadata. Keep source alpha/depth settings
+    // through quality changes, recovered GLBs and Reset.
+    original.opacity ??= material.opacity ?? 1;
+    original.transparent ??= material.transparent ?? false;
+    original.depthWrite ??= material.depthWrite ?? true;
     // Projects saved before coating controls already have a PBR baseline but
     // lack these two fields. Preserve their authored coating on first use.
     original.clearcoat ??= material.isMeshPhysicalMaterial ? material.clearcoat : 0;
@@ -2485,6 +2743,9 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         material.dispose?.();
         material = converted;
     }
+    // KHR_materials_unlit colors are authored for display. Filmic tone mapping
+    // changes them even when exposure and the display grade are neutral.
+    if (originallyUnlit) material.toneMapped = added;
     if (metadata.originalColor && material.color) {
         material.color.fromArray(metadata.originalColor);
         if (typeof override.color === 'string' && /^#[0-9a-f]{6}$/i.test(override.color)) material.color.set(override.color);
@@ -2506,6 +2767,11 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         material = physical;
     }
     material.shadowSide = THREE.DoubleSide;
+    const hasOpacity = Number.isFinite(override.opacity);
+    material.opacity = hasOpacity ? Math.max(0, Math.min(1, override.opacity)) : original.opacity;
+    const faded = hasOpacity && material.opacity < 1;
+    material.transparent = faded || original.transparent;
+    material.depthWrite = faded ? false : original.depthWrite;
     if (material.isMeshStandardMaterial) {
         for (const key of ['roughness', 'metalness', 'specularIntensity', 'envMapIntensity']) {
             const fallback = originallyUnlit ? ({ roughness: 1, metalness: 0, specularIntensity: 1, envMapIntensity: 1 })[key] : original[key];
@@ -2591,9 +2857,35 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         }
     });
 }
+        function applyImportedAssetVisibility(object, config = {}, type = 'glb') {
+    if (!object) return;
+    const visibility = config.importedAssetVisibility || {};
+    if (type === 'ply') {
+        object.visible = visibility[config.plyAssetId] !== false;
+        return;
+    }
+    object.traverse(node => {
+        const asset = node.userData?.vantageImportedAsset;
+        if (!asset?.id || asset.type !== 'glb') return;
+        const saved = visibility[asset.id];
+        node.visible = typeof saved === 'boolean' ? saved : asset.visible !== false;
+    });
+    // Untouched original GLB bytes have no asset metadata. A separate root ID
+    // keeps Show/Hide a state change even for large, single-file imports.
+    if (config.glbAssetId) {
+        object.visible = visibility[config.glbAssetId] !== false;
+    }
+}
+        function isObjectVisible(object) {
+    for (let node = object; node; node = node.parent) {
+        if (node.visible === false) return false;
+    }
+    return true;
+}
 
         function setupScene(gltf) {
             modelObject = gltf.scene;
+            applyImportedAssetVisibility(modelObject, config);
             // Keep source coordinates intact; apply the captured root transform once below.
 
             // Apply saved transform overrides
@@ -2648,6 +2940,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
                 sprite.userData = { id: h.id };
                 scene.add(sprite);
                 hotspots.push({ ...h, spriteRef: sprite });
+                if (document.body.classList.contains('viewer-ui-hidden')) sprite.visible = false;
             });
             pendingOcclusionChecks = hotspots.length;
 
@@ -2670,11 +2963,8 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
             scene.add(sunLight.target);
             if (plane) { plane.position.x = shadowCenter.x; plane.position.z = shadowCenter.z; }
             const sunDist = Math.max(30, shadowMaxDim * 2.5);
-            sunLight.position.set(
-                shadowCenter.x + sunDist * Math.sin(phi) * Math.sin(theta),
-                shadowCenter.y + sunDist * Math.cos(phi),
-                shadowCenter.z + sunDist * Math.sin(phi) * Math.cos(theta)
-            );
+            sunStudyDistance = sunDist;
+            updateSunStudyLight();
             const d = Math.max(15, shadowMaxDim * 1.8);
             sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d; sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
             sunLight.shadow.camera.near = 0.5;
@@ -2806,7 +3096,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
             activePointers.delete(event.pointerId);
             if (activePointers.size === 0) hadMultiTouch = false;
 
-            if (!p || !p.isTapCandidate || wasMulti) return;
+            if (!p || !p.isTapCandidate || wasMulti || document.body.classList.contains('viewer-ui-hidden')) return;
             if (event.target.id !== 'canvas-container' && event.target.tagName !== 'CANVAS') return;
 
             const elapsed = performance.now() - p.startTime;
@@ -3019,9 +3309,87 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         hotspot._currentTargetScale = target;
     }
 };
+        let viewerUiHidden = false;
+        const eyeIconSvg = '<svg class="ui-toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const eyeOffIconSvg = '<svg class="ui-toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
+        const viewerSettingControls = [
+            ['viewer-speed-toggle', 'viewer-speed-popover'],
+            ['sun-study-toggle', 'sun-study-controls']
+        ].map(([buttonId, popoverId]) => ({ button: document.getElementById(buttonId), popover: document.getElementById(popoverId) }))
+            .filter(({ button, popover }) => button && popover);
+        const viewerSettingHideTimers = new WeakMap();
+        const viewerReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        function closeViewerSettingPopovers(exceptButton = null) {
+            for (const { button, popover } of viewerSettingControls) {
+                if (button === exceptButton) continue;
+                button.setAttribute('aria-expanded', 'false');
+                popover.classList.remove('is-open');
+                popover.inert = true;
+                clearTimeout(viewerSettingHideTimers.get(popover));
+                if (viewerReducedMotion.matches) popover.hidden = true;
+                else if (!popover.hidden) {
+                    viewerSettingHideTimers.set(popover, setTimeout(() => {
+                        if (!popover.classList.contains('is-open')) popover.hidden = true;
+                    }, 220));
+                }
+            }
+            document.body.classList.toggle('viewer-setting-open', viewerSettingControls.some(({ button }) => button.getAttribute('aria-expanded') === 'true'));
+        }
+        for (const { button, popover } of viewerSettingControls) {
+            button.addEventListener('click', () => {
+                const opening = button.getAttribute('aria-expanded') !== 'true';
+                closeViewerSettingPopovers(button);
+                clearTimeout(viewerSettingHideTimers.get(popover));
+                if (opening) {
+                    popover.hidden = false;
+                    popover.inert = false;
+                    // Commit the closed frame before animating out from the icon.
+                    void popover.offsetWidth;
+                    popover.classList.add('is-open');
+                } else {
+                    popover.classList.remove('is-open');
+                    popover.inert = true;
+                    if (viewerReducedMotion.matches) popover.hidden = true;
+                    else viewerSettingHideTimers.set(popover, setTimeout(() => {
+                        if (!popover.classList.contains('is-open')) popover.hidden = true;
+                    }, 220));
+                }
+                button.setAttribute('aria-expanded', String(opening));
+                document.body.classList.toggle('viewer-setting-open', opening);
+            });
+        }
+        document.addEventListener('pointerdown', event => {
+            if (!event.target.closest('#viewer-speed-control, #sun-study-panel')) closeViewerSettingPopovers();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                const focusedSetting = viewerSettingControls.find(({ popover }) => popover.contains(document.activeElement));
+                closeViewerSettingPopovers();
+                focusedSetting?.button.focus();
+            }
+        });
+        const viewerUiToggle = document.getElementById('viewer-ui-toggle');
+        viewerUiToggle?.addEventListener('click', () => {
+            viewerUiHidden = !viewerUiHidden;
+            document.body.classList.toggle('viewer-ui-hidden', viewerUiHidden);
+            closeViewerSettingPopovers();
+            const label = viewerUiHidden ? 'Show UI' : 'Hide UI';
+            viewerUiToggle.innerHTML = (viewerUiHidden ? eyeOffIconSvg : eyeIconSvg) + '<span class="sr-only" id="viewer-ui-toggle-text">' + label + '</span>';
+            viewerUiToggle.setAttribute('aria-label', label);
+            viewerUiToggle.title = label;
+            if (viewerUiHidden) {
+                closeHotspotPopup();
+                document.getElementById('view-panel')?.classList.remove('visible');
+                markerAnimationState.hoveredHotspotId = null;
+            }
+            hotspots.forEach(hotspot => {
+                if (hotspot.spriteRef) hotspot.spriteRef.visible = !viewerUiHidden;
+            });
+        });
         const hoverRaycaster = new THREE.Raycaster();
         const hoverPointer = new THREE.Vector2();
         renderer.domElement.addEventListener('pointermove', event => {
+            if (viewerUiHidden) return;
             const rect = renderer.domElement.getBoundingClientRect();
             hoverPointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1,
                 -((event.clientY - rect.top) / rect.height) * 2 + 1);
@@ -3375,7 +3743,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
     let multiplier = 1;
     let touching = false;
     const apply = () => {
-        controls.rotateSpeed = 0.8 * (touching ? Math.max(1, multiplier) : multiplier);
+        controls.rotateSpeed = 0.8 * multiplier;
     };
     const pointer = event => {
         touching = event.pointerType === 'touch';
@@ -3404,7 +3772,12 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
     };
 }
         var speedToastTimeout = null;
+        var speedSnapFrame = 0;
+        var speedSnapTargetPosition = null;
         function setNavigationSpeed(level, showToast = true) {
+            cancelAnimationFrame(speedSnapFrame);
+            speedSnapFrame = 0;
+            speedSnapTargetPosition = null;
             const num = Math.max(1, Math.min(8, Math.round(Number(level) || 2)));
             const SPEED_PRESETS = {
                 1: { mult: 0.25, label: '0.25x (Precision)' },
@@ -3418,17 +3791,19 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
             };
             const preset = SPEED_PRESETS[num] || SPEED_PRESETS[2];
 
+            // Orbit, pan, and zoom stay at a deliberate quarter speed while the
+            // flight preset changes only keyboard flight movement.
             if (typeof controls !== 'undefined' && controls) {
-                controls.rotateSpeed = 0.8 * Math.min(2, preset.mult);
+                controls.rotateSpeed = 0.8 * 0.25;
                 if (!controls.touchOrbitSensitivity) {
                     controls.touchOrbitSensitivity = installTouchOrbitSensitivity(controls, controls.domElement);
                 }
-                controls.touchOrbitSensitivity.setSpeedMultiplier(Math.min(2, preset.mult));
-                controls.panSpeed = 0.8 * Math.min(2, preset.mult);
-                controls.zoomSpeed = 0.8 * Math.min(2, preset.mult);
+                controls.touchOrbitSensitivity.setSpeedMultiplier(0.25);
+                controls.panSpeed = 0.8 * 0.25;
+                controls.zoomSpeed = 0.8 * 0.25;
             }
             if (typeof smoothZoom !== 'undefined' && smoothZoom && typeof smoothZoom.setSpeedMultiplier === 'function') {
-                smoothZoom.setSpeedMultiplier(Math.min(2, preset.mult));
+                smoothZoom.setSpeedMultiplier(0.25);
             }
             if (typeof cameraController !== 'undefined' && cameraController && typeof cameraController.setSpeedMultiplier === 'function') {
                 cameraController.setSpeedMultiplier(preset.mult);
@@ -3446,12 +3821,88 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
                     }, 1300);
                 }
             }
-            const speedSelect = document.getElementById('viewer-flight-speed');
-            if (speedSelect) speedSelect.value = String(num);
+            const speedRange = document.getElementById('viewer-flight-speed');
+            if (speedRange) {
+                // The midpoint of the flight slider is exactly 1x. The two
+                // halves use different logarithmic spans to retain 0.25–64x.
+                const position = preset.mult <= 1
+                    ? 50 * (1 + Math.log(preset.mult) / Math.log(4))
+                    : 50 + 50 * Math.log(preset.mult) / Math.log(64);
+                speedRange.value = String(position);
+                speedRange.style.setProperty('--range-fill', position + '%');
+                speedRange.setAttribute('aria-valuetext', preset.mult + 'x');
+            }
             return preset;
         }
         window.setNavigationSpeed = setNavigationSpeed;
-        document.getElementById('viewer-flight-speed')?.addEventListener('change', event => setNavigationSpeed(event.target.value));
+        const flightSpeedRange = document.getElementById('viewer-flight-speed');
+        const speedStops = [0.25, 0.5, 1, 2, 8, 16, 32, 64].map(multiplier => ({
+            multiplier,
+            position: multiplier <= 1
+                ? 50 * (1 + Math.log(multiplier) / Math.log(4))
+                : 50 + 50 * Math.log(multiplier) / Math.log(64)
+        }));
+        function applyFlightSliderPosition(position) {
+            if (!flightSpeedRange) return;
+            const clamped = Math.max(0, Math.min(100, position));
+            const multiplier = clamped <= 50
+                ? Math.pow(4, clamped / 50 - 1)
+                : Math.pow(64, (clamped - 50) / 50);
+            cameraController?.setSpeedMultiplier(multiplier);
+            flightSpeedRange.value = String(clamped);
+            flightSpeedRange.style.setProperty('--range-fill', clamped + '%');
+            flightSpeedRange.setAttribute('aria-valuetext', Number(multiplier.toFixed(2)) + 'x');
+        }
+        function snapFlightSlider(targetStop = null) {
+            if (!flightSpeedRange) return;
+            cancelAnimationFrame(speedSnapFrame);
+            speedSnapFrame = 0;
+            const startPosition = Number(flightSpeedRange.value);
+            const stop = targetStop || speedStops.reduce((closest, candidate) =>
+                Math.abs(candidate.position - startPosition) < Math.abs(closest.position - startPosition) ? candidate : closest);
+            speedSnapTargetPosition = stop.position;
+            const finish = () => {
+                applyFlightSliderPosition(stop.position);
+                cameraController?.setSpeedMultiplier(stop.multiplier);
+                flightSpeedRange.setAttribute('aria-valuetext', stop.multiplier + 'x');
+                speedSnapFrame = 0;
+            };
+            if (viewerReducedMotion.matches || Math.abs(stop.position - startPosition) < 0.05) {
+                finish();
+                return;
+            }
+            const started = performance.now();
+            const animate = now => {
+                const elapsed = Math.min(1, (now - started) / 190);
+                const eased = 1 - Math.pow(1 - elapsed, 3);
+                applyFlightSliderPosition(startPosition + (stop.position - startPosition) * eased);
+                if (elapsed < 1) speedSnapFrame = requestAnimationFrame(animate);
+                else finish();
+            };
+            speedSnapFrame = requestAnimationFrame(animate);
+        }
+        flightSpeedRange?.addEventListener('input', event => {
+            cancelAnimationFrame(speedSnapFrame);
+            speedSnapFrame = 0;
+            speedSnapTargetPosition = null;
+            applyFlightSliderPosition(Number(event.target.value));
+        });
+        flightSpeedRange?.addEventListener('change', () => snapFlightSlider());
+        flightSpeedRange?.addEventListener('keydown', event => {
+            const key = event.key;
+            if (!['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(key)) return;
+            event.preventDefault();
+            const current = speedSnapTargetPosition ?? Number(flightSpeedRange.value);
+            let target;
+            if (key === 'Home') target = speedStops[0];
+            else if (key === 'End') target = speedStops[speedStops.length - 1];
+            else if (key === 'ArrowRight' || key === 'ArrowUp' || key === 'PageUp') {
+                target = speedStops.find(stop => stop.position > current + 0.05) || speedStops[speedStops.length - 1];
+            } else {
+                target = [...speedStops].reverse().find(stop => stop.position < current - 0.05) || speedStops[0];
+            }
+            snapFlightSlider(target);
+        });
 
         window.addEventListener('resize', () => { 
             cachedCardHeight = 0;
@@ -3487,12 +3938,12 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         function zoomToExtents(options = {}) {
             stopOrbitView({ restoreAutoRotate: true });
             if (!modelObject) {
-                if (defaultBookmark) applyView(defaultBookmark, options);
+                if (firstBookmark) applyView(firstBookmark, options);
                 return;
             }
             const box = new THREE.Box3().setFromObject(modelObject);
             if (box.isEmpty() || !Number.isFinite(box.min.x)) {
-                if (defaultBookmark) applyView(defaultBookmark, options);
+                if (firstBookmark) applyView(firstBookmark, options);
                 return;
             }
             const center = new THREE.Vector3();
@@ -3547,7 +3998,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
         }
 
         window.resetOrFitView = function(options = {}) {
-            if (defaultBookmark) applyView(defaultBookmark, options);
+            if (firstBookmark) applyView(firstBookmark, options);
             else zoomToExtents(options);
         };
 
@@ -3651,7 +4102,7 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
                         }
                     } else {
                         const intersects = raycaster.intersectObject(modelObject, true);
-                        if (intersects.length > 0 && intersects[0].distance <= maxObstacleDist) {
+                        if (intersects.some(hit => hit.distance <= maxObstacleDist && isObjectVisible(hit.object))) {
                             isOccluded = true;
                         }
                     }
@@ -3694,8 +4145,9 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
                 if (anchoredOrbit) anchoredOrbit.update(dt);
                 else {
                 if (cameraController) {
+                    const previousDistance = smoothZoom?.getCurrentDistance();
                     cameraController.update(dt);
-                    if (cameraController.isMoving) { if (cameraFlyTo) cameraFlyTo.cancel(); if (smoothZoom) smoothZoom.sync(); }
+                    if (cameraController.isMoving) { if (cameraFlyTo) cameraFlyTo.cancel(); if (smoothZoom) smoothZoom.followNavigation(previousDistance); }
                 }
                 if (smoothZoom) smoothZoom.update(dt);
                 controls.update();
