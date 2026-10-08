@@ -5,6 +5,11 @@ Thumbs.db
 node_modules/
 dist/
 
+# Local environment files may contain credentials. Track only the template.
+.env
+.env.*
+!.env.example
+
 # Local backup/export folders; keep them out of published site commits.
 assets_backup/
 New folder/

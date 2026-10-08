@@ -94,6 +94,22 @@ The GitHub Actions workflow uses these existing repository secrets:
 
 Never expose credentials in code, logs, commits, or documentation. Routine publishing does not require changes to these secrets, DNS, Pages environment variables, or R2 CORS.
 
+## Local environment and secret scanning
+
+Copy [`.env.example`](.env.example) to `.env.r2.local` for local credentials. All template values are empty placeholders. `.gitignore` excludes `.env` and `.env.*`, with only `.env.example` allowed in Git. Never force-add local environment files.
+
+The local uploader uses `CLOUDFLARE_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`; the AWS values are the same R2 credentials stored in GitHub as `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`. An environment file is not loaded automatically. For a local dry run with Node 22, use `node --env-file=.env.r2.local scripts/sync-r2-media.js --all --dry-run`. Leave `R2_MEDIA_BUCKET` empty to use the production bucket default, or set a bucket explicitly.
+
+[The secret scan workflow](.github/workflows/secret-scan.yml) runs on pushes, pull requests, and manual dispatches. It installs a pinned, checksum-verified Gitleaks release and scans all fetched Git history with redacted output. It needs no Cloudflare/R2 credentials or Gitleaks license. [The configuration](.gitleaks.toml) retains the default provider rules and adds detection for R2's hexadecimal credentials. A finding fails the job; no historical baseline is silently ignored. The sole false-positive exception requires both an exact historical npm cache path and readable-stream's public release-signing GPG fingerprint; it does not exclude the cache directory or disable a detection rule.
+
+To repeat the audit locally with Gitleaks 8.30.1 installed:
+
+```powershell
+gitleaks git --config=.gitleaks.toml --redact --no-banner --log-opts="--all --full-history" .
+```
+
+Scans cover fetched reachable history and detectable plaintext patterns; they cannot prove that a secret never existed in deleted remote refs, inaccessible objects, encrypted data, or binary assets. If a real credential is found, revoke or rotate it before considering a separate history cleanup.
+
 ## Production verification
 
 After a successful `main` deployment, verify:
