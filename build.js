@@ -93,7 +93,7 @@ async function build() {
     // build time so future re-exports cannot reintroduce the stale button state.
     console.log('[INFO] Applying Forestville mobile landscape control fix...');
     try {
-        const forestvilleIndexPath = path.join('presentation', 'forestville_test', 'index.html');
+        const forestvilleIndexPath = path.join('presentation', 'forestville', 'index.html');
         let forestvilleIndexHtml = fs.readFileSync(forestvilleIndexPath, 'utf8');
         const patchStart = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_START -->';
         const patchEnd = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_END -->';
@@ -152,7 +152,7 @@ ${patchEnd}`;
         }
         forestvilleIndexHtml = forestvilleIndexHtml.replace('</body>', `${forestvilleMobileFix}\n  </body>`);
         fs.writeFileSync(forestvilleIndexPath, forestvilleIndexHtml);
-        console.log('[OK] forestville_test mobile landscape control fix applied.');
+        console.log('[OK] forestville mobile landscape control fix applied.');
     } catch (err) {
         console.error('[FAIL] Forestville mobile landscape control fix failed:', err);
         buildFailed = true;
