@@ -70,6 +70,7 @@ jobs:
           metadata="${RUNNER_TEMP}/target.json"
           response="${RUNNER_TEMP}/update.json"
           payload="${RUNNER_TEMP}/payload.json"
+          encoded_file="${RUNNER_TEMP}/video.b64"
 
           curl --fail --silent --show-error \
             -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -79,11 +80,11 @@ jobs:
             --output "$metadata"
 
           current_sha="$(jq -r '.sha' "$metadata")"
-          encoded="$(base64 -w 0 "$output")"
+          base64 -w 0 "$output" > "$encoded_file"
 
           jq -n \
             --arg message "Use uploaded Forestville video thumbnail" \
-            --arg content "$encoded" \
+            --rawfile content "$encoded_file" \
             --arg sha "$current_sha" \
             --arg branch "main" \
             '{message:$message, content:$content, sha:$sha, branch:$branch}' > "$payload"
