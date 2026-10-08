@@ -3,7 +3,7 @@
     "dev": "vite --config scripts/feasibility-preview.config.mjs",
     "build:dist": "node scripts/build-dist.js",
     "verify:dist": "node scripts/verify-dist.js",
-    "build:cloudflare": "npm run build:dist && node scripts/version-white-model-dist.js && node scripts/fix-forestville-dist.js && npm run verify:dist && node scripts/verify-r2-media.js --if-pages",
+    "build:cloudflare": "node scripts/normalize-forestville-thumbnail-version.js && npm run build:dist && node scripts/version-white-model-dist.js && node scripts/fix-forestville-dist.js && npm run verify:dist && node scripts/verify-r2-media.js --if-pages",
     "test:cloudflare": "node scripts/test-cloudflare.js && node --test scripts/test-r2-media.js",
     "test:feasibility": "node --test scripts/test-feasibility.mjs",
     "check:update": "node scripts/check-update.js",
