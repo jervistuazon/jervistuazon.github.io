@@ -16,20 +16,36 @@ concurrency:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Check out repair branch
-        uses: actions/checkout@v4
+      - name: Fetch current thumbnail only
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          source_path="presentation/forestville/assets/video_thumbnail.mp4"
+          input="${RUNNER_TEMP}/video_thumbnail-source.mp4"
+
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github.raw+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/contents/${source_path}?ref=${GITHUB_SHA}" \
+            --output "$input"
+
+          test -s "$input"
+          ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height -of default=nw=1 "$input"
 
       - name: Re-encode thumbnail for browser playback
         shell: bash
         run: |
           set -euo pipefail
 
-          input="presentation/forestville/assets/video_thumbnail.mp4"
+          input="${RUNNER_TEMP}/video_thumbnail-source.mp4"
           output="${RUNNER_TEMP}/video_thumbnail.mp4"
 
-          test -s "$input"
           command -v ffmpeg >/dev/null
           command -v ffprobe >/dev/null
 
@@ -63,32 +79,57 @@ jobs:
           test "$width" -gt 0
           test "$height" -gt 0
 
-          # Decode the entire output so truncated/corrupt MP4s fail before commit.
+          # Decode the complete repaired file so corruption/truncation fails here.
           ffmpeg -v error -i "$output" -f null -
 
           size="$(stat -c%s "$output")"
           sha256="$(sha256sum "$output" | awk '{print $1}')"
           echo "Validated browser-safe Forestville video: ${width}x${height}, ${duration}s, ${size} bytes, sha256 ${sha256}"
 
-      - name: Commit validated video to main
+      - name: Commit validated video to main through GitHub API
         shell: bash
         run: |
           set -euo pipefail
 
-          output="${RUNNER_TEMP}/video_thumbnail.mp4"
           target="presentation/forestville/assets/video_thumbnail.mp4"
+          output="${RUNNER_TEMP}/video_thumbnail.mp4"
+          metadata="${RUNNER_TEMP}/target.json"
+          response="${RUNNER_TEMP}/update.json"
+          payload="${RUNNER_TEMP}/payload.json"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --depth=1 origin main
-          git checkout -B main FETCH_HEAD
-          cp "$output" "$target"
-          git add "$target"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/contents/${target}?ref=main" \
+            --output "$metadata"
 
-          if git diff --cached --quiet; then
-            echo "Forestville thumbnail is already browser-safe; no commit needed."
+          current_sha="$(jq -r '.sha' "$metadata")"
+          repaired_sha="$(git hash-object "$output")"
+
+          if [ "$current_sha" = "$repaired_sha" ]; then
+            echo "Forestville thumbnail on main already matches the validated repaired video."
             exit 0
           fi
 
-          git commit -m "Replace Forestville thumbnail with browser-safe H.264 video"
-          git push origin HEAD:main
+          encoded="$(base64 -w 0 "$output")"
+          jq -n \
+            --arg message "Replace Forestville thumbnail with browser-safe H.264 video" \
+            --arg content "$encoded" \
+            --arg sha "$current_sha" \
+            --arg branch "main" \
+            '{message:$message, content:$content, sha:$sha, branch:$branch}' > "$payload"
+
+          curl --fail-with-body --silent --show-error \
+            --request PUT \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/contents/${target}" \
+            --data-binary @"$payload" \
+            --output "$response"
+
+          commit_sha="$(jq -r '.commit.sha' "$response")"
+          new_blob_sha="$(jq -r '.content.sha' "$response")"
+          test "$new_blob_sha" = "$repaired_sha"
+          echo "Committed repaired Forestville thumbnail to main: ${commit_sha}"
