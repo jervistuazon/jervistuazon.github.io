@@ -1,0 +1,51 @@
+name: Apply Forestville video fix
+
+on:
+  push:
+    branches:
+      - forestville-video-binary-fix-2
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct and validate video
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .tmp/forestville-video/chunk0.b64 \
+              .tmp/forestville-video/chunk1.b64 \
+              .tmp/forestville-video/chunk2.b64 \
+              .tmp/forestville-video/chunk3.b64 \
+              .tmp/forestville-video/chunk4.b64 \
+              .tmp/forestville-video/chunk5.b64 \
+              .tmp/forestville-video/chunk6.b64 \
+              .tmp/forestville-video/chunk7.b64 > /tmp/fv.b64
+          base64 -d /tmp/fv.b64 > /tmp/video_thumbnail.mp4
+          test "$(stat -c%s /tmp/video_thumbnail.mp4)" = "66857"
+          test "$(git hash-object /tmp/video_thumbnail.mp4)" = "443b04d16105b763bda2f7918bd4c748d46f90a6"
+          echo "Validated Forestville video: 66857 bytes, git blob 443b04d16105b763bda2f7918bd4c748d46f90a6"
+
+      - name: Commit validated video to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          cp /tmp/video_thumbnail.mp4 presentation/forestville/assets/video_thumbnail.mp4
+          git add presentation/forestville/assets/video_thumbnail.mp4
+          if git diff --cached --quiet; then
+            echo "No change"
+          else
+            git commit -m "Replace Forestville thumbnail with browser-safe video"
+            git push origin main
+          fi
