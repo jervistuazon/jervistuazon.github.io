@@ -775,7 +775,7 @@ Make the MP4 seekable enough for scroll-driven scrubbing.
 - Mobile scrub output: `Video/Sequence 01_mobile_scrub_v2.mp4`
 - Re-encode script: `scripts/reencode-scroll-video.ps1`
 - Range-enabled local test server: `scripts/serve-local.mjs`, launched by `serve-local.bat`
-- Portable tools: `Tools/ffmpeg/bin/ffmpeg.exe`, `Tools/ffmpeg/bin/ffprobe.exe`
+- Ignored local tools: install FFmpeg on each authoring machine and place `ffmpeg.exe` and `ffprobe.exe` under `Tools/ffmpeg/bin/`; do not add `Tools/` to Git.
 - Mobile-only source: when `Video/Sequence 01_scrub_v2.mp4` exists, `-OnlyMobile` derives from that desktop scrub.
 
 **Template**

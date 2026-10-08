@@ -12,7 +12,7 @@ Build a scroll-driven animated presentation webpage. The page uses a full-screen
 - `Video/Sequence 01_scrub_v2.mp4` is the active native 24 fps desktop scroll-scrubbed video asset.
 - `Video/Sequence 01_mobile_scrub_v2.mp4` is the active mobile/touch scrubbed video asset. It is intentionally lower resolution and lower frame rate for smoother phone seeking.
 - `Video/Sequence 01.mp4` is the original 60 fps source video for re-encoding.
-- `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are project-local portable FFmpeg tools. Keep them in the project when transferring to another PC.
+- `Tools/ffmpeg/bin/ffmpeg.exe` and `Tools/ffmpeg/bin/ffprobe.exe` are ignored local authoring tools. On a fresh clone, install FFmpeg locally and copy those executables into that exact path before running the re-encode script; do not add them to Git.
 - `scripts/reencode-scroll-video.ps1` re-encodes the source MP4 into desktop and mobile scroll-scrub-friendly MP4s.
 - When `-OnlyMobile` is used and `Video/Sequence 01_scrub_v2.mp4` exists, the script should use that desktop scrub as the input source for the mobile version.
 
@@ -115,6 +115,8 @@ To verify keyframe spacing, run:
 ```powershell
 .\Tools\ffmpeg\bin\ffprobe.exe -v error -select_streams v:0 -skip_frame nokey -show_frames -show_entries frame=best_effort_timestamp_time,pict_type,key_frame -of csv=p=0 "Video\Sequence 01_scrub_v2.mp4"
 ```
+
+The `Tools/` directory is ignored. If this command is missing on a fresh clone, install FFmpeg and place `ffmpeg.exe` and `ffprobe.exe` under `Tools/ffmpeg/bin/` locally.
 
 For the mobile scrub, verify:
 
