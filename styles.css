@@ -2131,3 +2131,33 @@ video.lightbox-content {
 }
 
 
+
+/* FORESTVILLE_GALLERY_CARD_FIX_START */
+#gallery-grid .gallery-item[aria-label="Explore interactive presentation: Interactive Presentation Demo"] {
+    order: -1002;
+}
+
+#gallery-grid .gallery-item[aria-label="Explore interactive presentation: Forestville"] {
+    order: -1001;
+}
+
+#gallery-grid .gallery-item[aria-label="Explore interactive presentation: Forestville"] .card-cta {
+    opacity: 0 !important;
+    transform: translateY(8px) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    #gallery-grid .gallery-item[aria-label="Explore interactive presentation: Forestville"]:hover .card-media-wrapper .card-cta {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    #gallery-grid .gallery-item[aria-label="Explore interactive presentation: Forestville"]:hover .card-media-wrapper .card-cta,
+    #gallery-grid .gallery-item[aria-label="Explore interactive presentation: Forestville"]:focus-within .card-media-wrapper .card-cta {
+        opacity: 0 !important;
+        transform: translateY(8px) !important;
+    }
+}
+/* FORESTVILLE_GALLERY_CARD_FIX_END */
