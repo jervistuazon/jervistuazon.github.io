@@ -4,48 +4,93 @@ on:
   push:
     branches:
       - forestville-video-binary-fix-2
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: forestville-video-repair
+  cancel-in-progress: true
+
 jobs:
   apply:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repair branch
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Reconstruct and validate video
+      - name: Re-encode thumbnail for browser playback
         shell: bash
         run: |
           set -euo pipefail
-          cat .tmp/forestville-video/chunk0.b64 \
-              .tmp/forestville-video/chunk1.b64 \
-              .tmp/forestville-video/chunk2.b64 \
-              .tmp/forestville-video/chunk3.b64 \
-              .tmp/forestville-video/chunk4.b64 \
-              .tmp/forestville-video/chunk5.b64 \
-              .tmp/forestville-video/chunk6.b64 \
-              .tmp/forestville-video/chunk7.b64 > /tmp/fv.b64
-          base64 -d /tmp/fv.b64 > /tmp/video_thumbnail.mp4
-          test "$(stat -c%s /tmp/video_thumbnail.mp4)" = "66857"
-          test "$(git hash-object /tmp/video_thumbnail.mp4)" = "443b04d16105b763bda2f7918bd4c748d46f90a6"
-          echo "Validated Forestville video: 66857 bytes, git blob 443b04d16105b763bda2f7918bd4c748d46f90a6"
+
+          input="presentation/forestville/assets/video_thumbnail.mp4"
+          output="${RUNNER_TEMP}/video_thumbnail.mp4"
+
+          test -s "$input"
+          command -v ffmpeg >/dev/null
+          command -v ffprobe >/dev/null
+
+          ffmpeg -hide_banner -loglevel warning -y \
+            -i "$input" \
+            -map 0:v:0 \
+            -an \
+            -c:v libx264 \
+            -pix_fmt yuv420p \
+            -profile:v high \
+            -level:v 4.0 \
+            -tag:v avc1 \
+            -preset medium \
+            -crf 23 \
+            -movflags +faststart \
+            "$output"
+
+          test -s "$output"
+
+          codec="$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=nw=1:nk=1 "$output")"
+          pix_fmt="$(ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=nw=1:nk=1 "$output")"
+          codec_tag="$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_tag_string -of default=nw=1:nk=1 "$output")"
+          duration="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$output")"
+          width="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=nw=1:nk=1 "$output")"
+          height="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=nw=1:nk=1 "$output")"
+
+          test "$codec" = "h264"
+          test "$pix_fmt" = "yuv420p"
+          test "$codec_tag" = "avc1"
+          awk -v d="$duration" 'BEGIN { exit !(d > 0) }'
+          test "$width" -gt 0
+          test "$height" -gt 0
+
+          # Decode the entire output so truncated/corrupt MP4s fail before commit.
+          ffmpeg -v error -i "$output" -f null -
+
+          size="$(stat -c%s "$output")"
+          sha256="$(sha256sum "$output" | awk '{print $1}')"
+          echo "Validated browser-safe Forestville video: ${width}x${height}, ${duration}s, ${size} bytes, sha256 ${sha256}"
 
       - name: Commit validated video to main
         shell: bash
         run: |
           set -euo pipefail
+
+          output="${RUNNER_TEMP}/video_thumbnail.mp4"
+          target="presentation/forestville/assets/video_thumbnail.mp4"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          git checkout main
-          cp /tmp/video_thumbnail.mp4 presentation/forestville/assets/video_thumbnail.mp4
-          git add presentation/forestville/assets/video_thumbnail.mp4
+          git checkout -B main origin/main
+          cp "$output" "$target"
+          git add "$target"
+
           if git diff --cached --quiet; then
-            echo "No change"
-          else
-            git commit -m "Replace Forestville thumbnail with browser-safe video"
-            git push origin main
+            echo "Forestville thumbnail is already browser-safe; no commit needed."
+            exit 0
           fi
+
+          git commit -m "Replace Forestville thumbnail with browser-safe H.264 video"
+          git push origin HEAD:main
