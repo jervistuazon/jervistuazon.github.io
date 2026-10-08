@@ -28,7 +28,7 @@ const ROOT_RUNTIME_FILES = [
 
 const INTERACTIVE_PRESENTATION_DIR = 'presentation/interactive_presentation_demo';
 const CINEMATIC_PRESENTATION_DIR = 'presentation/cinematic_web_presentation';
-const FORESTVILLE_PRESENTATION_DIR = 'presentation/forestville_test';
+const FORESTVILLE_PRESENTATION_DIR = 'presentation/forestville';
 
 const SPECIAL_PRESENTATION_DIRS = new Set([
     INTERACTIVE_PRESENTATION_DIR,
