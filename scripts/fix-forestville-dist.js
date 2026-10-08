@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
-const target = path.join(rootDir, 'dist', 'presentation', 'forestville_test', 'index.html');
+const target = path.join(rootDir, 'dist', 'presentation', 'forestville', 'index.html');
 
 if (!fs.existsSync(target)) {
     throw new Error(`Missing Forestville dist output: ${target}`);
