@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/apply-forestville-mobile-fix.yml'
       - 'build.js'
-      - 'presentation/forestville_test/index.html'
+      - 'presentation/forestville/index.html'
   workflow_dispatch:
 
 permissions:
@@ -35,7 +35,7 @@ jobs:
           const path = require('path');
           const crypto = require('crypto');
 
-          const target = path.join('presentation', 'forestville_test', 'index.html');
+          const target = path.join('presentation', 'forestville', 'index.html');
           let html = fs.readFileSync(target, 'utf8');
           const start = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_START -->';
           const end = '<!-- FORESTVILLE_MOBILE_LANDSCAPE_FIX_END -->';
@@ -168,12 +168,12 @@ jobs:
       - name: Commit patched export when needed
         shell: bash
         run: |
-          if git diff --quiet -- presentation/forestville_test/index.html; then
+          if git diff --quiet -- presentation/forestville/index.html; then
             echo "Forestville export already contains the current fix and cache version."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add presentation/forestville_test/index.html
+          git add presentation/forestville/index.html
           git commit -m "Fix Forestville mobile button scale after landscape"
           git push origin HEAD:main
