@@ -1,0 +1,23 @@
+title = "Portfolio secret scanning"
+
+[extend]
+useDefault = true
+
+# Public release-signing key fingerprint in readable-stream's cached README.
+# Require both this exact historical cache path and this exact public value.
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "readable-stream maintainer's public GPG fingerprint"
+condition = "AND"
+paths = ['''^\.tmp/npm-cache/_cacache/content-v2/sha512/bd/e5/2be1ae6a12e71e1d84883854a773f4b3e2d89bd3a2cfb87ed84f1b2c3ce935d98961b2df41e57c79ac3cd7d65561cb2a3ccdcbbe795ed2720a5cdb673588$''']
+regexes = ['''^3ABC01543F22DD2239285CDD818674489FBC127E$''']
+
+# R2 uses hexadecimal credentials without the AWS AKIA/ASIA prefix.
+# Keep the default provider rules and additionally check R2/AWS assignments.
+[[rules]]
+id = "r2-credential"
+description = "Hardcoded Cloudflare R2 access key ID or secret access key"
+regex = '''(?i)\b(?:r2_access_key_id|r2_secret_access_key|aws_access_key_id|aws_secret_access_key)\b["'\s]*[:=][\s"']*([a-f0-9]{64}|[a-f0-9]{32})(?:[\s"';,}]|$)'''
+secretGroup = 1
+keywords = ["r2_access_key_id", "r2_secret_access_key", "aws_access_key_id", "aws_secret_access_key"]
