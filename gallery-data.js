@@ -274,7 +274,7 @@
                 "featured": true
             },
             {
-                "src": "presentation/forestville/assets/Sequence_03/video_Seedance2.0_mini_r2v_00001_-3-000.jpg",
+                "src": "presentation/forestville/assets/video_thumbnail.mp4",
                 "label": "Forestville",
                 "href": "presentation/forestville/",
                 "featured": true
