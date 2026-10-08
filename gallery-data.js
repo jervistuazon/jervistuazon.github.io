@@ -274,7 +274,7 @@
                 "featured": true
             },
             {
-                "src": "presentation/forestville/assets/video_thumbnail.mp4?v=2",
+                "src": "presentation/forestville/assets/video_thumbnail.mp4",
                 "label": "Forestville",
                 "href": "presentation/forestville/",
                 "featured": true
