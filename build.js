@@ -200,7 +200,7 @@ ${patchEnd}`;
         indexHtml = indexHtml.replace(/(src="script(?:\.min)?\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
 
         // Update gallery-data.js reference
-        indexHtml = indexHtml.replace(/(src="gallery-data\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
+        indexHtml = indexHtml.replace(/(src="gallery-(?:data|media)\.js)(?:\?v=\d+)?(")/g, `$1?v=${version}$2`);
 
         fs.writeFileSync('index.html', indexHtml);
         console.log(`[OK] index.html updated with version: ${version}`);

@@ -10,6 +10,101 @@ let lightboxReturnFocus = null;
 let lightboxCloseTimer = null;
 let lightboxTouchStart = null;
 
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const dataSaverConnection = navigator.connection;
+const hoverSlideshowStops = new Set();
+const visibleGalleryVideos = new Set();
+const nearGalleryVideos = new Set();
+const automaticGalleryVideos = new Set();
+let galleryPlaybackFrame = null;
+
+function allowsAutomaticMedia() {
+    return !reducedMotionQuery.matches && !dataSaverConnection?.saveData && !document.hidden;
+}
+
+function galleryMediaDescriptor(mediaPath) {
+    const cleanPath = mediaPath.split(/[?#]/, 1)[0];
+    return window.galleryMedia?.[cleanPath] || window.galleryMedia?.[normalizeMediaReference(cleanPath)];
+}
+
+function setGalleryImageSource(image, mediaPath) {
+    const descriptor = galleryMediaDescriptor(mediaPath);
+    if (descriptor?.images?.length) {
+        image.srcset = descriptor.images.map(entry => `${encodePath(entry.src)} ${entry.width}w`).join(', ');
+        image.sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 760px';
+        image.src = encodePath(descriptor.images[0].src);
+    } else {
+        image.removeAttribute('srcset');
+        image.removeAttribute('sizes');
+        image.src = encodePath(mediaPath);
+    }
+}
+
+function loadGalleryVideo(video) {
+    if (!video.hasAttribute('src') && video.dataset.src) {
+        video.src = video.dataset.src;
+        video.load();
+    }
+}
+
+function guardAutomaticGalleryPlayback() {
+    galleryPlaybackFrame = null;
+    automaticGalleryVideos.forEach(video => {
+        if (!allowsAutomaticMedia() || !video.isConnected || !visibleGalleryVideos.has(video)) {
+            video.pause();
+            video.controls = !allowsAutomaticMedia();
+            automaticGalleryVideos.delete(video);
+        }
+    });
+    if (!allowsAutomaticMedia()) updateScrollMotion();
+    if (automaticGalleryVideos.size) galleryPlaybackFrame = requestAnimationFrame(guardAutomaticGalleryPlayback);
+}
+
+function playGalleryVideoAutomatically(video) {
+    automaticGalleryVideos.add(video);
+    if (galleryPlaybackFrame === null) galleryPlaybackFrame = requestAnimationFrame(guardAutomaticGalleryPlayback);
+    video.play()?.then(() => {
+        // A preference change can precede its queued media-query notification.
+        if (!allowsAutomaticMedia() || !video.isConnected || !visibleGalleryVideos.has(video)) {
+            video.pause();
+            automaticGalleryVideos.delete(video);
+        }
+    }).catch(() => automaticGalleryVideos.delete(video));
+}
+
+function reconcileGalleryPlayback() {
+    document.querySelectorAll('video[data-autoplay-on-visible]').forEach(video => {
+        video.controls = !allowsAutomaticMedia();
+        if (allowsAutomaticMedia() && visibleGalleryVideos.has(video)) {
+            loadGalleryVideo(video);
+            playGalleryVideoAutomatically(video);
+        } else {
+            video.pause();
+            automaticGalleryVideos.delete(video);
+        }
+    });
+    if (!allowsAutomaticMedia()) hoverSlideshowStops.forEach(stop => stop());
+}
+
+function disposeGalleryMedia(grid) {
+    grid.querySelectorAll('video[data-autoplay-on-visible]').forEach(video => {
+        videoAutoplayObserver.unobserve(video);
+        videoLoadObserver.unobserve(video);
+        visibleGalleryVideos.delete(video);
+        nearGalleryVideos.delete(video);
+        automaticGalleryVideos.delete(video);
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+    });
+    grid.querySelectorAll('.gallery-item').forEach(item => {
+        if (item.stopHoverSlideshow) {
+            item.stopHoverSlideshow();
+            hoverSlideshowStops.delete(item.stopHoverSlideshow);
+        }
+    });
+}
+
 const DIALOG_FOCUSABLE_SELECTOR = [
     'a[href]',
     'button:not([disabled])',
@@ -282,10 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!el) return;
 
         e.preventDefault();
-        if (lenis) {
+        if (lenis && !reducedMotionQuery.matches) {
             lenis.scrollTo(el);
         } else {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            el.scrollIntoView({ behavior: reducedMotionQuery.matches ? 'instant' : 'smooth', block: 'start' });
         }
     });
 });
@@ -304,6 +399,11 @@ function initHeroFade() {
     };
 
     const updateHeroFade = () => {
+        if (reducedMotionQuery.matches) {
+            heroSection.style.setProperty('--hero-fade', '1');
+            isTicking = false;
+            return;
+        }
         const scrollY = window.scrollY || window.pageYOffset;
         const heroHeight = cachedHeroHeight;
         const fadeDistance = heroHeight * 0.8;
@@ -392,7 +492,7 @@ function normalizeMediaReference(filename) {
     }
 }
 
-const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=6149419192112';
+const INTERACTIVE_PRESENTATION_DEMO_URL = 'presentation/interactive_presentation_demo/?v=4084555322069';
 
 function getPresentationHref(itemData) {
     if (itemData && itemData.href) {
@@ -419,27 +519,48 @@ function getGalleryItemLabel(filename, fallback = '') {
 const videoAutoplayObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         const video = entry.target;
-
-        if (entry.isIntersecting) {
+        if (!video.isConnected) {
+            visibleGalleryVideos.delete(video);
+            video.pause();
+            return;
+        }
+        if (entry.isIntersecting) visibleGalleryVideos.add(video);
+        else visibleGalleryVideos.delete(video);
+        if (entry.isIntersecting && allowsAutomaticMedia()) {
+            loadGalleryVideo(video);
             // Video is at least 50% visible - play it
-            const playPromise = video.play();
-
-            // Handle play promise to avoid console errors
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    // Autoplay was prevented (browser policy), silently ignore
-                    // Video will remain paused until user interacts
-                });
-            }
+            playGalleryVideoAutomatically(video);
         } else {
             // Video is less than 50% visible - pause it
             video.pause();
+            automaticGalleryVideos.delete(video);
         }
     });
 }, {
     root: null, // Use viewport as root
     rootMargin: '0px',
     threshold: 0.5 // Trigger when 50% of video is visible
+});
+
+const videoLoadObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (!entry.target.isConnected) return;
+        if (entry.isIntersecting) {
+            nearGalleryVideos.add(entry.target);
+            if (allowsAutomaticMedia()) loadGalleryVideo(entry.target);
+        } else nearGalleryVideos.delete(entry.target);
+    });
+}, { rootMargin: '300px 0px' });
+
+reducedMotionQuery.addEventListener('change', () => {
+    if (reducedMotionQuery.matches) document.getElementById('hero')?.style.setProperty('--hero-fade', '1');
+    updateScrollMotion();
+    reconcileGalleryPlayback();
+});
+dataSaverConnection?.addEventListener('change', reconcileGalleryPlayback);
+document.addEventListener('visibilitychange', () => {
+    updateScrollMotion();
+    reconcileGalleryPlayback();
 });
 
 // Function to register a video element for viewport-based autoplay
@@ -888,6 +1009,7 @@ function setupHoverSlideshow(container, category, folder, files) {
 
     // Define slideshow logic
     const startSlideshow = () => {
+        if (!allowsAutomaticMedia()) return;
         // Avoid starting multiple intervals
         if (slideshowInterval) return;
 
@@ -904,7 +1026,7 @@ function setupHoverSlideshow(container, category, folder, files) {
             const nextImage = slideshowImages[1];
             const path = getMediaPath(category, folder, nextImage);
 
-            img2.src = encodePath(path);
+            setGalleryImageSource(img2, path);
             img2.style.opacity = '1';
             img1.style.opacity = '0';
             // Keep useSecondImage false so next interval will use img1
@@ -913,6 +1035,10 @@ function setupHoverSlideshow(container, category, folder, files) {
 
         // Start cycling through images
         slideshowInterval = setInterval(() => {
+            if (!allowsAutomaticMedia()) {
+                stopSlideshow();
+                return;
+            }
             currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
             const nextImage = slideshowImages[currentSlideIndex];
 
@@ -925,12 +1051,12 @@ function setupHoverSlideshow(container, category, folder, files) {
 
                 if (useSecondImage) {
                     // Load into img2, fade it in
-                    img2.src = encodePath(path);
+                    setGalleryImageSource(img2, path);
                     img2.style.opacity = '1';
                     img1.style.opacity = '0';
                 } else {
                     // Load into img1, fade it in
-                    img1.src = encodePath(path);
+                    setGalleryImageSource(img1, path);
                     img1.style.opacity = '1';
                     img2.style.opacity = '0';
                 }
@@ -953,7 +1079,7 @@ function setupHoverSlideshow(container, category, folder, files) {
         if (img1 && img2) {
             const firstImage = slideshowImages[0];
             const path = getMediaPath(category, folder, firstImage);
-            img1.src = encodePath(path);
+            setGalleryImageSource(img1, path);
             img1.style.opacity = '1';
             img2.style.opacity = '0';
         }
@@ -962,6 +1088,8 @@ function setupHoverSlideshow(container, category, folder, files) {
     // Desktop: Mouse events
     container.addEventListener('mouseenter', startSlideshow);
     container.addEventListener('mouseleave', stopSlideshow);
+    container.stopHoverSlideshow = stopSlideshow;
+    hoverSlideshowStops.add(stopSlideshow);
 
 }
 
@@ -981,11 +1109,16 @@ function renderMediaItem(container, category, folder, filename) {
 
     if (isVideo(filename)) {
         const video = document.createElement('video');
-        video.src = encodedPath;
+        const descriptor = galleryMediaDescriptor(path);
+        video.dataset.src = encodePath(descriptor?.preview || path);
+        if (descriptor?.poster) video.poster = encodePath(descriptor.poster);
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
-        video.preload = 'metadata'; // Only load metadata until in view
+        video.preload = 'none';
+        video.controls = !allowsAutomaticMedia();
+        video.addEventListener('pointerdown', () => loadGalleryVideo(video), { passive: true });
+        video.addEventListener('click', event => { if (video.controls) event.stopPropagation(); });
         video.className = 'gallery-video';
         video.setAttribute('data-autoplay-on-visible', 'true'); // Mark for Intersection Observer
 
@@ -1001,11 +1134,16 @@ function renderMediaItem(container, category, folder, filename) {
 
         // Observe this video for viewport-based autoplay
         observeVideoForAutoplay(video);
+        videoLoadObserver.observe(video);
+        if (descriptor?.poster) {
+            parent.classList.remove('loading');
+            parent.classList.add('loaded');
+        }
     } else {
         // Create the primary image only. A decorative crossfade image is added
         // lazily on first hover for devices that actually support hover.
         const img1 = document.createElement('img');
-        img1.src = encodedPath;
+        setGalleryImageSource(img1, path);
         img1.alt = filename;
         img1.className = 'gallery-img';
         img1.loading = 'lazy'; // Optimization: Lazy load
@@ -1585,7 +1723,7 @@ function syncLightboxThumbnails() {
         item.setAttribute('aria-selected', isActive.toString());
 
         if (isActive) {
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            item.scrollIntoView({ behavior: reducedMotionQuery.matches ? 'instant' : 'smooth', block: 'nearest', inline: 'center' });
         }
     });
 }
@@ -1787,14 +1925,28 @@ const lenis = typeof window.Lenis === 'function' ? new window.Lenis({
 
 let projectLenis = null;
 let projectLenisResizeObserver = null;
+let scrollAnimationFrame = null;
 
 function raf(time) {
+    scrollAnimationFrame = null;
+    if (reducedMotionQuery.matches || document.hidden || (!lenis && !projectLenis)) return;
     if (lenis) lenis.raf(time);
     if (projectLenis) projectLenis.raf(time);
-    requestAnimationFrame(raf);
+    scrollAnimationFrame = requestAnimationFrame(raf);
 }
 
-requestAnimationFrame(raf);
+function updateScrollMotion() {
+    if (scrollAnimationFrame !== null) cancelAnimationFrame(scrollAnimationFrame);
+    scrollAnimationFrame = null;
+    if (lenis) lenis.options.smoothWheel = !reducedMotionQuery.matches;
+    if (reducedMotionQuery.matches && lenis) lenis.scrollTo(window.scrollY, { immediate: true });
+    if (projectLenis) projectLenis.options.smoothWheel = !reducedMotionQuery.matches;
+    if (!reducedMotionQuery.matches && !document.hidden && (lenis || projectLenis)) {
+        scrollAnimationFrame = requestAnimationFrame(raf);
+    }
+}
+
+updateScrollMotion();
 
 // Filter Gallery Function
 function filterGallery(category, evt, isLoadMore = false) {
@@ -1878,6 +2030,7 @@ function filterGallery(category, evt, isLoadMore = false) {
     if (grid) {
         // If it's a new filter (not load more), clear existing items and reset observer
         if (!isLoadMore) {
+            disposeGalleryMedia(grid);
             if (galleryRevealObserver) {
                 grid.querySelectorAll('.gallery-item').forEach(item => galleryRevealObserver.unobserve(item));
             }

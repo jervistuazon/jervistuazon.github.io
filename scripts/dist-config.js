@@ -19,6 +19,7 @@ const ROOT_RUNTIME_FILES = [
     'index.html',
     '404.html',
     'gallery-data.js',
+    'gallery-media.js',
     'script.min.js',
     'styles.min.css',
     'site.webmanifest',
@@ -190,7 +191,8 @@ function collectRootReferencedAssets(rootDir) {
         'index.html',
         '404.html',
         'site.webmanifest',
-        'styles.css'
+        'styles.css',
+        'gallery-media.js'
     ];
 
     for (const relativeFile of sourceFiles) {

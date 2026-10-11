@@ -1498,6 +1498,15 @@ video.lightbox-content {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .gallery-item,
+    .gallery-img,
+    .gallery-img-alt,
+    .project-view,
+    .hero-section::before,
+    .hero-section::after {
+        transition: none !important;
+        animation: none !important;
+    }
     .lightbox,
     .lightbox-content,
     .nav-btn,
