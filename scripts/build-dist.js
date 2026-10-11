@@ -45,6 +45,7 @@ function deterministicCacheVersion() {
         'styles.css',
         'script.js',
         'gallery-data.js',
+        'gallery-media.js',
         `${CINEMATIC_PRESENTATION_DIR}/index.html`,
         `${CINEMATIC_PRESENTATION_DIR}/styles.css`,
         `${CINEMATIC_PRESENTATION_DIR}/script.js`
@@ -83,7 +84,7 @@ function copyRelative(relativePath) {
     fs.copyFileSync(input, output);
 }
 
-function main() {
+async function main() {
     console.log('==========================================');
     console.log('       CLEAN DIST BUILD                   ');
     console.log('==========================================');
@@ -105,6 +106,8 @@ function main() {
         const absolutePath = sourcePath(relativePath);
         if (!fs.existsSync(absolutePath)) throw new Error(`Missing required input: ${relativePath}`);
     });
+
+    await require('./generate-gallery-media').generateGalleryMedia();
 
     // SEO generation must see the current gallery data before cache busting and
     // minification. It also regenerates sitemap.xml and robots.txt.
@@ -129,9 +132,7 @@ function main() {
     console.log('[OK] Authoring files, duplicate presentations, local tools, and repository metadata were not copied.');
 }
 
-try {
-    main();
-} catch (error) {
+main().catch(error => {
     console.error(`[ERROR] Clean dist build failed: ${error.message}`);
     process.exitCode = 1;
-}
+});

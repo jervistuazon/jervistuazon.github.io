@@ -1,0 +1,22 @@
+{
+  "assets/Interactive Presentation/Interactive Presentation Apartment Interior.mp4": {
+    "sourceHash": "88b115ae1733dcfd",
+    "preview": "assets/gallery-previews/88b115ae1733dcfd-preview.mp4",
+    "poster": "assets/gallery-previews/88b115ae1733dcfd-poster.webp"
+  },
+  "assets/Interactive Presentation/Interactive Presentation Singapore House.mp4": {
+    "sourceHash": "9d66884a6c5b87d6",
+    "preview": "assets/gallery-previews/9d66884a6c5b87d6-preview.mp4",
+    "poster": "assets/gallery-previews/9d66884a6c5b87d6-poster.webp"
+  },
+  "assets/Residential/Singapore HDB Development -F.mp4": {
+    "sourceHash": "3e3c7fb8f512c386",
+    "preview": "assets/gallery-previews/3e3c7fb8f512c386-preview.mp4",
+    "poster": "assets/gallery-previews/3e3c7fb8f512c386-poster.webp"
+  },
+  "presentation/forestville/assets/video_thumbnail.mp4": {
+    "sourceHash": "33aad53195707add",
+    "preview": "assets/gallery-previews/33aad53195707add-preview.mp4",
+    "poster": "assets/gallery-previews/33aad53195707add-poster.webp"
+  }
+}

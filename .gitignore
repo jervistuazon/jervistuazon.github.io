@@ -4,6 +4,7 @@ Thumbs.db
 *.log
 node_modules/
 dist/
+test-artifacts/
 .tmp/
 
 # Local environment files may contain credentials. Track only the template.

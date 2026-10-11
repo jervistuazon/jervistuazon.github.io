@@ -66,6 +66,14 @@ Review `git diff`, commit only the intended files, and push a branch for Preview
 
 Do not run `deploy.bat`; it is the legacy GitHub Pages publisher.
 
+## Gallery thumbnails and video previews
+
+The production build generates responsive WebP variants and `gallery-media.js` from the gallery inventory. Gallery cards use these variants and compact preview clips; lightboxes retain the original sources. Generated filenames include a source-content hash to avoid stale cached previews. Run `npm run media:gallery` after image changes and include the generated manifest and thumbnails with the source change.
+
+After adding or replacing a gallery video, run `npm run media:gallery:videos` with FFmpeg available on PATH, or set `FFMPEG_PATH` to its executable. This prepares six-second H.264 previews and WebP posters under `assets/gallery-previews/` and updates `gallery-video-previews.json`. Commit those files with the source. Normal builds verify the recorded source hashes and never require FFmpeg; missing or stale previews fail the build with the regeneration command.
+
+Run `npm run check:update` and `npm run test:gallery` to verify the artifact and actual gallery browser behavior. The browser suite uses Playwright Chromium; run `npx playwright install chromium` first, or set `PLAYWRIGHT_CHANNEL=chrome` for installed Chrome. Pull-request CI runs both commands. Reduced-motion/data-saving preferences disable automatic gallery motion, and video sources are deferred until nearby or explicitly requested.
+
 ## Automatic oversized-media publishing
 
 The build and R2 uploader share a media inventory. Supported runtime assets above **25 MiB** (including GLB models, binary buffers, textures, and videos) are served from R2 instead of copied into the Pages upload. Draft presentations marked `.no-publish`, authoring files, build output, and dependencies are excluded. Existing video URLs remain compatible.
